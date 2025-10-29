@@ -12,16 +12,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 'lts/*'
-          cache: 'pnpm'
-
-      # ✅ Добавляем установку pnpm через официальный экшен
+      # ✅ Сначала устанавливаем pnpm
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.20.0
+
+      # ✅ Потом настраиваем Node.js (с кэшем pnpm)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

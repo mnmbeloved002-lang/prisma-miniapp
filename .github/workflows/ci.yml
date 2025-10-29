@@ -1,78 +1,74 @@
 name: CI Quality Gate (L2)
+
 on:
   push:
     branches: [dev]
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [main]
-jobs:
-  # Job 1: Проверка безопасности (Gitleaks)
-  gitleaks:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - name: Gitleaks Scan
-        uses: gitleaks/gitleaks-action@v2
 
-  # Job 2: Быстрые проверки L1.7 (lint, test, build)
+jobs:
+  # Job 1: Быстрые проверки L1.7 (lint, test, build)
   verify:
-    needs: gitleaks # Зависит от Gitleaks
+    name: 1. L1.7 Verify
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 'lts/*', cache: 'pnpm' }
-      - run: corepack enable && pnpm install --frozen-lockfile
-      - name: L1.7 Checks
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*' # ИСПРАВЛЕНО: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: corepack enable && pnpm install --frozen-lockfile
+
+      - name: Run L1.7 Sanity Checks
         run: pnpm run sanity
 
-  # Job 3: L2 Проверка производительности (Lighthouse CI)
-  lighthouse:
+  # Job 2: L2 Проверка безопасности (Gitleaks)
+  gitleaks:
+    name: 2. L2 Gitleaks
     needs: verify
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 'lts/*', cache: 'pnpm' }
-      - run: corepack enable && pnpm install --frozen-lockfile
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with: { fetch-depth: 0 } # Требуется для полной проверки истории
+
+      - name: Gitleaks Scan
+        uses: gitleaks/gitleaks-action@v2
+        # Мы НЕ используем config, Gitleaks-action v2 имеет 'sensible defaults'
+
+  # Job 3: L2 Проверка производительности (Lighthouse CI)
+  lighthouse:
+    name: 3. L2 Lighthouse
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*' # ИСПРАВЛЕНО: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: corepack enable && pnpm install --frozen-lockfile
+
       - name: Build (Static Dist)
         run: pnpm run build
+
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1
+
       - name: Lighthouse CI Check
         run: |
+          # Используем pnpx для прямого запуска
           pnpx @lhci/cli@0.13.x autorun \
             --config=lighthouserc.json \
-            --collect.staticDistDir=dist 
-EOF
-```
-
-#### Шаг 4.2: Фиксация и отправка
-
-Мы также должны зафиксировать все остальные изменения L2 (Semantic Release, MVP Logger), которые мы создали в Шагах 1-3.
-
-```bash
-# 1. Добавляем ВСЕ ИЗМЕНЕНИЯ (L2-файлы и обновленные L1.7-файлы)
-git add .
-
-# 2. Коммитим
-git commit -m "feat(l2): implement final security, error reporting and release automation (L2-Free)"
-
-# 3. Отправляем в dev
-git push origin dev
-```
-
----
-
-### 3. Финальная проверка (DoD)
-
-Ваш `push` запустит новый, исправленный CI-пайплайн.
-
-1.  **Проверка CI:** Перейдите в GitHub Actions. Все Job'ы (`gitleaks`, `verify`, `lighthouse`) должны **позеленеть**.
-2.  **Проверка API (после того как Vercel станет Ready):** Выполните эту команду, **заменив** плейсхолдер `<YOUR_DEV_URL>` на URL вашего проекта (`prisma-miniapp-dev.vercel.app`).
-
-```bash
-curl -X POST https://prisma-miniapp-dev.vercel.app/api/report-error \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Final L2 check"}'
+            --collect.staticDistDir=dist

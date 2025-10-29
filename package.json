@@ -21,7 +21,7 @@
     "size": "size-limit",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
-    "lhci": "lhci autorun --config=lighthouserc.json --collect.settings.chromeFlags='--no-sandbox'"
+    "lhci": "lhci autorun --config=lighthouserc.json"
   },
   "dependencies": {
     "react": "^19.1.1",
@@ -74,7 +74,7 @@
   "size-limit": [
     {
       "path": "dist/assets/*.js",
-      "limit": "120 kB"
+      "limit": "100 kB"
     }
   ],
   "npmpackagejsonlint": {

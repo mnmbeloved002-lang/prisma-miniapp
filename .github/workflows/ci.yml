@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 'lts/', cache: 'pnpm' }
+        with: { node-version: 'lts/*', cache: 'pnpm' } # ИСПРАВЛЕНО: 'lts/*'
       - run: corepack enable && pnpm install --frozen-lockfile
       - name: L1.7 Checks
         run: pnpm run sanity
@@ -23,10 +23,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 } # Требуется для полной проверки истории
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 'lts/*', cache: 'pnpm' } # ИСПРАВЛЕНО: 'lts/*'
+      - run: corepack enable && pnpm install --frozen-lockfile
       - name: Gitleaks Scan
         uses: gitleaks/gitleaks-action@v2
-        with: { config: '${{ github.workspace }}/.gitleaksignore' } # Используем стандартный конфиг
 
   # Job 3: L2 Проверка производительности (Lighthouse CI)
   lighthouse:
@@ -35,7 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 'lts/', cache: 'pnpm' }
+        with: { node-version: 'lts/*', cache: 'pnpm' } # ИСПРАВЛЕНО: 'lts/*'
       - run: corepack enable && pnpm install --frozen-lockfile
       - name: Build (Static Dist)
         run: pnpm run build
@@ -43,7 +45,34 @@ jobs:
         uses: browser-actions/setup-chrome@v1
       - name: Lighthouse CI Check
         run: |
-          # Используем pnpx для прямого запуска
           pnpx @lhci/cli@0.13.x autorun \
             --config=lighthouserc.json \
-            --collect.staticDistDir=dist 
+            --collect.staticDistDir=dist
+```
+
+#### Шаг 4.2: Фиксация и отправка
+
+```bash
+# 1. Добавляем измененный ci.yml
+git add .github/workflows/ci.yml
+
+# 2. Коммитим
+git commit -m "fix(ci): correct node alias to lts/* for github actions"
+
+# 3. Отправляем в dev
+git push origin dev
+```
+
+---
+
+### 3. Финальная проверка (DoD)
+
+Ваш `push` запустит новый, исправленный CI-пайплайн.
+
+1.  **Проверка CI:** Перейдите в GitHub Actions. Все Job'ы (`verify`, `gitleaks`, `lighthouse`) должны **позеленеть**.
+2.  **Проверка API (после того как Vercel станет Ready):** Выполните эту команду, **заменив** плейсхолдер `<YOUR_DEV_URL>` на URL вашего проекта (`prisma-miniapp-dev.vercel.app`).
+
+```bash
+curl -X POST https://prisma-miniapp-dev.vercel.app/api/report-error \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Final L2 check"}'

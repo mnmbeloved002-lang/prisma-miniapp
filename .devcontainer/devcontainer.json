@@ -1,17 +1,13 @@
 {
-  "name": "Prisma MiniApp",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
-  "features": {
-    "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "22",
-      "nodeGypDependencies": true
-    }
-  },
-  "containerEnv": {
-    "COREPACK_ENABLE_DOWNLOADS": "1"
-  },
-  "postCreateCommand": "bash -lc 'corepack enable && pnpm --version && pnpm install --frozen-lockfile'",
+  "name": "Prisma MiniApp Dev (L2 Stable - Recovery)",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bullseye",
+  
+  // УДАЛЕНЫ ВСЕ features (pnpm, chrome), вызывающие ошибку аутентификации.
+  "features": {}, 
+
+  // Установка pnpm и Chromium перенесена в надежный postCreateCommand (apt).
+  "postCreateCommand": "npm install -g pnpm && sudo apt-get update && sudo apt-get install -y chromium-browser", 
+
   "customizations": {
     "vscode": {
       "extensions": [
@@ -21,7 +17,7 @@
       ],
       "settings": {
         "editor.formatOnSave": true,
-        "files.eol": "\\n"
+        "files.eol": "\n"
       }
     }
   },

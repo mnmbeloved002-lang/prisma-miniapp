@@ -14,13 +14,14 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "verify": "pnpm run lint && pnpm run typecheck && pnpm run build",
-    "sanity": "pnpm run lint && pnpm run typecheck && pnpm run test:cov && pnpm run pkg:lint && pnpm run audit && pnpm run build && pnpm run size",
+    "sanity": "pnpm run lint && pnpm run typecheck && pnpm run test:cov && pnpm run pkg:lint && pnpm run audit && pnpm run build && pnpm run size && pnpm run lhci",
     "prepare": "husky install",
     "pkg:lint": "npmPkgJsonLint .",
     "audit": "pnpm audit --prod --audit-level=moderate",
     "size": "size-limit",
     "test": "vitest run",
-    "test:cov": "vitest run --coverage"
+    "test:cov": "vitest run --coverage",
+    "lhci": "lhci autorun --config=lighthouserc.json --collect.settings.chromeFlags='--no-sandbox'"
   },
   "dependencies": {
     "react": "^19.1.1",
@@ -30,6 +31,7 @@
     "@commitlint/cli": "^20.0.0",
     "@commitlint/config-conventional": "^20.0.0",
     "@eslint/js": "^9.38.0",
+    "@lhci/cli": "^0.15.1",
     "@size-limit/file": "^11.2.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",

@@ -1,4 +1,4 @@
-name: CI Quality Gate (L2)
+name: CI Quality Gate (L2.1)
 
 on:
   push:
@@ -16,14 +16,21 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      # --- ИСПРАВЛЕНИЕ ---
+      - name: 1. Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.20.0 # (Ваша версия pnpm)
+
+      - name: 2. Setup Node.js (с кэшем pnpm)
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*' # ИСПРАВЛЕНО: 'lts/*'
+          node-version: 'lts/*'
           cache: 'pnpm'
+      # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
 
       - name: Install Dependencies
-        run: corepack enable && pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Run L1.7 Sanity Checks
         run: pnpm run sanity
@@ -36,11 +43,11 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with: { fetch-depth: 0 } # Требуется для полной проверки истории
+        with: { fetch-depth: 0 }
 
       - name: Gitleaks Scan
         uses: gitleaks/gitleaks-action@v2
-        # Мы НЕ используем config, Gitleaks-action v2 имеет 'sensible defaults'
+        # Gitleaks v2 не требует pnpm или node
 
   # Job 3: L2 Проверка производительности (Lighthouse CI)
   lighthouse:
@@ -51,14 +58,21 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      # --- ИСПРАВЛЕНИЕ ---
+      - name: 1. Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.20.0
+
+      - name: 2. Setup Node.js (с кэшем pnpm)
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*' # ИСПРАВЛЕНО: 'lts/*'
+          node-version: 'lts/*'
           cache: 'pnpm'
+      # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
 
       - name: Install Dependencies
-        run: corepack enable && pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build (Static Dist)
         run: pnpm run build

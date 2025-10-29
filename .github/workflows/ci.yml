@@ -6,29 +6,26 @@ on:
     types: [opened, synchronize, reopened]
     branches: [main]
 jobs:
-  # Job 1: Быстрые проверки L1.7 (lint, test, build)
-  verify:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 'lts/*', cache: 'pnpm' } # ИСПРАВЛЕНО: 'lts/*'
-      - run: corepack enable && pnpm install --frozen-lockfile
-      - name: L1.7 Checks
-        run: pnpm run sanity
-
-  # Job 2: L2 Проверка безопасности (Gitleaks)
+  # Job 1: Проверка безопасности (Gitleaks)
   gitleaks:
-    needs: verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
-      - uses: actions/setup-node@v4
-        with: { node-version: 'lts/*', cache: 'pnpm' } # ИСПРАВЛЕНО: 'lts/*'
-      - run: corepack enable && pnpm install --frozen-lockfile
       - name: Gitleaks Scan
         uses: gitleaks/gitleaks-action@v2
+
+  # Job 2: Быстрые проверки L1.7 (lint, test, build)
+  verify:
+    needs: gitleaks # Зависит от Gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 'lts/*', cache: 'pnpm' }
+      - run: corepack enable && pnpm install --frozen-lockfile
+      - name: L1.7 Checks
+        run: pnpm run sanity
 
   # Job 3: L2 Проверка производительности (Lighthouse CI)
   lighthouse:
@@ -37,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 'lts/*', cache: 'pnpm' } # ИСПРАВЛЕНО: 'lts/*'
+        with: { node-version: 'lts/*', cache: 'pnpm' }
       - run: corepack enable && pnpm install --frozen-lockfile
       - name: Build (Static Dist)
         run: pnpm run build
@@ -47,17 +44,20 @@ jobs:
         run: |
           pnpx @lhci/cli@0.13.x autorun \
             --config=lighthouserc.json \
-            --collect.staticDistDir=dist
+            --collect.staticDistDir=dist 
+EOF
 ```
 
 #### Шаг 4.2: Фиксация и отправка
 
+Мы также должны зафиксировать все остальные изменения L2 (Semantic Release, MVP Logger), которые мы создали в Шагах 1-3.
+
 ```bash
-# 1. Добавляем измененный ci.yml
-git add .github/workflows/ci.yml
+# 1. Добавляем ВСЕ ИЗМЕНЕНИЯ (L2-файлы и обновленные L1.7-файлы)
+git add .
 
 # 2. Коммитим
-git commit -m "fix(ci): correct node alias to lts/* for github actions"
+git commit -m "feat(l2): implement final security, error reporting and release automation (L2-Free)"
 
 # 3. Отправляем в dev
 git push origin dev
@@ -69,7 +69,7 @@ git push origin dev
 
 Ваш `push` запустит новый, исправленный CI-пайплайн.
 
-1.  **Проверка CI:** Перейдите в GitHub Actions. Все Job'ы (`verify`, `gitleaks`, `lighthouse`) должны **позеленеть**.
+1.  **Проверка CI:** Перейдите в GitHub Actions. Все Job'ы (`gitleaks`, `verify`, `lighthouse`) должны **позеленеть**.
 2.  **Проверка API (после того как Vercel станет Ready):** Выполните эту команду, **заменив** плейсхолдер `<YOUR_DEV_URL>` на URL вашего проекта (`prisma-miniapp-dev.vercel.app`).
 
 ```bash

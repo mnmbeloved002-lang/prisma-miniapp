@@ -14,7 +14,7 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "verify": "pnpm run lint && pnpm run typecheck && pnpm run build",
-    "sanity": "pnpm run lint && pnpm run typecheck && pnpm run test:cov && pnpm run pkg:lint && pnpm run audit && pnpm run build && pnpm run size",
+    "sanity": "pnpm run lint && pnpm run typecheck && pnpm run test:cov && pnpm run pkg:lint && pnpm run audit && pnpm run build && pnpm run size && pnpm run lhci",
     "prepare": "husky install",
     "pkg:lint": "npmPkgJsonLint .",
     "audit": "pnpm audit --prod --audit-level=moderate",

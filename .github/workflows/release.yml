@@ -2,9 +2,13 @@ name: Release (L2 Automation)
 on:
   push:
     branches: [main]
+
 jobs:
   release:
     runs-on: ubuntu-latest
+    concurrency:
+      group: semantic-release-${{ github.ref }}
+      cancel-in-progress: false
     permissions:
       contents: write
       issues: write
@@ -15,7 +19,12 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 'lts/*' }
       - run: corepack enable && pnpm install --frozen-lockfile
-      - name: Run Semantic Release
-        run: pnpx semantic-release
+      - name: Run Semantic Release (with retry)
+        run: |
+          for i in 1 2 3; do
+            npx -y semantic-release && s=0 && break || s=$?
+            echo "GitHub flaky? retry $i/3 after 20s"; sleep 20
+          done
+          exit $s
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

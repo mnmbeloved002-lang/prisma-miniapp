@@ -1,4 +1,4 @@
-name: CI Quality Gate (L2.2)
+name: CI Quality Gate (L2.3)
 
 on:
   push:
@@ -6,6 +6,13 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [main]
+
+# --- ИСПРАВЛЕНИЕ (L2.3) ---
+# Мы предоставляем минимальные права, необходимые Gitleaks для чтения PR
+permissions:
+  contents: read # Необходимо для actions/checkout
+  pull-requests: read # Необходимо для gitleaks-action (сканирование PR)
+# --- КОНЕЦ ИСПРАВЛЕНИЯ ---
 
 jobs:
   # Job 1: Быстрые проверки L1.7 (lint, test, build)
@@ -46,10 +53,8 @@ jobs:
       - name: Gitleaks Scan
         uses: gitleaks/gitleaks-action@v2
         env:
-          # --- ИСПРАВЛЕНИЕ ---
           # Gitleaks v2 требует GITHUB_TOKEN для сканирования PR
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # --- КОНЕЦ ИСПРАВЛЕНИЯ ---
 
   # Job 3: L2 Проверка производительности (Lighthouse CI)
   lighthouse:

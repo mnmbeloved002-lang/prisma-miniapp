@@ -7,17 +7,17 @@ describe('reportError (edgecases to 100%)', () => {
 
   beforeEach(() => {
     // Уберём их, чтобы пройти ветки без UA и URL
-    // @ts-expect-error тестовые подмены
+    
     delete (globalThis as any).navigator;
-    // @ts-expect-error тестовые подмены
+
     delete (globalThis as any).location;
   });
 
   afterEach(() => {
     // Вернём окружение
-    // @ts-expect-error тестовые подмены
+ 
     globalThis.navigator = origNavigator;
-    // @ts-expect-error тестовые подмены
+ 
     globalThis.location = origLocation;
     vi.restoreAllMocks();
   });

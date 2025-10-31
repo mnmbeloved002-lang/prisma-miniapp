@@ -13,5 +13,7 @@ export default defineConfig({
       reporter: ['text', 'lcov'],
       thresholds: { lines: 70, functions: 70, branches: 70 },
     },
+    // ВАЖНО: не трогать Playwright e2e
+    exclude: ['node_modules', 'dist', 'tests/e2e/**'],
   },
 });

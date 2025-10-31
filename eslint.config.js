@@ -1,16 +1,31 @@
-import js from "@eslint/js";
-import globals from "globals";
-import tseslint from "typescript-eslint";
+// eslint.config.js (ESLint v9 flat config)
+import tseslint from 'typescript-eslint';
+import js from '@eslint/js';
 
-export default tseslint.config({
-  extends: [js.configs.recommended, ...tseslint.configs.recommended],
-  files: ["**/*.{ts,tsx,js,jsx}"],
-  ignores: ["dist/**", "node_modules/**"],
-  languageOptions: {
-    globals: globals.browser
+export default tseslint.config(
+  js.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked, // если у тебя уже есть project в tsconfig
+  {
+    ignores: ['dist', 'build', '.lighthouseci'],
   },
-  rules: {
-    "no-unused-vars": "warn",
-    "no-console": "off"
-  }
-});
+  {
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.json', './tsconfig.node.json', './tsconfig.app.json'].filter(Boolean),
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      // твои боевые правила тут…
+    },
+  },
+  // ⬇️ Оверрайд ТОЛЬКО для тестов
+  {
+    files: ['**/*.test.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
+    },
+  },
+);

@@ -1,6 +1,18 @@
 # 1.0.0 (2025-10-30)
 
 
+## v0.0.2...v1.8.2
+
+[compare changes](https://github.com/mnmbeloved002-lang/prisma-miniapp/compare/v0.0.2...v1.8.2)
+
+### 📖 Documentation
+
+- **changelog:** Update for v1.8.2 ([77b20aa](https://github.com/mnmbeloved002-lang/prisma-miniapp/commit/77b20aa))
+
+### ❤️ Contributors
+
+- ShumikDV <dimitr227@gmail.com>
+
 ## 65ad9dd81483c4896c094371fafeeec71cb046fa...v1.8.2
 
 [compare changes](https://github.com/mnmbeloved002-lang/prisma-miniapp/compare/65ad9dd81483c4896c094371fafeeec71cb046fa...v1.8.2)

@@ -1,21 +1,55 @@
 name: Release (L2 Automation)
+
 on:
   push:
     branches: [main]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
+    timeout-minutes: 20
+
     steps:
-      - uses: actions/checkout@v4
-        with: { persist-credentials: false }
-      - uses: actions/setup-node@v4
-        with: { node-version: 'lts/*' }
-      - run: corepack enable && pnpm install --frozen-lockfile
-      - name: Run Semantic Release
-        run: pnpx semantic-release
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.20.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      # 🔁 Надёжный запуск c 3 попытками (боремся с 502/5xx)
+      - name: Run Semantic Release (with retry)
         env:
+          # можно оставить GITHUB_TOKEN; если создашь PAT -> см. примечание ниже
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          for i in 1 2 3; do
+            echo "semantic-release attempt $i..."
+            npx semantic-release && exit 0
+            echo "semantic-release failed (attempt $i). Waiting 25s and retrying..."
+            sleep 25
+          done
+          echo "semantic-release failed after 3 attempts"
+          exit 1

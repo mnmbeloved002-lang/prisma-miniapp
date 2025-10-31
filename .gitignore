@@ -20,3 +20,4 @@ node_modules/
 # === Misc ===
 pnpm-debug.log*
 npm-debug.log*
+manifest.json

@@ -1,6 +1,10 @@
 # 1.0.0 (2025-10-30)
 
 
+## v0.0.2...v1.8.2
+
+[compare changes](https://github.com/mnmbeloved002-lang/prisma-miniapp/compare/v0.0.2...v1.8.2)
+
 ### Bug Fixes
 
 * **build:** add missing @vercel/node types ([1b70a3a](https://github.com/mnmbeloved002-lang/prisma-miniapp/commit/1b70a3ac3d0a646a92cd4bf27d96022ca9e57f6f))

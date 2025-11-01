@@ -1,4 +1,3 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { z } from 'zod';
 
 const BodySchema = z.object({
@@ -9,38 +8,49 @@ const BodySchema = z.object({
   url: z.string().url().optional(),
 });
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
-    return res.status(204).end();
+    res.statusCode = 204;
+    res.end();
+    return;
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
+    res.statusCode = 405;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ ok: false, error: 'Method Not Allowed' }));
+    return;
   }
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const data = BodySchema.parse(body);
 
-    // здесь можем логировать в консоль/провайдер — пока просто no-op
     console.error('[report-error]', {
       message: data.message,
       stack: data.stack,
       context: data.context,
-      userAgent: data.userAgent ?? req.headers['user-agent'],
+      userAgent: data.userAgent ?? req.headers?.['user-agent'],
       url: data.url,
     });
 
-    return res.status(200).json({ ok: true });
-  } catch (err) {
-    if (err instanceof z.ZodError) {
-      return res.status(400).json({ ok: false, error: 'Invalid body', issues: err.issues });
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ ok: true }));
+  } catch (err: any) {
+    if (err?.issues) {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ ok: false, error: 'Invalid body', issues: err.issues }));
+      return;
     }
-    return res.status(500).json({ ok: false, error: 'Internal Server Error' });
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ ok: false, error: 'Internal Server Error' }));
   }
 }

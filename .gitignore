@@ -30,3 +30,8 @@ blob-report
 coverage
 dist
 .pnpm-store
+
+# LHCI/HTML reports
+*.report
+*.report.json
+localhost-*index_html*.report*

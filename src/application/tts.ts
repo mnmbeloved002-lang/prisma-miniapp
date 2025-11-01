@@ -1,47 +1,52 @@
-let u: SpeechSynthesisUtterance | null = null;
+// src/application/tts.ts
 
-function hasTTS(): boolean {
-  return typeof window !== 'undefined' && 'speechSynthesis' in window;
+// Безопасная ссылка на SpeechSynthesis (в браузере) 
+const synth: SpeechSynthesis | null =
+  typeof window !== 'undefined' && 'speechSynthesis' in window
+    ? window.speechSynthesis
+    : null;
+
+/** Проверка поддержки Web Speech API (TTS) */
+export function supported(): boolean {
+  return !!synth;
 }
 
-export function stop() {
+/** Остановить озвучивание (если поддерживается) */
+export function stop(): void {
+  if (!synth) return;
   try {
-    if (hasTTS()) {
-      window.speechSynthesis.cancel();
-    }
-  } catch (e) {
-    // use the error to avoid no-unused-vars
-    void e;
+    synth.cancel();
+  } catch {
+    /* no-op */
   }
-  u = null;
 }
 
-export function speak(text: string, lang = 'ru-RU', rate = 1) {
-  if (!hasTTS()) return;
-  stop(); // отменим предыдущую озвучку
-  u = new SpeechSynthesisUtterance(text);
-  u.lang = lang;
-  u.rate = rate;
+/** Озвучить: берём title + «голый» текст из HTML (без тегов) */
+export async function speakFromHtml(title: string, html: string): Promise<void> {
+  if (!synth) return;
 
-  const voices = window.speechSynthesis.getVoices();
-  const pref = voices.find(v => v.lang.toLowerCase().startsWith(lang.toLowerCase()));
-  if (pref) u.voice = pref;
+  // На всякий случай гасим предыдущее
+  stop();
 
-  window.speechSynthesis.speak(u);
-}
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  const body = (tmp.textContent ?? '').trim();
+  const text = (title ? `${title}. ` : '') + body;
 
-export function speakFromHtml(html: string, lang = 'ru-RU', rate = 1) {
-  // грубая очистка HTML → текст: убираем теги, схлопываем пробелы
-  const text = html
-    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  if (!text) return;
 
-  if (text) speak(text, lang, rate);
-}
+  const utter = new SpeechSynthesisUtterance(text);
+  // Можно подстроить при желании:
+  utter.rate = 1;
+  utter.pitch = 1;
 
-export function isSpeaking(): boolean {
-  return hasTTS() && window.speechSynthesis.speaking;
+  await new Promise<void>((resolve) => {
+    utter.onend = () => resolve();
+    utter.onerror = () => resolve(); // не рушим UX, просто завершаем
+    try {
+      synth.speak(utter);
+    } catch {
+      resolve();
+    }
+  });
 }

@@ -8,6 +8,8 @@ coverage/
 # LHCI временные файлы
 localhost-index_html-*.report.json
 localhost-index_html-*.report.html
+localhost-*index_html*.report*
+
 
 # === Node / package managers ===
 node_modules/

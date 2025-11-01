@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { getNewsCached } from '../infrastructure/api-client'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { getNewsCached, getNewsFresh } from '../infrastructure/api-client'
 import type { NewsItem, Category } from '../domain/types'
 import { Header } from './Header'
 import { FilterBar } from './FilterBar'
@@ -12,30 +12,62 @@ import { ReaderPreview } from './ReaderPreview'
 import { speakFromHtml } from '../application/tts'
 import { useDebouncedValue } from '../utils/useDebouncedValue'
 import { usePersistentState } from '../utils/usePersistentState'
+import { NewItemsBar } from './NewItemsBar'
 
 export default function AppShell() {
   const [items, setItems] = useState<NewsItem[] | null>(null)
   const [err, setErr] = useState<string | null>(null)
-
-  // сохраняем между сессиями
-  const [query, setQuery] = usePersistentState<string>('ui-query', '')
-  const [showBm, setShowBm] = usePersistentState<boolean>('ui-show-bookmarks', false)
-
+  const [query, setQuery] = useState('')
   const [cats, setCats] = useState<Category[]>([])
+  const [showBm, setShowBm] = useState(false)
   const [preview, setPreview] = useState<NewsItem | null>(null)
+
+  // новые ещё не «показанные» пользователю элементы
+  const [pending, setPending] = useState<NewsItem[]>([])
+  const pollRef = useRef<number | null>(null)
 
   const debouncedQuery = useDebouncedValue(query, 300)
 
+  // первичная загрузка
   useEffect(() => {
     getNewsCached().then(setItems).catch(() => setErr('Не удалось загрузить новости'))
   }, [])
 
-  const filtered = (items ?? []).filter(n =>
-    (cats.length ? cats.some(c => n.category.includes(c)) : true) &&
-    (debouncedQuery ? (n.title + ' ' + n.summary).toLowerCase().includes(debouncedQuery.toLowerCase()) : true)
-  )
+  // простой опрос «свежака» раз в 120 сек (можно потом вынести в конфиг)
+  useEffect(() => {
+    // не опрашиваем, пока ещё первая загрузка не завершилась
+    if (items === null) return
+    const start = () => {
+      stop()
+      pollRef.current = window.setInterval(async () => {
+        const fresh = await getNewsFresh()
+        // сравним по id, отберём те, которых нет в текущих
+        const currentIds = new Set((items ?? []).map(i => i.id))
+        const unseen = fresh.filter(i => !currentIds.has(i.id))
+        if (unseen.length) setPending(unseen)
+      }, 120_000)
+    }
+    const stop = () => { if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null } }
+    start()
+    return stop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items])
 
-  const current = showBm ? bmList() : filtered
+  const filtered = useMemo(() => {
+    const base = showBm ? bmList() : (items ?? [])
+    return base.filter(n =>
+      (cats.length ? cats.some(c => n.category.includes(c)) : true) &&
+      (debouncedQuery ? (n.title + ' ' + n.summary).toLowerCase().includes(debouncedQuery.toLowerCase()) : true)
+    )
+  }, [items, showBm, cats, debouncedQuery])
+
+  // Когда пользователь нажимает «Показать N новых»
+  const revealPending = async () => {
+    if (!pending.length) return
+    const fresh = await getNewsFresh()
+    setItems(fresh)
+    setPending([])
+  }
 
   return (
     <div className="min-h-screen">
@@ -45,15 +77,17 @@ export default function AppShell() {
         showBookmarks={showBm}
       />
 
+      <NewItemsBar count={pending.length} onShow={revealPending} />
+
       {err && <ErrorBanner message={err} onRetry={() => location.reload()} />}
 
-      <FilterBar selected={cats} onChange={setCats} total={current.length} />
+      <FilterBar selected={cats} onChange={setCats} total={filtered.length} />
 
       <main className="container mx-auto px-4 py-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {items === null
           ? Array.from({ length: 6 }).map((_, i) => <NewsCardSkeleton key={i} />)
-          : current.length
-            ? current.map(n => <NewsCard key={n.id} item={n} onOpen={setPreview} />)
+          : filtered.length
+            ? filtered.map(n => <NewsCard key={n.id} item={n} onOpen={setPreview} />)
             : <EmptyState />}
       </main>
 

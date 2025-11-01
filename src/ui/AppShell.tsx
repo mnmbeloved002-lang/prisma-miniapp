@@ -11,7 +11,6 @@ import { list as bmList, has as bmHas, add as bmAdd, remove as bmRemove } from '
 import { ReaderPreview } from './ReaderPreview'
 import { speakFromHtml } from '../application/tts'
 import { useDebouncedValue } from '../utils/useDebouncedValue'
-import { usePersistentState } from '../utils/usePersistentState'
 import { NewItemsBar } from './NewItemsBar'
 
 export default function AppShell() {
@@ -22,35 +21,31 @@ export default function AppShell() {
   const [showBm, setShowBm] = useState(false)
   const [preview, setPreview] = useState<NewsItem | null>(null)
 
-  // новые ещё не «показанные» пользователю элементы
   const [pending, setPending] = useState<NewsItem[]>([])
   const pollRef = useRef<number | null>(null)
 
   const debouncedQuery = useDebouncedValue(query, 300)
 
-  // первичная загрузка
   useEffect(() => {
     getNewsCached().then(setItems).catch(() => setErr('Не удалось загрузить новости'))
   }, [])
 
-  // простой опрос «свежака» раз в 120 сек (можно потом вынести в конфиг)
+  // опрос свежих новостей раз в 120 сек
   useEffect(() => {
-    // не опрашиваем, пока ещё первая загрузка не завершилась
     if (items === null) return
+    const stop = () => { if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null } }
     const start = () => {
       stop()
       pollRef.current = window.setInterval(async () => {
         const fresh = await getNewsFresh()
-        // сравним по id, отберём те, которых нет в текущих
         const currentIds = new Set((items ?? []).map(i => i.id))
         const unseen = fresh.filter(i => !currentIds.has(i.id))
         if (unseen.length) setPending(unseen)
       }, 120_000)
     }
-    const stop = () => { if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null } }
     start()
     return stop
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line
   }, [items])
 
   const filtered = useMemo(() => {
@@ -61,7 +56,6 @@ export default function AppShell() {
     )
   }, [items, showBm, cats, debouncedQuery])
 
-  // Когда пользователь нажимает «Показать N новых»
   const revealPending = async () => {
     if (!pending.length) return
     const fresh = await getNewsFresh()

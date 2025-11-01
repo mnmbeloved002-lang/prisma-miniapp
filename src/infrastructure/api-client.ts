@@ -5,14 +5,6 @@ import type { NewsItem } from '../domain/types';
 type CacheEntry = { ts: number; etag?: string; data: NewsItem[] };
 const KEY = 'news-cache-v1';
 
-async function fetchWithCache(headers: Record<string, string> = {}) {
-  const res = await fetch('/news.json', { headers });
-  const etag = res.headers.get('ETag') ?? undefined;
-  const data = await res.json() as NewsItem[];
-  storage.set(KEY, { ts: Date.now(), etag, data });
-  return { etag, data };
-}
-
 export async function getNewsCached(): Promise<NewsItem[]> {
   const cached = storage.get<CacheEntry>(KEY);
   const headers: Record<string, string> = {};
@@ -25,16 +17,16 @@ export async function getNewsCached(): Promise<NewsItem[]> {
     const res = await fetch('/news.json', { headers });
     if (res.status === 304 && cached?.data) return cached.data;
     const etag = res.headers.get('ETag') ?? undefined;
-    const data = await res.json() as NewsItem[];
+    const data = (await res.json()) as NewsItem[];
     storage.set(KEY, { ts: Date.now(), etag, data });
     return data;
-  } catch (e) {
+  } catch {
     if (cached?.data) return cached.data; // оффлайн фолбэк
-    throw e;
+    throw new Error('Network failed and no cache available');
   }
 }
 
-// Принудительно игнорируем TTL, аккуратно обновляя кэш
+// Принудительно тянем свежак (мимо TTL), аккуратно обновляя кэш
 export async function getNewsFresh(): Promise<NewsItem[]> {
   const cached = storage.get<CacheEntry>(KEY);
   try {
@@ -43,7 +35,7 @@ export async function getNewsFresh(): Promise<NewsItem[]> {
     const res = await fetch('/news.json', { headers });
     if (res.status === 304 && cached?.data) return cached.data;
     const etag = res.headers.get('ETag') ?? undefined;
-    const data = await res.json() as NewsItem[];
+    const data = (await res.json()) as NewsItem[];
     storage.set(KEY, { ts: Date.now(), etag, data });
     return data;
   } catch {

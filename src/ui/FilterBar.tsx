@@ -1,7 +1,9 @@
 import type { Category } from '../domain/types';
 const ALL: Category[] = ['политика','экономика','спорт','технологии','общество','культура'];
 
-export function FilterBar({ selected, onChange, total }:{ selected: Category[]; onChange:(c:Category[])=>void; total:number }){
+export function FilterBar({ selected, onChange, total }:{
+  selected: Category[]; onChange:(c:Category[])=>void; total:number
+}){
   function toggle(c: Category){
     onChange(selected.includes(c) ? selected.filter(x=>x!==c) : [...selected, c]);
   }

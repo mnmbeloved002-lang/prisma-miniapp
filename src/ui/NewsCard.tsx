@@ -1,4 +1,5 @@
 // src/ui/NewsCard.tsx
+import { motion } from 'framer-motion'
 import type { NewsItem } from '../domain/types'
 import { SourceChip } from './SourceChip'
 import { has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks'
@@ -14,7 +15,14 @@ export function NewsCard({ item, onOpen }: Props) {
   const date = d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })
 
   return (
-    <article className="group bg-[var(--surface)] rounded-2xl ring-1 ring-white/5 shadow-cinema overflow-hidden hover:ring-white/10 transition-all">
+    <motion.article
+      layout
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 8 }}
+      transition={{ duration: 0.25 }}
+      className="group bg-[var(--surface)] rounded-2xl ring-1 ring-white/5 shadow-cinema overflow-hidden hover:ring-white/10 transition-all"
+    >
       <div className="aspect-[16/9] w-full overflow-hidden">
         <img
           src={item.image}
@@ -35,9 +43,7 @@ export function NewsCard({ item, onOpen }: Props) {
           {item.title}
         </h3>
 
-        <p className="text-sm text-white/70 line-clamp-2">
-          {item.summary}
-        </p>
+        <p className="text-sm text-white/70 line-clamp-2">{item.summary}</p>
 
         <div className="mt-2 flex gap-2">
           <button
@@ -60,7 +66,7 @@ export function NewsCard({ item, onOpen }: Props) {
           </button>
         </div>
       </div>
-    </article>
+    </motion.article>
   )
 }
 

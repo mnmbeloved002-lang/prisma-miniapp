@@ -1,108 +1,85 @@
-import { useEffect } from 'react';
-import { stop as ttsStop } from '../application/tts';
+// src/ui/ReaderPreview.tsx
+import { useEffect, useRef } from 'react';
+import { useTTSState } from '../utils/useTTSState';
 
 export function ReaderPreview({
   html,
-  title,
   onOpenSource,
   onBookmark,
-  onSpeak,
   onClose,
 }: {
   html: string;
-  title?: string;
   onOpenSource: () => void;
   onBookmark: () => void;
-  onSpeak: () => void;
   onClose: () => void;
 }) {
-  // Отключаем TTS при закрытии
-  useEffect(() => () => ttsStop(), []);
+  const { canTTS, isSpeaking, start, halt } = useTTSState();
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Мягкое появление и возврат скролла в начало при каждом открытии
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = 0;
+  }, [html]);
 
   return (
     <div
+      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center"
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50"
-      style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      {/* затемнение фона */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-[2px] opacity-100"
-        onClick={onClose}
-      />
+      <div className="w-full sm:w-[720px] max-h-[88vh] bg-[var(--surface)] text-[var(--text)] rounded-2xl shadow-cinema ring-1 ring-white/10 overflow-hidden">
+        {/* header */}
+        <div className="flex items-center gap-2 p-3 sm:p-4 border-b border-white/5">
+          <div className="text-sm text-white/70">Предпросмотр</div>
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              className="px-3 py-2 rounded-lg bg-white/5 ring-1 ring-white/10 hover:bg-white/10"
+              onClick={onBookmark}
+            >
+              ★ В закладки
+            </button>
+            <button
+              className="px-3 py-2 rounded-lg bg-white/5 ring-1 ring-white/10 hover:bg-white/10"
+              onClick={onOpenSource}
+            >
+              Открыть источник
+            </button>
 
-      {/* Контейнер: мобайл — bottom sheet; десктоп — центр */}
-      <div className="
-        absolute inset-x-0 bottom-0
-        md:inset-0 md:flex md:items-center md:justify-center
-      ">
-        <div
-          className="
-            bg-surface text-text ring-1 ring-white/10 shadow-cinema
-            rounded-t-2xl md:rounded-2xl
-            w-full md:w-[800px]
-            max-h-[85dvh] md:max-h-[85vh]
-            translate-y-0
-          "
-        >
-          {/* Хэндл для дроуэра на мобиле */}
-          <div className="md:hidden flex justify-center pt-2">
-            <div className="h-1.5 w-12 rounded-full bg-white/20" />
-          </div>
+            {canTTS && (
+              isSpeaking ? (
+                <button
+                  className="px-3 py-2 rounded-lg bg-white/5 ring-1 ring-white/10 hover:bg-white/10"
+                  onClick={halt}
+                >
+                  ⏹ Остановить
+                </button>
+              ) : (
+                <button
+                  className="px-3 py-2 rounded-lg bg-white/5 ring-1 ring-white/10 hover:bg-white/10"
+                  onClick={() => start('Превью', html)}
+                >
+                  🔊 Слушать
+                </button>
+              )
+            )}
 
-          {/* Заголовок + закрыть (липкая шапка) */}
-          <div className="sticky top-0 z-10 px-4 md:px-5 pt-3 pb-3 md:pb-4 bg-surface/90 backdrop-blur border-b border-white/10">
-            <div className="flex items-start gap-3">
-              <h2 className="text-base md:text-lg font-semibold leading-tight line-clamp-2">
-                {title ?? 'Предпросмотр'}
-              </h2>
-              <button
-                onClick={() => { ttsStop(); onClose(); }}
-                className="ml-auto px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 ring-1 ring-white/10"
-                aria-label="Закрыть"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-
-          {/* Контент */}
-          <div className="relative overflow-y-auto px-4 md:px-6 py-4 md:py-5 max-h-[calc(85dvh-120px)] md:max-h-[calc(85vh-140px)]">
-            <article className="prose prose-invert max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: html }} />
-            </article>
-
-            <div className="pointer-events-none absolute bottom-0 inset-x-0 h-10 bg-gradient-to-t from-surface to-transparent" />
-          </div>
-
-          {/* Липкая панель действий снизу */}
-          <div className="sticky bottom-0 z-10 px-4 md:px-5 py-3 bg-surface/90 backdrop-blur border-t border-white/10">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={onOpenSource}
-                className="px-3 py-2 md:py-2.5 rounded-xl bg-white/5 hover:bg-white/10 ring-1 ring-white/10 text-sm md:text-base"
-                aria-label="Открыть источник"
-              >
-                🌐 Открыть источник
-              </button>
-              <button
-                onClick={onBookmark}
-                className="px-3 py-2 md:py-2.5 rounded-xl bg-white/5 hover:bg-white/10 ring-1 ring-white/10 text-sm md:text-base"
-                aria-label="Добавить в закладки"
-              >
-                ⭐ В закладки
-              </button>
-              <button
-                onClick={() => onSpeak?.()}
-                className="ml-auto px-3 py-2 md:py-2.5 rounded-xl bg-primary/20 hover:bg-primary/25 ring-1 ring-white/10 text-sm md:text-base"
-                aria-label="Слушать"
-              >
-                🔊 Слушать
-              </button>
-            </div>
+            <button
+              className="px-3 py-2 rounded-lg bg-white/5 ring-1 ring-white/10 hover:bg-white/10"
+              onClick={onClose}
+            >
+              Закрыть
+            </button>
           </div>
         </div>
+
+        {/* content */}
+        <div
+          ref={scrollRef}
+          className="prose prose-invert px-4 sm:px-6 py-4 max-h-[70vh] overflow-auto"
+          // безопасная вставка заранее подготовленного previewHtml
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
       </div>
     </div>
   );

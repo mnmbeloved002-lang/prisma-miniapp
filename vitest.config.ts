@@ -1,9 +1,12 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    setupFiles: ['src/setupTests.ts'],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'], // только unit в src/**
+    // e2e из tests/** игнорируем, их запускает Playwright
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
@@ -21,4 +24,4 @@ export default defineConfig({
       },
     },
   },
-})
+});

@@ -1,36 +1,37 @@
-import { useEffect, useState } from 'react';
-import { getNewsCached } from '../infrastructure/api-client';
-import type { NewsItem, Category } from '../domain/types';
-import { Header } from './Header';
-import { FilterBar } from './FilterBar';
-import { NewsCard, NewsCardSkeleton } from './NewsCard';
-import { EmptyState } from './EmptyState';
-import { ErrorBanner } from './ErrorBanner';
-import { list as bmList, has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks';
-import { ReaderPreview } from './ReaderPreview';
-import { speakFromHtml } from '../application/tts';
-import { useDebouncedValue } from '../utils/useDebouncedValue';
+import { useEffect, useState } from 'react'
+import { getNewsCached } from '../infrastructure/api-client'
+import type { NewsItem, Category } from '../domain/types'
+import { Header } from './Header'
+import { FilterBar } from './FilterBar'
+import { NewsCard, NewsCardSkeleton } from './NewsCard'
+import { EmptyState } from './EmptyState'
+import { ErrorBanner } from './ErrorBanner'
+import { openLink } from '../utils/nav'
+import { list as bmList, has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks'
+import { ReaderPreview } from './ReaderPreview'
+import { speakFromHtml } from '../application/tts'
+import { useDebouncedValue } from '../utils/useDebouncedValue'
 
 export default function AppShell() {
-  const [items, setItems] = useState<NewsItem[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  const [query, setQuery] = useState('');
-  const [cats, setCats] = useState<Category[]>([]);
-  const [showBm, setShowBm] = useState(false);
-  const [preview, setPreview] = useState<NewsItem | null>(null);
+  const [items, setItems] = useState<NewsItem[] | null>(null)
+  const [err, setErr] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
+  const [cats, setCats] = useState<Category[]>([])
+  const [showBm, setShowBm] = useState(false)
+  const [preview, setPreview] = useState<NewsItem | null>(null)
 
-  const debouncedQuery = useDebouncedValue(query, 300);
+  const debouncedQuery = useDebouncedValue(query, 300)
 
   useEffect(() => {
-    getNewsCached().then(setItems).catch(() => setErr('Не удалось загрузить новости'));
-  }, []);
+    getNewsCached().then(setItems).catch(() => setErr('Не удалось загрузить новости'))
+  }, [])
 
   const filtered = (items ?? []).filter(n =>
     (cats.length ? cats.some(c => n.category.includes(c)) : true) &&
     (debouncedQuery ? (n.title + ' ' + n.summary).toLowerCase().includes(debouncedQuery.toLowerCase()) : true)
-  );
+  )
 
-  const current = showBm ? bmList() : filtered;
+  const current = showBm ? bmList() : filtered
 
   return (
     <div className="min-h-screen">
@@ -55,28 +56,15 @@ export default function AppShell() {
       {preview && (
         <ReaderPreview
           html={preview.previewHtml}
-          onOpenSource={() => {
-            const url = preview.canonicalUrl;
-            try {
-              // Telegram WebApp иногда блокирует window.open: откроем в текущем webview.
-              // @ts-expect-error Telegram может отсутствовать
-              if (window.Telegram?.WebApp) {
-                window.location.href = url;
-              } else {
-                window.open(url, '_blank', 'noopener');
-              }
-            } catch {
-              window.location.assign(url);
-            }
-          }}
+          onOpenSource={() => openLink(preview.canonicalUrl)}
           onBookmark={() => {
-            if (bmHas(preview.id)) { bmRemove(preview.id); }
-            else { bmAdd(preview); }
+            if (bmHas(preview.id)) bmRemove(preview.id)
+            else bmAdd(preview)
           }}
           onSpeak={() => speakFromHtml(preview.title, preview.previewHtml)}
           onClose={() => setPreview(null)}
         />
       )}
     </div>
-  );
+  )
 }

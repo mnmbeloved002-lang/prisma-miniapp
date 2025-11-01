@@ -9,16 +9,26 @@ export function NewsCard({ item, onOpen }: { item: NewsItem; onOpen: (n:NewsItem
         <img src={item.image} alt="" className="w-full h-full object-cover" loading="lazy" />
       </button>
       <div className="p-4 space-y-2">
-        <div className="text-xs text-white/60 flex gap-2"><span>{item.source}</span><span>•</span><time>{new Date(item.publishedAt).toLocaleDateString()}</time></div>
+        <div className="text-xs text-white/60 flex gap-2">
+          <span>{item.source}</span><span>•</span>
+          <time>{new Date(item.publishedAt).toLocaleDateString()}</time>
+        </div>
         <h3 className="text-base font-semibold line-clamp-2">{item.title}</h3>
         <p className="text-sm text-white/70 line-clamp-2">{item.summary}</p>
         <div className="pt-2 flex gap-2">
-          <button onClick={()=>onOpen(item)} className="px-3 py-1.5 text-sm rounded-lg bg-white/10 hover:bg-white/15">Открыть</button>
+          <button onClick={()=>onOpen(item)} className="px-3 py-1.5 text-sm rounded-lg bg-white/10 hover:bg-white/15">
+            Открыть
+          </button>
           <button
-            onClick={()=>{ inBm ? bm.remove(item.id) : bm.add(item); }}
+            onClick={()=>{
+              if (inBm) { bm.remove(item.id); }
+              else { bm.add(item); }
+            }}
             aria-pressed={inBm}
             className="px-3 py-1.5 text-sm rounded-lg ring-1 ring-white/10"
-          >{inBm ? '★ В закладках' : '☆ В закладки'}</button>
+          >
+            {inBm ? '★ В закладках' : '☆ В закладки'}
+          </button>
         </div>
       </div>
     </article>

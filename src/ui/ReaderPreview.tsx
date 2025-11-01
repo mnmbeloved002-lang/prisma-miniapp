@@ -1,82 +1,85 @@
 import { useEffect } from 'react';
-import type { NewsItem } from '../domain/types';
-import { bm } from '../application/bookmarks';
-import { speak, stop } from '../application/tts';
+import { tgOpen } from '../utils/tg';
+
+type Props = {
+  html: string;
+  onOpenSource?: () => void;
+  onBookmark?: () => void;
+  onSpeak?: () => void;
+  onClose: () => void;
+};
 
 export function ReaderPreview({
-  item,
-  onClose,
+  html,
+  onOpenSource,
   onBookmark,
-}: {
-  item: NewsItem;
-  onClose: () => void;
-  onBookmark: () => void;
-}) {
+  onSpeak,
+  onClose,
+}: Props) {
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKey);
-    return () => { document.removeEventListener('keydown', onKey); stop(); };
-  }, [onClose]);
-
-  const inBm = bm.has(item.id);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
 
   return (
-    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="absolute inset-0 flex items-center justify-center p-4">
-        <article className="w-full max-w-3xl rounded-2xl bg-[var(--surface)] shadow-cinema ring-1 ring-white/10 overflow-hidden">
-          <header className="px-5 py-4 border-b border-white/10 flex items-center gap-2">
-            <h2 className="text-lg font-semibold leading-tight flex-1">{item.title}</h2>
-            <button
-              onClick={()=>{
-                if (inBm) bm.remove(item.id); else bm.add(item);
-                onBookmark();
-              }}
-              aria-pressed={inBm}
-              className="px-3 py-1.5 rounded-lg ring-1 ring-white/10 hover:bg-white/5"
-              title={inBm ? 'Удалить из закладок' : 'В закладки'}
-            >
-              {inBm ? '★' : '☆'}
-            </button>
-            <button
-              onClick={() => speak(item.title + '. ' + item.summary)}
-              className="px-3 py-1.5 rounded-lg ring-1 ring-white/10 hover:bg-white/5"
-              title="Озвучить"
-            >
-              🔈
-            </button>
-            <button onClick={onClose} className="ml-1 px-3 py-1.5 rounded-lg hover:bg-white/5" aria-label="Закрыть">✕</button>
-          </header>
+    <div role="dialog" aria-modal="true" className="fixed inset-0 z-40">
+      {/* overlay */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
-          {item.image && (
-            <img
-              src={item.image}
-              alt=""
-              className="w-full aspect-[16/9] object-cover"
-              loading="lazy"
-              decoding="async"
-            />
-          )}
-
-          <div className="p-5">
-            <div className="text-sm text-[var(--muted)] mb-2">
-              {item.source} • {new Date(item.publishedAt).toLocaleString()}
-            </div>
-            <div className="prose prose-invert">
-              <div dangerouslySetInnerHTML={{ __html: item.previewHtml }} />
+      {/* sheet */}
+      <div className="absolute inset-x-0 bottom-0 md:inset-y-8 md:mx-auto md:max-w-3xl">
+        <div
+          className="mx-3 md:mx-0 rounded-2xl shadow-cinema ring-1 ring-white/10 bg-surface text-text overflow-hidden flex flex-col"
+          style={{ maxHeight: '85vh' }}
+        >
+          {/* header */}
+          <div className="flex items-center gap-2 px-4 h-12 border-b border-white/10">
+            <button
+              onClick={onClose}
+              className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 ring-1 ring-white/10"
+              aria-label="Закрыть"
+            >
+              ✕
+            </button>
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={() => (onSpeak ? onSpeak() : null)}
+                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 ring-1 ring-white/10"
+              >
+                🔊 Слушать
+              </button>
+              <button
+                onClick={() => (onBookmark ? onBookmark() : null)}
+                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 ring-1 ring-white/10"
+              >
+                ⭐ В закладки
+              </button>
+              <button
+                onClick={() => {
+                  if (onOpenSource) onOpenSource();
+                  else {
+                    const m = html.match(/https?:\/\/[^\s"'<>]+/);
+                    if (m) tgOpen(m[0]);
+                  }
+                }}
+                className="px-3 py-1.5 rounded-lg bg-primary/20 hover:bg-primary/30 ring-1 ring-white/10"
+              >
+                🌐 Открыть источник
+              </button>
             </div>
           </div>
 
-          <footer className="px-5 pb-5">
-            <a
-              href={item.canonicalUrl}
-              target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10"
-            >
-              Открыть источник ↗
-            </a>
-          </footer>
-        </article>
+          {/* scrollable content */}
+          <div className="px-4 py-4 overflow-y-auto prose prose-sm prose-invert">
+            <div dangerouslySetInnerHTML={{ __html: html }} />
+          </div>
+        </div>
       </div>
     </div>
   );

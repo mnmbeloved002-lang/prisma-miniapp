@@ -1,73 +1,98 @@
-import { supported, stop } from '../application/tts';
+// src/ui/ReaderPreview.tsx
+import { useEffect } from 'react';
+import { useTTSState } from '../utils/useTTSState';
 
 type Props = {
   html: string;
   onOpenSource: () => void;
   onBookmark: () => void;
-  onSpeak: () => void;
+  onSpeak?: () => void; // необязательно — если не придёт, кнопку спрячем/задизейблим
   onClose: () => void;
 };
 
 export function ReaderPreview({ html, onOpenSource, onBookmark, onSpeak, onClose }: Props) {
-  const ttsOk = supported();
+  const { supported, speaking, stop } = useTTSState();
+
+  // Если окно закрывают — останавливаем речь
+  useEffect(() => () => { if (speaking) stop(); }, [speaking, stop]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50"
-      role="dialog"
-      aria-modal="true"
-    >
-      {/* Карточка: мобильный — дроуэр снизу; десктоп — модалка по центру */}
-      <div className="w-full sm:max-w-xl mx-2 sm:mx-0 max-h-[90vh] bg-[var(--surface)] text-[var(--text)] rounded-t-2xl sm:rounded-2xl shadow-cinema ring-1 ring-white/5 overflow-hidden">
-        {/* Контент с прокруткой */}
-        <div className="p-4 sm:p-6 overflow-y-auto max-h-[68vh] sm:max-h-[70vh] prose prose-invert">
-          {/* html уже прошёл нашу «превью»-селекцию, без полного копирайта */}
-          <div dangerouslySetInnerHTML={{ __html: html }} />
-        </div>
+    <>
+      {/* затемняющий фон */}
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+        role="button"
+        aria-label="Закрыть превью"
+        onClick={onClose}
+      />
 
-        {/* Панель действий — крупные кнопки, хороши на мобиле */}
-        <div className="p-3 sm:p-4 border-t border-white/10 bg-black/20 flex flex-wrap gap-2 sm:gap-3 justify-between">
-          <div className="flex gap-2 sm:gap-3 flex-1">
-            <button
-              onClick={onOpenSource}
-              className="flex-1 sm:flex-none px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
-            >
-              Открыть источник
-            </button>
-            <button
-              onClick={onBookmark}
-              className="flex-1 sm:flex-none px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
-            >
-              В закладки
-            </button>
-          </div>
+      {/* мобильный дроуэр (внизу), на десктопе — центрированная панель */}
+      <div className="
+        fixed z-50 left-0 right-0
+        md:inset-0 md:flex md:items-center md:justify-center
+      ">
+        <article
+          className="
+            bg-[var(--surface)] text-[var(--text)] shadow-cinema ring-1 ring-white/10
+            rounded-t-2xl md:rounded-2xl
+            w-full md:w-[720px] max-h-[85vh]
+            fixed bottom-0 md:relative
+            flex flex-col
+          "
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Превью новости"
+        >
+          {/* хедер с действиями */}
+          <header className="sticky top-0 z-10 bg-[var(--surface)]/95 backdrop-blur px-4 py-3 border-b border-white/10 flex items-center gap-2">
+            <h2 className="text-sm font-medium opacity-90">Предпросмотр</h2>
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={onOpenSource}
+                className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10 text-sm"
+              >
+                Открыть источник
+              </button>
 
-          <div className="flex gap-2 sm:gap-3">
-            <button
-              onClick={onSpeak}
-              disabled={!ttsOk}
-              title={ttsOk ? 'Озвучить превью' : 'Озвучивание недоступно в этом браузере'}
-              className={`px-3 py-2 rounded-xl ring-1 ring-white/10 ${
-                ttsOk ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'
-              }`}
-            >
-              Слушать
-            </button>
-            <button
-              onClick={stop}
-              className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
-            >
-              Стоп
-            </button>
-            <button
-              onClick={onClose}
-              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10"
-            >
-              Закрыть
-            </button>
+              {/* Кнопка озвучки: всегда видимая, но может быть disabled */}
+              {onSpeak ? (
+                <button
+                  onClick={() => (speaking ? stop() : onSpeak())}
+                  disabled={!supported}
+                  aria-pressed={speaking}
+                  className={`px-3 py-2 rounded-xl ring-1 ring-white/10 text-sm
+                    ${supported ? 'hover:bg-white/10' : 'opacity-40 cursor-not-allowed'}
+                  `}
+                  title={supported ? 'Озвучить текст' : 'Озвучка не поддерживается в этом браузере'}
+                >
+                  {speaking ? '■ Стоп' : '▶ Слушать'}
+                </button>
+              ) : null}
+
+              <button
+                onClick={onBookmark}
+                className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10 text-sm"
+              >
+                ☆ Закладка
+              </button>
+
+              <button
+                onClick={onClose}
+                className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10 text-sm"
+                aria-label="Закрыть"
+              >
+                Закрыть
+              </button>
+            </div>
+          </header>
+
+          {/* область чтения */}
+          <div className="overflow-y-auto px-4 py-4 md:px-6 md:py-5">
+            <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: html }} />
           </div>
-        </div>
+        </article>
       </div>
-    </div>
+    </>
   );
 }

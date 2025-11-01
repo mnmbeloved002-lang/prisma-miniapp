@@ -1,37 +1,40 @@
+// src/ui/FilterBar.tsx
 import type { Category } from '../domain/types';
 
-const ALL: Category[] = ['политика','экономика','спорт','технологии','общество','культура'];
+type Props = {
+  selected: Category[];
+  onChange: (cats: Category[]) => void;
+  total: number;
+};
 
-export function FilterBar({
-  selected,
-  onChange,
-  total
-}: { selected: Category[]; onChange:(c:Category[])=>void; total:number }) {
+const ALL: Category[] = ['политика', 'экономика', 'спорт', 'технологии', 'общество', 'культура'];
 
+export function FilterBar({ selected, onChange, total }: Props) {
   const toggle = (c: Category) => {
-    if (selected.includes(c)) onChange(selected.filter(x=>x!==c));
+    if (selected.includes(c)) onChange(selected.filter(x => x !== c));
     else onChange([...selected, c]);
   };
 
   return (
-    <div className="container mx-auto px-4 pt-3 pb-2 flex items-center gap-2">
-      <div className="flex flex-wrap gap-2">
-        {ALL.map(c => (
-          <button
-            key={c}
-            onClick={()=>toggle(c)}
-            className={`px-3 py-1.5 rounded-full text-sm ring-1 ring-white/10 transition
-              ${selected.includes(c) ? 'bg-white/10' : 'bg-white/[0.03] hover:bg-white/[0.06]'}`}
-            aria-pressed={selected.includes(c)}
-          >
-            {c}
-          </button>
-        ))}
+    <div className="container mx-auto px-4 mt-3 flex items-center gap-2 flex-wrap">
+      <div className="flex gap-2 flex-1 flex-wrap">
+        {ALL.map(c => {
+          const active = selected.includes(c);
+          return (
+            <button
+              key={c}
+              onClick={() => toggle(c)}
+              aria-pressed={active}
+              className={`px-3 py-1.5 rounded-xl ring-1 ring-white/10 text-sm transition
+                ${active ? 'bg-white/10' : 'hover:bg-white/5'}
+              `}
+            >
+              {c}
+            </button>
+          );
+        })}
       </div>
-
-      <div className="ml-auto text-sm text-white/60">
-        Найдено: <span className="text-white/80">{total}</span>
-      </div>
+      <div className="text-xs text-white/60">Найдено: {total}</div>
     </div>
   );
 }

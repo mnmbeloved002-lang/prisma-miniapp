@@ -9,7 +9,7 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,12 +43,11 @@ jobs:
       - name: Size-limit
         run: pnpm run size
 
-      # LHCI (локальный прогон, загрузка в файловую систему — токен не нужен)
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1
+        id: chrome
 
       - name: Lighthouse CI
         env:
-          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path || '/usr/bin/google-chrome-stable' }}
-        run: |
-          pnpm run lhci || exit 1
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: pnpm run lhci

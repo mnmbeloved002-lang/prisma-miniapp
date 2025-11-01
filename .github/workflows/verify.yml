@@ -1,0 +1,54 @@
+name: Verify
+
+on:
+  pull_request:
+    branches: ['*']
+  push:
+    branches: ['dev','main']
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.20.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: ESLint
+        run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Unit tests (Vitest)
+        run: pnpm run test:cov
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Size-limit
+        run: pnpm run size
+
+      # LHCI (локальный прогон, загрузка в файловую систему — токен не нужен)
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Lighthouse CI
+        env:
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path || '/usr/bin/google-chrome-stable' }}
+        run: |
+          pnpm run lhci || exit 1

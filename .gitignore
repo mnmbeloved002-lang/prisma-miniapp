@@ -35,3 +35,43 @@ dist
 *.report
 *.report.json
 localhost-*index_html*.report*
+# Build outputs
+dist/
+
+# Test/CI artifacts
+coverage/
+.lighthouseci/
+test-results/
+
+# Local HTML reports (LHCI / Lighthouse)
+*.report
+*.report.json
+localhost-*index_html*.report*
+
+# Package manager caches
+.pnpm-store/
+
+# OS / editor junk (safety)
+.DS_Store
+Thumbs.db
+## prisma-miniapp ignore block
+# Build outputs
+dist/
+
+# Test/CI artifacts
+coverage/
+.lighthouseci/
+test-results/
+
+# Local HTML reports (LHCI / Lighthouse)
+*.report
+*.report.json
+localhost-*index_html*.report*
+
+# Package manager caches
+.pnpm-store/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+## end prisma-miniapp ignore block

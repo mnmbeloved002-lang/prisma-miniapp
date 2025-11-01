@@ -6,9 +6,10 @@ import { FilterBar } from './FilterBar';
 import { NewsCard, NewsCardSkeleton } from './NewsCard';
 import { EmptyState } from './EmptyState';
 import { ErrorBanner } from './ErrorBanner';
-import * as bm from '../application/bookmarks';
+import { list as bmList, has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks';
 import { ReaderPreview } from './ReaderPreview';
 import { speakFromHtml } from '../application/tts';
+import { useDebouncedValue } from '../utils/useDebouncedValue';
 
 export default function AppShell() {
   const [items, setItems] = useState<NewsItem[] | null>(null);
@@ -18,40 +19,62 @@ export default function AppShell() {
   const [showBm, setShowBm] = useState(false);
   const [preview, setPreview] = useState<NewsItem | null>(null);
 
+  const debouncedQuery = useDebouncedValue(query, 300);
+
   useEffect(() => {
     getNewsCached().then(setItems).catch(() => setErr('Не удалось загрузить новости'));
   }, []);
 
   const filtered = (items ?? []).filter(n =>
     (cats.length ? cats.some(c => n.category.includes(c)) : true) &&
-    (query ? (n.title + ' ' + n.summary).toLowerCase().includes(query.toLowerCase()) : true)
+    (debouncedQuery ? (n.title + ' ' + n.summary).toLowerCase().includes(debouncedQuery.toLowerCase()) : true)
   );
-  const list = showBm ? bm.list() : filtered;
+
+  const current = showBm ? bmList() : filtered;
 
   return (
     <div className="min-h-screen">
-      <Header onSearch={setQuery} onToggleBookmarks={()=>setShowBm(v=>!v)} showBookmarks={showBm} />
+      <Header
+        onSearch={setQuery}
+        onToggleBookmarks={() => setShowBm(v => !v)}
+        showBookmarks={showBm}
+      />
+
       {err && <ErrorBanner message={err} onRetry={() => location.reload()} />}
-      <FilterBar selected={cats} onChange={setCats} total={list.length} />
+
+      <FilterBar selected={cats} onChange={setCats} total={current.length} />
 
       <main className="container mx-auto px-4 py-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {items === null
           ? Array.from({ length: 6 }).map((_, i) => <NewsCardSkeleton key={i} />)
-          : list.length
-            ? list.map(n => <NewsCard key={n.id} item={n} onOpen={setPreview} />)
+          : current.length
+            ? current.map(n => <NewsCard key={n.id} item={n} onOpen={setPreview} />)
             : <EmptyState />}
       </main>
 
       {preview && (
         <ReaderPreview
           html={preview.previewHtml}
-          onOpenSource={()=> window.open(preview.canonicalUrl, "_blank")}
-          onBookmark={()=>{
-            if (bm.has(preview.id)) { bm.remove(preview.id); }
-            else { bm.add(preview); }
+          onOpenSource={() => {
+            const url = preview.canonicalUrl;
+            try {
+              // Telegram WebApp иногда блокирует window.open: откроем в текущем webview.
+              // @ts-expect-error Telegram может отсутствовать
+              if (window.Telegram?.WebApp) {
+                window.location.href = url;
+              } else {
+                window.open(url, '_blank', 'noopener');
+              }
+            } catch {
+              window.location.assign(url);
+            }
           }}
-          onSpeak={()=> speakFromHtml(preview.title, preview.previewHtml)}
-          onClose={()=> setPreview(null)}
+          onBookmark={() => {
+            if (bmHas(preview.id)) { bmRemove(preview.id); }
+            else { bmAdd(preview); }
+          }}
+          onSpeak={() => speakFromHtml(preview.title, preview.previewHtml)}
+          onClose={() => setPreview(null)}
         />
       )}
     </div>

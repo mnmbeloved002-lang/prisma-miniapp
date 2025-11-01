@@ -1,85 +1,72 @@
-// src/ui/ReaderPreview.tsx
-import { useEffect, useRef } from 'react';
-import { useTTSState } from '../utils/useTTSState';
+import { supported, stop } from '../application/tts';
 
-export function ReaderPreview({
-  html,
-  onOpenSource,
-  onBookmark,
-  onClose,
-}: {
+type Props = {
   html: string;
   onOpenSource: () => void;
   onBookmark: () => void;
+  onSpeak: () => void;
   onClose: () => void;
-}) {
-  const { canTTS, isSpeaking, start, halt } = useTTSState();
-  const scrollRef = useRef<HTMLDivElement | null>(null);
+};
 
-  // Мягкое появление и возврат скролла в начало при каждом открытии
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (el) el.scrollTop = 0;
-  }, [html]);
+export function ReaderPreview({ html, onOpenSource, onBookmark, onSpeak, onClose }: Props) {
+  const ttsOk = supported();
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50"
       role="dialog"
       aria-modal="true"
     >
-      <div className="w-full sm:w-[720px] max-h-[88vh] bg-[var(--surface)] text-[var(--text)] rounded-2xl shadow-cinema ring-1 ring-white/10 overflow-hidden">
-        {/* header */}
-        <div className="flex items-center gap-2 p-3 sm:p-4 border-b border-white/5">
-          <div className="text-sm text-white/70">Предпросмотр</div>
-          <div className="ml-auto flex items-center gap-2">
+      {/* Карточка: мобильный — дроуэр снизу; десктоп — модалка по центру */}
+      <div className="w-full sm:max-w-xl mx-2 sm:mx-0 max-h-[90vh] bg-[var(--surface)] text-[var(--text)] rounded-t-2xl sm:rounded-2xl shadow-cinema ring-1 ring-white/5 overflow-hidden">
+        {/* Контент с прокруткой */}
+        <div className="p-4 sm:p-6 overflow-y-auto max-h-[68vh] sm:max-h-[70vh] prose prose-invert">
+          {/* html уже прошёл нашу «превью»-селекцию, без полного копирайта */}
+          <div dangerouslySetInnerHTML={{ __html: html }} />
+        </div>
+
+        {/* Панель действий — крупные кнопки, хороши на мобиле */}
+        <div className="p-3 sm:p-4 border-t border-white/10 bg-black/20 flex flex-wrap gap-2 sm:gap-3 justify-between">
+          <div className="flex gap-2 sm:gap-3 flex-1">
             <button
-              className="px-3 py-2 rounded-lg bg-white/5 ring-1 ring-white/10 hover:bg-white/10"
-              onClick={onBookmark}
-            >
-              ★ В закладки
-            </button>
-            <button
-              className="px-3 py-2 rounded-lg bg-white/5 ring-1 ring-white/10 hover:bg-white/10"
               onClick={onOpenSource}
+              className="flex-1 sm:flex-none px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
             >
               Открыть источник
             </button>
-
-            {canTTS && (
-              isSpeaking ? (
-                <button
-                  className="px-3 py-2 rounded-lg bg-white/5 ring-1 ring-white/10 hover:bg-white/10"
-                  onClick={halt}
-                >
-                  ⏹ Остановить
-                </button>
-              ) : (
-                <button
-                  className="px-3 py-2 rounded-lg bg-white/5 ring-1 ring-white/10 hover:bg-white/10"
-                  onClick={() => start('Превью', html)}
-                >
-                  🔊 Слушать
-                </button>
-              )
-            )}
-
             <button
-              className="px-3 py-2 rounded-lg bg-white/5 ring-1 ring-white/10 hover:bg-white/10"
+              onClick={onBookmark}
+              className="flex-1 sm:flex-none px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
+            >
+              В закладки
+            </button>
+          </div>
+
+          <div className="flex gap-2 sm:gap-3">
+            <button
+              onClick={onSpeak}
+              disabled={!ttsOk}
+              title={ttsOk ? 'Озвучить превью' : 'Озвучивание недоступно в этом браузере'}
+              className={`px-3 py-2 rounded-xl ring-1 ring-white/10 ${
+                ttsOk ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'
+              }`}
+            >
+              Слушать
+            </button>
+            <button
+              onClick={stop}
+              className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
+            >
+              Стоп
+            </button>
+            <button
               onClick={onClose}
+              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10"
             >
               Закрыть
             </button>
           </div>
         </div>
-
-        {/* content */}
-        <div
-          ref={scrollRef}
-          className="prose prose-invert px-4 sm:px-6 py-4 max-h-[70vh] overflow-auto"
-          // безопасная вставка заранее подготовленного previewHtml
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
       </div>
     </div>
   );

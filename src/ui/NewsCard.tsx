@@ -1,10 +1,18 @@
 import type { NewsItem } from '../domain/types';
 import * as bm from '../application/bookmarks';
+import { motion } from 'framer-motion';
 
 export function NewsCard({ item, onOpen }: { item: NewsItem; onOpen: (n:NewsItem)=>void }) {
   const inBm = bm.has(item.id);
   return (
-    <article className="rounded-2xl overflow-hidden ring-1 ring-white/10 bg-[var(--surface)] shadow-[var(--shadow)]">
+    <motion.article
+      layout
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.16 }}
+      whileHover={{ scale: 1.01 }}
+      className="rounded-2xl overflow-hidden ring-1 ring-white/10 bg-[var(--surface)] shadow-[var(--shadow)]"
+    >
       <button onClick={()=>onOpen(item)} className="aspect-video bg-white/5 w-full block text-left">
         <img src={item.image} alt="" className="w-full h-full object-cover" loading="lazy" />
       </button>
@@ -31,7 +39,7 @@ export function NewsCard({ item, onOpen }: { item: NewsItem; onOpen: (n:NewsItem
           </button>
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 }
 

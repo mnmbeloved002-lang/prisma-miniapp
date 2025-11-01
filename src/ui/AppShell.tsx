@@ -11,13 +11,17 @@ import { list as bmList, has as bmHas, add as bmAdd, remove as bmRemove } from '
 import { ReaderPreview } from './ReaderPreview'
 import { speakFromHtml } from '../application/tts'
 import { useDebouncedValue } from '../utils/useDebouncedValue'
+import { usePersistentState } from '../utils/usePersistentState'
 
 export default function AppShell() {
   const [items, setItems] = useState<NewsItem[] | null>(null)
   const [err, setErr] = useState<string | null>(null)
-  const [query, setQuery] = useState('')
+
+  // сохраняем между сессиями
+  const [query, setQuery] = usePersistentState<string>('ui-query', '')
+  const [showBm, setShowBm] = usePersistentState<boolean>('ui-show-bookmarks', false)
+
   const [cats, setCats] = useState<Category[]>([])
-  const [showBm, setShowBm] = useState(false)
   const [preview, setPreview] = useState<NewsItem | null>(null)
 
   const debouncedQuery = useDebouncedValue(query, 300)

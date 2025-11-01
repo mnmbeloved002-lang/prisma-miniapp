@@ -24,3 +24,7 @@ manifest.json
 playwright-report
 test-results
 blob-report
+*.report
+coverage
+dist
+.pnpm-store

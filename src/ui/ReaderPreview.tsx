@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import { openLink } from '../utils/nav'
 import { shareLink } from '../utils/share'
 
 type Props = {

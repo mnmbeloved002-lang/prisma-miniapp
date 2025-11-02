@@ -2,12 +2,35 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-visual" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-visual"
+    />
+    <meta name="theme-color" content="#0b0c0f" />
     <title>Prisma MiniApp</title>
+
+    <!-- Минимальный первый пиксель + читаемый прелоадер -->
+    <style>
+      html { background:#0b0c0f; color:#e7e9ee; }
+      body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif; }
+      #boot {
+        padding:12px 16px;
+        font-size:14px;
+        line-height:1.4;
+        color:#9aa3b2;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <noscript>Enable JavaScript to run Prisma MiniApp.</noscript>
+    <noscript>
+      <div style="padding:12px">Для работы приложения нужен JavaScript.</div>
+    </noscript>
+
+    <!-- ВАЖНО: даём контент Lighthouse до монтирования React -->
+    <div id="root">
+      <div id="boot">Загрузка…</div>
+    </div>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

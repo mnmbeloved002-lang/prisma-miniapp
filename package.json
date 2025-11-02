@@ -10,6 +10,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview --strictPort --port 4173 --host",
+    "serve:dist": "node scripts/serve-dist.js",
     "lint": "eslint src api vite.config.ts",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",

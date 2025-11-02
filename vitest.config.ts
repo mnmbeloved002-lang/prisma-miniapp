@@ -1,26 +1,22 @@
+// vitest.config.ts
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
     environment: 'jsdom',
-    globals: true,
-    setupFiles: ['src/setupTests.ts'],
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'], // только unit в src/**
-    // e2e из tests/** игнорируем, их запускает Playwright
+    setupFiles: ['./src/setupTests.ts'],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'lcov'],
-      exclude: [
-        'src/ui/**',
-        'src/application/**',
-        'src/infrastructure/**',
-        'src/domain/**',
-        'src/config.ts',
-        '**/*.test.*',
-        'dist/**'
-      ],
+      reportsDirectory: 'coverage',
+      reporter: ['text', 'lcov', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/main.tsx', 'src/App.tsx', 'src/**/*.d.ts'],
       thresholds: {
-        global: { lines: 70, functions: 70, branches: 70, statements: 70 },
+        statements: 35,
+        branches: 45,
+        functions: 45,
+        lines: 35,
       },
     },
   },

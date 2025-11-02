@@ -1,53 +1,40 @@
-// eslint.config.js
+// eslint.config.js (flat config)
 import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import ts from 'typescript-eslint';
+import reactHooks from 'eslint-plugin-react-hooks';
 
-export default tseslint.config(
-  // базовый JS
+export default ts.config(
   js.configs.recommended,
-
-  // базовый TS (без type-aware) — работает везде
-  ...tseslint.configs.recommended,
-
-  // общие игноры
-  { ignores: ['dist', 'build', '.lighthouseci'] },
-
-  // ⬇️ ТОЛЬКО для src включаем type-aware правила (нужен project)
+  ...ts.configs.recommended,
   {
-    files: ['src/**/*.{ts,tsx}'],
+    name: 'env',
     languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.app.json', './tsconfig.node.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
+      ecmaVersion: 2023,
+      sourceType: 'module',
     },
-    // свои правила для src можно добавить тут
-    rules: {},
   },
-
-  // ⬇️ Тесты: снимаем «unsafe» и бан ts-комментариев
   {
-    files: ['**/*.test.{ts,tsx}'],
+    name: 'react-hooks',
+    plugins: { 'react-hooks': reactHooks },
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
-      '@typescript-eslint/ban-ts-comment': 'off',
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
     },
   },
-
-  // ⬇️ API-файлы: без type-aware (нет отдельного tsconfig — и не нужен)
   {
-    files: ['api/**/*.ts'],
-    // без project -> снимаем причину parser error
-    languageOptions: {
-      parserOptions: { project: null },
-    },
+    name: 'project-rules',
+    files: ['**/*.{ts,tsx}'],
     rules: {
-      // можно ослабить что-то точечно, если захочешь
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      '@typescript-eslint/no-explicit-any': ['error', { ignoreRestArgs: true }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' },
+      ],
     },
   },
+  {
+    name: 'ignores',
+    ignores: ['dist', 'coverage', '.lighthouseci', 'test-results', 'node_modules'],
+  }
 );

@@ -1,37 +1,30 @@
-// Небольшие типы вместо any, чтобы не ругался ESLint
-interface TelegramWebApp {
+// Никаких сайд-эффектов на уровне модуля — только функция!
+type TgWebApp = {
+  ready?: () => void;
   expand?: () => void;
-  setHeaderColor?: (color: string) => void;
-  setBackgroundColor?: (color: string) => void;
-  onEvent?: (event: string, cb: () => void) => void;
-}
+  disableVerticalSwipes?: () => void;
+  MainButton?: { setText?: (s: string) => void };
+};
+
 declare global {
   interface Window {
-    Telegram?: { WebApp?: TelegramWebApp };
+    Telegram?: { WebApp?: TgWebApp };
   }
 }
 
-/** true, если приложение открыто в Telegram WebApp */
-export function isInTelegram(): boolean {
-  return Boolean(window?.Telegram?.WebApp);
-}
-
-/** Инициализация UI Telegram WebApp: разворачиваемся, задаём цвета */
+/**
+ * Безопасная и необязательная инициализация Telegram WebApp.
+ * Если API нет — просто выходим. Любые ошибки глушим.
+ */
 export function initTelegramUI(): void {
-  const tg = window?.Telegram?.WebApp;
-  if (!tg) return;
-
-  try { tg.expand?.(); } catch (e) { console.debug('tg.expand error', e); }
-
   try {
-    tg.setHeaderColor?.('#0b0c0f');
-    tg.setBackgroundColor?.('#0b0c0f');
-  } catch (e) { console.debug('tg.set*Color error', e); }
+    const tg = window?.Telegram?.WebApp;
+    if (!tg) return;
 
-  try {
-    tg.onEvent?.('themeChanged', () => {
-      // Тут можно будет подстраивать токены под tg.themeParams, если понадобится
-      console.debug('Telegram themeChanged');
-    });
-  } catch (e) { console.debug('tg.onEvent error', e); }
+    // Минимальные безопасные вызовы
+    tg.ready?.();
+    // Всё остальное — осознанно позже, по месту
+  } catch {
+    // ничего — мост НЕ должен ломать первый рендер UI
+  }
 }

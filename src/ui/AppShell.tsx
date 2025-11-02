@@ -16,15 +16,17 @@ import {
 } from '../application/bookmarks'
 import { ReaderPreview } from './ReaderPreview'
 import { useDebouncedValue } from '../utils/useDebouncedValue'
+import { usePersistentState } from '../utils/usePersistentState'
 
 export default function AppShell() {
   const [items, setItems] = useState<NewsItem[] | null>(null)
   const [err, setErr] = useState<string | null>(null)
-  const [query, setQuery] = useState('')
-  const [cats, setCats] = useState<Category[]>([])
-  const [showBm, setShowBm] = useState(false)
-  const [preview, setPreview] = useState<NewsItem | null>(null)
 
+  const [query, setQuery] = usePersistentState<string>('ui:query', '')
+  const [cats, setCats] = usePersistentState<Category[]>('ui:cats', [])
+  const [showBm, setShowBm] = usePersistentState<boolean>('ui:showBm', false)
+
+  const [preview, setPreview] = useState<NewsItem | null>(null)
   const debouncedQuery = useDebouncedValue(query, 300)
 
   useEffect(() => {
@@ -68,9 +70,7 @@ export default function AppShell() {
       {preview && (
         <ReaderPreview
           html={preview.previewHtml}
-          // Открытие источника (корректно в Telegram WebView и в обычном браузере)
           onOpenSource={() => openLink(preview.canonicalUrl)}
-          // Тоггл закладок
           onBookmark={() => {
             if (bmHas(preview.id)) bmRemove(preview.id)
             else bmAdd(preview)

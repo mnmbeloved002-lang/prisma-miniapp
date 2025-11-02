@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+// src/ui/AppShell.tsx
+import { useEffect, useState } from 'react'
 import { getNewsCached } from '../infrastructure/api-client'
 import type { NewsItem, Category } from '../domain/types'
 import { Header } from './Header'
@@ -9,9 +10,7 @@ import { ErrorBanner } from './ErrorBanner'
 import { openLink } from '../utils/nav'
 import { list as bmList, has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks'
 import { ReaderPreview } from './ReaderPreview'
-import { speakFromHtml } from '../application/tts'
 import { useDebouncedValue } from '../utils/useDebouncedValue'
-import NewItemsBar from './NewItemsBar'
 
 export default function AppShell() {
   const [items, setItems] = useState<NewsItem[] | null>(null)
@@ -21,55 +20,22 @@ export default function AppShell() {
   const [showBm, setShowBm] = useState(false)
   const [preview, setPreview] = useState<NewsItem | null>(null)
 
-  const [freshCount, setFreshCount] = useState(0)
-
   const debouncedQuery = useDebouncedValue(query, 300)
 
   useEffect(() => {
-    getNewsCached().then(setItems).catch(() => setErr('Не удалось загрузить новости'))
+    getNewsCached()
+      .then(setItems)
+      .catch(() => setErr('Не удалось загрузить новости'))
   }, [])
 
-  // лёгкий «пуллинг» свежих — сравниваем максимум publishedAt
-  useEffect(() => {
-    let timer: number | undefined
-    async function tick() {
-      try {
-        const res = await fetch(`/news.json?ts=${Date.now()}`, { cache: 'no-store' })
-        const json = await res.json()
-        const incoming: NewsItem[] = json.items ?? json
-        if (!Array.isArray(incoming)) return
+  const filtered = (items ?? []).filter(n =>
+    (cats.length ? cats.some(c => n.category.includes(c)) : true) &&
+    (debouncedQuery
+      ? (n.title + ' ' + n.summary).toLowerCase().includes(debouncedQuery.toLowerCase())
+      : true)
+  )
 
-        const maxIncoming = maxDate(incoming)
-        const maxCurrent = maxDate(items ?? [])
-        if (maxIncoming && maxCurrent && maxIncoming > maxCurrent) {
-          // посчитаем «новые» по publishedAt
-          const count = incoming.filter(n => new Date(n.publishedAt) > maxCurrent).length
-          setFreshCount(count)
-        }
-      } catch {}
-      timer = window.setTimeout(tick, 60_000) // раз в минуту
-    }
-    tick()
-    return () => { if (timer) window.clearTimeout(timer) }
-  }, [items])
-
-  const filtered = useMemo(() => {
-    const base = showBm ? bmList() : (items ?? [])
-    return base.filter(n =>
-      (cats.length ? cats.some(c => n.category.includes(c)) : true) &&
-      (debouncedQuery ? (n.title + ' ' + n.summary).toLowerCase().includes(debouncedQuery.toLowerCase()) : true)
-    )
-  }, [showBm, items, cats, debouncedQuery])
-
-  const current = filtered
-
-  async function showFresh() {
-    try {
-      const next = await getNewsCached(/* обычный */)
-      setItems(next)
-      setFreshCount(0)
-    } catch {}
-  }
+  const current = showBm ? bmList() : filtered
 
   return (
     <div className="min-h-screen">
@@ -78,8 +44,6 @@ export default function AppShell() {
         onToggleBookmarks={() => setShowBm(v => !v)}
         showBookmarks={showBm}
       />
-
-      {!!freshCount && <NewItemsBar count={freshCount} onShow={showFresh} />}
 
       {err && <ErrorBanner message={err} onRetry={() => location.reload()} />}
 
@@ -106,9 +70,4 @@ export default function AppShell() {
       )}
     </div>
   )
-}
-
-function maxDate(list: NewsItem[]) {
-  if (!list.length) return null
-  return new Date(Math.max(...list.map(n => +new Date(n.publishedAt))))
 }

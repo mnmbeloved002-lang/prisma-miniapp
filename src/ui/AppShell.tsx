@@ -8,7 +8,12 @@ import { NewsCard, NewsCardSkeleton } from './NewsCard'
 import { EmptyState } from './EmptyState'
 import { ErrorBanner } from './ErrorBanner'
 import { openLink } from '../utils/nav'
-import { list as bmList, has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks'
+import {
+  list as bmList,
+  has as bmHas,
+  add as bmAdd,
+  remove as bmRemove,
+} from '../application/bookmarks'
 import { ReaderPreview } from './ReaderPreview'
 import { useDebouncedValue } from '../utils/useDebouncedValue'
 
@@ -28,11 +33,14 @@ export default function AppShell() {
       .catch(() => setErr('Не удалось загрузить новости'))
   }, [])
 
-  const filtered = (items ?? []).filter(n =>
-    (cats.length ? cats.some(c => n.category.includes(c)) : true) &&
-    (debouncedQuery
-      ? (n.title + ' ' + n.summary).toLowerCase().includes(debouncedQuery.toLowerCase())
-      : true)
+  const filtered = (items ?? []).filter(
+    (n) =>
+      (cats.length ? cats.some((c) => n.category.includes(c)) : true) &&
+      (debouncedQuery
+        ? (n.title + ' ' + n.summary)
+            .toLowerCase()
+            .includes(debouncedQuery.toLowerCase())
+        : true),
   )
 
   const current = showBm ? bmList() : filtered
@@ -41,7 +49,7 @@ export default function AppShell() {
     <div className="min-h-screen">
       <Header
         onSearch={setQuery}
-        onToggleBookmarks={() => setShowBm(v => !v)}
+        onToggleBookmarks={() => setShowBm((v) => !v)}
         showBookmarks={showBm}
       />
 
@@ -53,14 +61,16 @@ export default function AppShell() {
         {items === null
           ? Array.from({ length: 6 }).map((_, i) => <NewsCardSkeleton key={i} />)
           : current.length
-            ? current.map(n => <NewsCard key={n.id} item={n} onOpen={setPreview} />)
-            : <EmptyState />}
+          ? current.map((n) => <NewsCard key={n.id} item={n} onOpen={setPreview} />)
+          : <EmptyState />}
       </main>
 
       {preview && (
         <ReaderPreview
           html={preview.previewHtml}
+          // Открытие источника (корректно в Telegram WebView и в обычном браузере)
           onOpenSource={() => openLink(preview.canonicalUrl)}
+          // Тоггл закладок
           onBookmark={() => {
             if (bmHas(preview.id)) bmRemove(preview.id)
             else bmAdd(preview)

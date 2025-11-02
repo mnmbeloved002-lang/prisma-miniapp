@@ -47,5 +47,11 @@ button, a { min-height: 44px; }
 .prose { line-height: 1.7; }
 .prose p { line-height: 1.7; }
 
-/* Вспомогательные утилиты (если нужны вручную)
-   bg-bg / text-text / ring-white/10 и т.п. уже доступны из @theme */
+/* Доступность: меньше резких анимаций */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

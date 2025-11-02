@@ -1,108 +1,109 @@
-// ESM-версия, т.к. в package.json "type": "module"
-import http from 'node:http';
-import fs from 'node:fs';
-import path from 'node:path';
+// scripts/serve-dist.js (ESM)
+import { createServer } from 'node:http';
+import { createReadStream, statSync, existsSync } from 'node:fs';
+import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const distDir = path.resolve(__dirname, '..', 'dist');
+const __dirname = normalize(join(fileURLToPath(import.meta.url), '..', '..'));
+const distDir = join(__dirname, 'dist');
 const port = process.env.PORT ? Number(process.env.PORT) : 4173;
+const host = process.env.HOST || '127.0.0.1';
 
-const csp = [
-  "default-src 'self'",
-  "script-src 'self'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data:",
-  "font-src 'self' data:",
-  "connect-src 'self'",
-  "frame-ancestors 'none'",
-].join('; ');
-
-const headersBase = {
-  'Content-Security-Policy': csp,
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
-  'Referrer-Policy': 'no-referrer',
-  'Cross-Origin-Opener-Policy': 'same-origin',
-  'Cross-Origin-Resource-Policy': 'same-origin',
+const MIME = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.txt': 'text/plain; charset=utf-8',
+  '.map': 'application/json; charset=utf-8',
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
 };
 
-const mime = (filePath) => {
-  const ext = path.extname(filePath).toLowerCase();
-  switch (ext) {
-    case '.html': return 'text/html; charset=utf-8';
-    case '.js': return 'text/javascript; charset=utf-8';
-    case '.css': return 'text/css; charset=utf-8';
-    case '.json': return 'application/json; charset=utf-8';
-    case '.svg': return 'image/svg+xml';
-    case '.png': return 'image/png';
-    case '.jpg':
-    case '.jpeg': return 'image/jpeg';
-    case '.webp': return 'image/webp';
-    case '.ico': return 'image/x-icon';
-    case '.map': return 'application/json; charset=utf-8';
-    default: return 'application/octet-stream';
-  }
-};
+const ASSET_CACHE = 'public, max-age=31536000, immutable';
+const HTML_NOCACHE = 'no-store, no-cache, must-revalidate, proxy-revalidate';
 
-function send(res, status, body, extra = {}) {
-  const h = { ...headersBase, ...extra };
-  res.writeHead(status, h);
-  if (body !== undefined) res.end(body);
-  else res.end();
+function isAsset(p) {
+  const e = extname(p);
+  return e && e !== '.html';
 }
 
-function serveFile(res, filePath) {
-  fs.readFile(filePath, (err, buf) => {
-    if (err) {
-      if (err.code === 'ENOENT') return send(res, 404, 'Not found');
-      return send(res, 500, 'Internal error');
-    }
-    send(res, 200, buf, {
-      'Content-Type': mime(filePath),
-      'Cache-Control': filePath.includes('/assets/')
-        ? 'public, max-age=31536000, immutable'
-        : 'no-store',
-    });
-  });
+function setSecurityHeaders(res) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'same-origin');
+  res.setHeader(
+    'Permissions-Policy',
+    'geolocation=(), microphone=(), camera=(), interest-cohort=()'
+  );
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data:",
+      "font-src 'self' data:",
+      "connect-src 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "frame-ancestors 'none'",
+      "upgrade-insecure-requests",
+    ].join('; ')
+  );
 }
 
-const server = http.createServer((req, res) => {
+function serve(req, res) {
   try {
-    const url = decodeURI((req.url || '').split('?')[0]);
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    let pathname = decodeURIComponent(url.pathname);
+    if (pathname === '/') pathname = '/index.html';
 
-    // Блокируем sourcemaps
-    if (url.endsWith('.map')) return send(res, 404, 'Not found');
-
-    // Отдаём ассеты
-    if (url.startsWith('/assets/')) {
-      return serveFile(res, path.join(distDir, url));
+    const filePath = normalize(join(distDir, pathname));
+    if (!filePath.startsWith(distDir)) {
+      res.writeHead(403); return res.end('Forbidden');
     }
 
-    // Файлы у корня dist
-    const candidate = path.join(distDir, url);
-    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
-      return serveFile(res, candidate);
+    setSecurityHeaders(res);
+
+    // Строгая политика выдачи карт sourcemap — прячем
+    if (pathname.endsWith('.map')) {
+      res.writeHead(404); return res.end('Not found');
     }
 
-    // SPA fallback
-    return serveFile(res, path.join(distDir, 'index.html'));
-  } catch {
-    return send(res, 500, 'Internal error');
+    if (!existsSync(filePath)) {
+      // Для SPA: только если просят корень — выдаём index.html
+      if (!isAsset(pathname)) {
+        const indexPath = join(distDir, 'index.html');
+        const stat = statSync(indexPath);
+        res.writeHead(200, {
+          'Content-Type': MIME['.html'],
+          'Cache-Control': HTML_NOCACHE,
+          'Content-Length': stat.size,
+        });
+        return createReadStream(indexPath).pipe(res);
+      }
+      res.writeHead(404); return res.end('Not found');
+    }
+
+    const ext = extname(filePath);
+    const stat = statSync(filePath);
+    res.writeHead(200, {
+      'Content-Type': MIME[ext] || 'application/octet-stream',
+      'Cache-Control': isAsset(pathname) ? ASSET_CACHE : HTML_NOCACHE,
+      'Content-Length': stat.size,
+    });
+    createReadStream(filePath).pipe(res);
+  } catch (e) {
+    res.writeHead(500); res.end('Internal Server Error');
   }
-});
+}
 
-// ... остальной файл без изменений ...
-
-const host = '127.0.0.1';
-server.on('error', (err) => {
-  console.error('[serve-dist] server error:', err);
-  // Явно выходим, чтобы Playwright увидел неуспех старта
-  process.exit(1);
-});
-
-server.listen(port, host, () => {
+createServer(serve).listen(port, host, () => {
   console.log(`▶ Serving dist/ at http://${host}:${port}`);
 });

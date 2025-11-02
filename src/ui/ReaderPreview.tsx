@@ -1,61 +1,104 @@
 // src/ui/ReaderPreview.tsx
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { shareLink } from '../utils/share'
 
-type Props = {
+interface Props {
   html: string
   onOpenSource: () => void
   onBookmark: () => void
   onClose: () => void
 }
 
-export default function ReaderPreview({ html, onOpenSource, onBookmark, onClose }: Props) {
-  // Блокируем прокрутку фона, пока открыт ридер
+export function ReaderPreview({ html, onOpenSource, onBookmark, onClose }: Props) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [canSpeak, setCanSpeak] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
+
+  // Проверяем поддержку Web Speech API
   useEffect(() => {
-    const orig = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = orig }
+    setCanSpeak('speechSynthesis' in window)
   }, [])
 
+  // Произнесение текста (TTS)
+  const speakFromHtml = () => {
+    if (!canSpeak) return
+    try {
+      const utter = new SpeechSynthesisUtterance(ref.current?.innerText ?? '')
+      utter.lang = 'ru-RU'
+      utter.rate = 1
+      utter.pitch = 1
+      utter.onend = () => setIsSpeaking(false)
+      setIsSpeaking(true)
+      window.speechSynthesis.cancel()
+      window.speechSynthesis.speak(utter)
+    } catch {
+      setIsSpeaking(false)
+    }
+  }
+
+  const stopSpeaking = () => {
+    try {
+      window.speechSynthesis.cancel()
+      setIsSpeaking(false)
+    } catch { /* ignore */ }
+  }
+
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60"
-      onClick={onClose}
-    >
-      <article
-        className="w-full sm:w-[min(760px,92vw)] max-h-[92vh] overflow-auto rounded-t-2xl sm:rounded-2xl bg-[var(--color-surface)] ring-1 ring-white/10 shadow-cinema"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* верхняя панель действий */}
-        <div className="sticky top-0 z-10 backdrop-blur bg-[color-mix(in_oklab,var(--color-surface),transparent_25%)] border-b border-white/10 px-3 sm:px-4 py-2 flex items-center gap-2">
-          <button
-            onClick={onOpenSource}
-            className="px-3 py-2 text-sm rounded-xl ring-1 ring-white/10 hover:bg-white/10"
-          >
-            Открыть источник
-          </button>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-surface">
+        <h2 className="text-lg font-semibold">Просмотр</h2>
+        <div className="flex gap-2">
           <button
             onClick={onBookmark}
-            className="px-3 py-2 text-sm rounded-xl ring-1 ring-white/10 hover:bg-white/10"
+            className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
           >
-            В закладки
+            ★
           </button>
-          <div className="ml-auto" />
+
+          <button
+            onClick={onOpenSource}
+            className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
+          >
+            Открыть
+          </button>
+
+          <button
+            onClick={() => shareLink(location.href)}
+            className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
+          >
+            Поделиться
+          </button>
+
           <button
             onClick={onClose}
-            className="px-3 py-2 text-sm rounded-xl ring-1 ring-white/10 hover:bg-white/10"
-            aria-label="Закрыть"
+            className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
           >
-            Закрыть
+            ✕
           </button>
         </div>
+      </div>
 
-        {/* контент превью */}
-        <div className="px-4 sm:px-6 py-4">
-          <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: html }} />
-        </div>
-      </article>
+      <div
+        ref={ref}
+        className="prose prose-invert max-w-none p-4 overflow-y-auto flex-1 bg-surface text-text"
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+
+      <div className="flex justify-center gap-3 py-4 border-t border-white/10 bg-surface">
+        <button
+          onClick={isSpeaking ? stopSpeaking : speakFromHtml}
+          disabled={!canSpeak}
+          className={`px-4 py-2 rounded-xl ring-1 ring-white/10 ${
+            canSpeak
+              ? 'hover:bg-white/10'
+              : 'opacity-50 cursor-not-allowed'
+          }`}
+        >
+          {canSpeak
+            ? (isSpeaking ? '⏹ Остановить' : '🔊 Слушать')
+            : '🔇 Не поддерживается'}
+        </button>
+      </div>
     </div>
   )
 }

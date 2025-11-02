@@ -1,19 +1,31 @@
 // src/utils/share.ts
-export async function shareLink(url: string, title?: string, text?: string) {
+export async function shareLink(url: string, title?: string) {
+  // 1) Нативный share API (например, Telegram WebView или мобильный браузер)
   try {
-    if (navigator.share) {
-      await navigator.share({ url, title, text })
-      return true
+    if (typeof navigator !== 'undefined' && typeof (navigator as any).share === 'function') {
+      await (navigator as any).share({ title, url });
+      return true;
     }
   } catch {
-    // игнорируем — пойдём во fallback
+    /* ignore */
   }
+
+  // 2) Фолбэк — просто копируем ссылку в буфер обмена
   try {
-    await navigator.clipboard?.writeText(url)
-    alert('Ссылка скопирована в буфер обмена')
-    return true
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url);
+      return true;
+    }
   } catch {
-    window.open(url, '_blank', 'noopener,noreferrer')
-    return false
+    /* ignore */
   }
+
+  // 3) Если ничего не сработало — открываем в новой вкладке
+  try {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  } catch {
+    /* ignore */
+  }
+
+  return false;
 }

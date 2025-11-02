@@ -1,31 +1,86 @@
 // src/utils/share.ts
-export async function shareLink(url: string, title?: string) {
-  // 1) Нативный share API (например, Telegram WebView или мобильный браузер)
+
+type WebShareData = {
+  title?: string
+  text?: string
+  url?: string
+}
+
+interface NavigatorWithShare extends Navigator {
+  share?: (data: WebShareData) => Promise<void>
+  clipboard?: {
+    writeText: (text: string) => Promise<void>
+  }
+}
+
+type TgPopupButton =
+  | { id?: string; type?: 'ok' | 'close' | 'cancel' | 'destructive' | 'default'; text?: string }
+
+interface TelegramWebApp {
+  shareURL?: (url: string) => void
+  openTelegramLink?: (url: string) => void
+  showPopup?: (params: { title?: string; message: string; buttons?: TgPopupButton[] }) => void
+}
+
+declare global {
+  interface Window {
+    Telegram?: { WebApp?: TelegramWebApp }
+  }
+}
+
+/**
+ * Универсальный шаринг ссылки:
+ * 1) Telegram WebApp → shareURL
+ * 2) Web Share API → navigator.share
+ * 3) Clipboard → navigator.clipboard.writeText
+ * 4) Фолбэк → alert
+ *
+ * @returns true если показывали/скопировали успешно, иначе false
+ */
+export async function shareLink(url: string, title?: string): Promise<boolean> {
+  const tg = window?.Telegram?.WebApp
+  const nav = navigator as NavigatorWithShare
+
+  // 1) Telegram WebApp
   try {
-    if (typeof navigator !== 'undefined' && typeof (navigator as any).share === 'function') {
-      await (navigator as any).share({ title, url });
-      return true;
+    if (tg?.shareURL) {
+      tg.shareURL(url)
+      return true
     }
   } catch {
     /* ignore */
   }
 
-  // 2) Фолбэк — просто копируем ссылку в буфер обмена
+  // 2) Web Share API
   try {
-    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(url);
-      return true;
+    if (nav.share) {
+      await nav.share({ url, title })
+      return true
     }
   } catch {
     /* ignore */
   }
 
-  // 3) Если ничего не сработало — открываем в новой вкладке
+  // 3) Clipboard API
   try {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    if (nav.clipboard?.writeText) {
+      await nav.clipboard.writeText(url)
+      tg?.showPopup?.({
+        title: 'Скопировано',
+        message: 'Ссылка скопирована в буфер обмена.',
+        buttons: [{ type: 'ok' }]
+      })
+      return true
+    }
   } catch {
     /* ignore */
   }
 
-  return false;
+  // 4) Фолбэк
+  try {
+    alert(`Скопируй ссылку:\n${url}`)
+  } catch {
+    /* ignore */
+  }
+  return false
 }

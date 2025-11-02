@@ -1,112 +1,129 @@
-import { useEffect } from 'react'
-import { useTTSState } from '../utils/useTTSState'
+import { useEffect, useRef } from 'react'
+import { openLink } from '../utils/nav'
+import { shareLink } from '../utils/share'
 
 type Props = {
   html: string
   onOpenSource: () => void
-  onBookmark: () => void
+  onBookmark?: () => void
   onClose: () => void
 }
 
+/**
+ * Модальное окно чтения:
+ * - role="dialog", aria-modal
+ * - фокус на «Закрыть» при открытии
+ * - Esc — закрыть, Enter на «Открыть источник»
+ */
 export function ReaderPreview({ html, onOpenSource, onBookmark, onClose }: Props) {
-  const { canTTS, speaking, speak, stop } = useTTSState()
+  const closeBtnRef = useRef<HTMLButtonElement | null>(null)
+  const openBtnRef = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
-    // Блокируем скролл фона, пока открыт ридер (модалка)
-    const orig = document.body.style.overflow
+    // Запрет скролла подложки
+    const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = orig }
+    // Фокус на кнопку «Закрыть»
+    closeBtnRef.current?.focus()
+    return () => {
+      document.body.style.overflow = prev
+    }
   }, [])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onClose()
+      }
+      if (e.key === 'Enter' && (document.activeElement === openBtnRef.current)) {
+        e.preventDefault()
+        onOpenSource()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose, onOpenSource])
 
   return (
     <div
+      className="fixed inset-0 z-50 grid place-items-end sm:place-items-center bg-black/60"
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 grid"
-      style={{ gridTemplateRows: 'auto 1fr auto' }}
     >
-      {/* затемнение фона */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-        aria-hidden
-      />
-
-      {/* верхняя панель */}
-      <header className="relative z-10 px-4 pt-[var(--safe-top)] pb-2 bg-[var(--surface)]/90 ring-1 ring-white/10">
-        <div className="container mx-auto flex items-center gap-2">
+      <div className="w-full sm:w-[min(720px,95vw)] h-[92vh] sm:h-[80vh] bg-[var(--surface)] rounded-t-3xl sm:rounded-2xl ring-1 ring-white/10 shadow-cinema overflow-hidden flex flex-col">
+        {/* action bar */}
+        <div className="flex items-center gap-2 p-3 border-b border-white/10 bg-black/20">
           <button
+            ref={closeBtnRef}
             onClick={onClose}
             className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
             aria-label="Закрыть"
           >
-            ← Назад
+            Закрыть
           </button>
 
           <div className="ml-auto flex items-center gap-2">
             <button
+              ref={openBtnRef}
               onClick={onOpenSource}
               className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
+              aria-label="Открыть источник"
+              title="Открыть источник"
             >
-              Открыть источник
+              Открыть
             </button>
 
             <button
-              onClick={onBookmark}
+              onClick={async () => {
+                // попытаемся расшарить текущий URL источника, если он в onOpenSource = openLink(url)
+                // для консистентности — прокинем из AppShell прямо canonicalUrl
+                // но так как сюда приходит только handler, используем небольшой трюк:
+                // попросим AppShell открыть ссылку в новом табе и параллельно вызовем shareLink
+                // (AppShell уже прокидывает onOpenSource как openLink(url))
+                try {
+                  const btn = openBtnRef.current
+                  const urlAttr = btn?.getAttribute('data-url')
+                  if (urlAttr) {
+                    await shareLink(urlAttr)
+                  } else {
+                    // если data-url не прокинут — просто предупредим пользователя
+                    alert('Не удалось определить ссылку источника — откроем страницу, её можно скопировать')
+                    onOpenSource()
+                  }
+                } catch {
+                  onOpenSource()
+                }
+              }}
               className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
+              aria-label="Поделиться"
+              title="Поделиться"
             >
-              ☆ В закладки
+              Поделиться
             </button>
 
-            <button
-              onClick={() => (speaking ? stop() : speak())}
-              disabled={!canTTS}
-              className={`px-3 py-2 rounded-xl ring-1 ring-white/10 ${canTTS ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-              title={canTTS ? (speaking ? 'Стоп' : 'Слушать') : 'Озвучивание не поддерживается в этом браузере'}
-            >
-              {speaking ? '⏹ Стоп' : '🔊 Слушать'}
-            </button>
+            {onBookmark && (
+              <button
+                onClick={onBookmark}
+                className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
+                aria-label="В закладки"
+                title="В закладки"
+              >
+                ☆
+              </button>
+            )}
           </div>
         </div>
-      </header>
 
-      {/* контент */}
-      <main className="relative z-10 overflow-y-auto">
-        <article className="container mx-auto px-4 py-6">
-          <div
-            className="prose prose-invert max-w-none leading-7"
-            // содержимое уже доверенное (наше previewHtml)
+        {/* content */}
+        <div className="flex-1 overflow-auto p-4 sm:p-6">
+          <article
+            className="prose prose-invert max-w-none"
+            // без dangerouslySetInnerHTML тут не обойтись: мы рендерим подготовленный HTML превью
             dangerouslySetInnerHTML={{ __html: html }}
           />
-          <div className="h-20" aria-hidden /> {/* запас под нижнюю панель на мобиле */}
-        </article>
-      </main>
-
-      {/* нижняя панель (мобайл friendly) */}
-      <footer className="relative z-10 px-4 pb-[calc(8px+var(--safe-bottom))] pt-3 bg-[var(--surface)]/90 ring-1 ring-white/10">
-        <div className="container mx-auto grid grid-cols-3 gap-2">
-          <button
-            onClick={onOpenSource}
-            className="px-3 py-3 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
-          >
-            Источник
-          </button>
-          <button
-            onClick={onBookmark}
-            className="px-3 py-3 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
-          >
-            ☆ Закладка
-          </button>
-          <button
-            onClick={() => (speaking ? stop() : speak())}
-            disabled={!canTTS}
-            className={`px-3 py-3 rounded-xl ring-1 ring-white/10 ${canTTS ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'}`}
-            title={canTTS ? (speaking ? 'Стоп' : 'Слушать') : 'Озвучивание не поддерживается в этом браузере'}
-          >
-            {speaking ? 'Стоп' : 'Слушать'}
-          </button>
         </div>
-      </footer>
+      </div>
     </div>
   )
 }

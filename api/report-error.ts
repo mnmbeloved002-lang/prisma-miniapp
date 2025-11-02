@@ -1,57 +1,51 @@
+// api/report-error.ts
+type ReportPayload = {
+  message: string;
+  stack?: string;
+  userAgent?: string;
+  url?: string;
+  extra?: Record<string, unknown>;
+};
 
-import { z } from 'zod';
-
-const BodySchema = z.object({
-  message: z.string().min(1),
-  stack: z.string().optional(),
-  context: z.record(z.any()).optional(),
-  userAgent: z.string().optional(),
-  url: z.string().url().optional(),
-});
-
-export default async function handler(req: any, res: any) {
-  // CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 204;
-    res.end();
-    return;
-  }
-
-  if (req.method !== 'POST') {
-    res.statusCode = 405;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ ok: false, error: 'Method Not Allowed' }));
-    return;
-  }
-
-  try {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const data = BodySchema.parse(body);
-
-    console.error('[report-error]', {
-      message: data.message,
-      stack: data.stack,
-      context: data.context,
-      userAgent: data.userAgent ?? req.headers?.['user-agent'],
-      url: data.url,
-    });
-
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ ok: true }));
-  } catch (err: any) {
-    if (err?.issues) {
-      res.statusCode = 400;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ ok: false, error: 'Invalid body', issues: err.issues }));
-      return;
-    }
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ ok: false, error: 'Internal Server Error' }));
-  }
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
+
+export async function POST(req: Request): Promise<Response> {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return new Response(JSON.stringify({ ok: false, error: 'invalid_json' }), {
+      status: 400,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
+
+  const data = (isPlainObject(body) ? body : {}) as Partial<ReportPayload>;
+  if (typeof data.message !== 'string' || data.message.trim().length === 0) {
+    return new Response(JSON.stringify({ ok: false, error: 'message_required' }), {
+      status: 400,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
+
+  const payload: ReportPayload = {
+    message: data.message,
+    stack: typeof data.stack === 'string' ? data.stack : undefined,
+    userAgent: typeof data.userAgent === 'string' ? data.userAgent : undefined,
+    url: typeof data.url === 'string' ? data.url : undefined,
+    extra: isPlainObject(data.extra) ? data.extra : undefined,
+  };
+
+  // здесь можно писать в лог/метрику/бэкенд
+  // console.error('[client-error]', payload);
+
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  });
+}
+
+// Для совместимости с некоторых роутерами:
+export const runtime = 'edge'; // убери/измени при необходимости

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { getNewsCached, getNewsFresh } from '../infrastructure/api-client'
+import { useEffect, useMemo, useState } from 'react'
+import { getNewsCached } from '../infrastructure/api-client'
 import type { NewsItem, Category } from '../domain/types'
 import { Header } from './Header'
 import { FilterBar } from './FilterBar'
@@ -11,7 +11,7 @@ import { list as bmList, has as bmHas, add as bmAdd, remove as bmRemove } from '
 import { ReaderPreview } from './ReaderPreview'
 import { speakFromHtml } from '../application/tts'
 import { useDebouncedValue } from '../utils/useDebouncedValue'
-import { NewItemsBar } from './NewItemsBar'
+import NewItemsBar from './NewItemsBar'
 
 export default function AppShell() {
   const [items, setItems] = useState<NewsItem[] | null>(null)
@@ -21,8 +21,7 @@ export default function AppShell() {
   const [showBm, setShowBm] = useState(false)
   const [preview, setPreview] = useState<NewsItem | null>(null)
 
-  const [pending, setPending] = useState<NewsItem[]>([])
-  const pollRef = useRef<number | null>(null)
+  const [freshCount, setFreshCount] = useState(0)
 
   const debouncedQuery = useDebouncedValue(query, 300)
 
@@ -30,22 +29,28 @@ export default function AppShell() {
     getNewsCached().then(setItems).catch(() => setErr('Не удалось загрузить новости'))
   }, [])
 
-  // опрос свежих новостей раз в 120 сек
+  // лёгкий «пуллинг» свежих — сравниваем максимум publishedAt
   useEffect(() => {
-    if (items === null) return
-    const stop = () => { if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null } }
-    const start = () => {
-      stop()
-      pollRef.current = window.setInterval(async () => {
-        const fresh = await getNewsFresh()
-        const currentIds = new Set((items ?? []).map(i => i.id))
-        const unseen = fresh.filter(i => !currentIds.has(i.id))
-        if (unseen.length) setPending(unseen)
-      }, 120_000)
+    let timer: number | undefined
+    async function tick() {
+      try {
+        const res = await fetch(`/news.json?ts=${Date.now()}`, { cache: 'no-store' })
+        const json = await res.json()
+        const incoming: NewsItem[] = json.items ?? json
+        if (!Array.isArray(incoming)) return
+
+        const maxIncoming = maxDate(incoming)
+        const maxCurrent = maxDate(items ?? [])
+        if (maxIncoming && maxCurrent && maxIncoming > maxCurrent) {
+          // посчитаем «новые» по publishedAt
+          const count = incoming.filter(n => new Date(n.publishedAt) > maxCurrent).length
+          setFreshCount(count)
+        }
+      } catch {}
+      timer = window.setTimeout(tick, 60_000) // раз в минуту
     }
-    start()
-    return stop
-    // eslint-disable-next-line
+    tick()
+    return () => { if (timer) window.clearTimeout(timer) }
   }, [items])
 
   const filtered = useMemo(() => {
@@ -54,13 +59,16 @@ export default function AppShell() {
       (cats.length ? cats.some(c => n.category.includes(c)) : true) &&
       (debouncedQuery ? (n.title + ' ' + n.summary).toLowerCase().includes(debouncedQuery.toLowerCase()) : true)
     )
-  }, [items, showBm, cats, debouncedQuery])
+  }, [showBm, items, cats, debouncedQuery])
 
-  const revealPending = async () => {
-    if (!pending.length) return
-    const fresh = await getNewsFresh()
-    setItems(fresh)
-    setPending([])
+  const current = filtered
+
+  async function showFresh() {
+    try {
+      const next = await getNewsCached(/* обычный */)
+      setItems(next)
+      setFreshCount(0)
+    } catch {}
   }
 
   return (
@@ -71,17 +79,17 @@ export default function AppShell() {
         showBookmarks={showBm}
       />
 
-      <NewItemsBar count={pending.length} onShow={revealPending} />
+      {!!freshCount && <NewItemsBar count={freshCount} onShow={showFresh} />}
 
       {err && <ErrorBanner message={err} onRetry={() => location.reload()} />}
 
-      <FilterBar selected={cats} onChange={setCats} total={filtered.length} />
+      <FilterBar selected={cats} onChange={setCats} total={current.length} />
 
       <main className="container mx-auto px-4 py-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {items === null
           ? Array.from({ length: 6 }).map((_, i) => <NewsCardSkeleton key={i} />)
-          : filtered.length
-            ? filtered.map(n => <NewsCard key={n.id} item={n} onOpen={setPreview} />)
+          : current.length
+            ? current.map(n => <NewsCard key={n.id} item={n} onOpen={setPreview} />)
             : <EmptyState />}
       </main>
 
@@ -93,10 +101,14 @@ export default function AppShell() {
             if (bmHas(preview.id)) bmRemove(preview.id)
             else bmAdd(preview)
           }}
-          onSpeak={() => speakFromHtml(preview.title, preview.previewHtml)}
           onClose={() => setPreview(null)}
         />
       )}
     </div>
   )
+}
+
+function maxDate(list: NewsItem[]) {
+  if (!list.length) return null
+  return new Date(Math.max(...list.map(n => +new Date(n.publishedAt))))
 }

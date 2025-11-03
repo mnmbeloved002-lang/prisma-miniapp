@@ -1,3 +1,4 @@
+// vite.config.ts
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -9,13 +10,9 @@ export default defineConfig({
     sourcemap: false,
     target: 'es2020',
     cssTarget: 'chrome100',
-    rollupOptions: {
-      treeshake: {
-        moduleSideEffects: false,
-        propertyReadSideEffects: false,
-        tryCatchDeoptimization: false,
-      },
-    },
+    // Опции Rollup по умолчанию (с `moduleSideEffects: true`)
+    // идеально подходят для React-приложений.
+    // Агрессивный treeshake удален.
   },
   esbuild: isProd
     ? { drop: ['console', 'debugger'] }

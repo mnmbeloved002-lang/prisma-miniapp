@@ -72,7 +72,10 @@ export function NewsCard({ item, onOpen }: Props) {
 
 export function NewsCardSkeleton() {
   return (
-    <div className="rounded-2xl ring-1 ring-white/5 bg-[var(--surface)] overflow-hidden">
+    <div 
+      className="rounded-2xl ring-1 ring-white/5 bg-[var(--surface)] overflow-hidden"
+      data-testid="news-card-skeleton" // <-- ИСПРАВЛЕНИЕ ЗДЕСЬ
+    >
       <div className="aspect-[16/9] bg-white/5 animate-pulse" />
       <div className="p-4 space-y-2">
         <div className="h-4 w-1/3 bg-white/10 rounded" />

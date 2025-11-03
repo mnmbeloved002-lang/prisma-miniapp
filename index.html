@@ -46,8 +46,13 @@
     <script type="module" src="/src/main.tsx"></script>
   </head>
   <body>
-    <div id="root">
-    <span class="sr-only">Loading…</span>
+<div id="root">
+    <!-- ВИДИМЫЙ скелет, чтобы был FCP даже без JS -->
+    <div id="boot-skeleton" style="
+      height:56px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      backdrop-filter:saturate(120%) blur(8px);
+    "></div>
   </div>
   </body>
 </html>

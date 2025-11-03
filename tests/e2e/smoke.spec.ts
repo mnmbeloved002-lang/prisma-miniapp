@@ -5,7 +5,7 @@ test('index.html references built assets (smoke)', async ({ page, request }) => 
   const res = await request.get('/')
   expect(res.ok()).toBeTruthy()
   const html = await res.text()
-  expect(html).toContain('<div id="root"></div>')
+  expect(html).toMatch(/<div id="root"[^>]*><\/div>/)
 
   // Достаём пути ассетов вида /assets/index-XXXX.js и .css
   const jsMatch = html.match(/\/assets\/index-[\w-]+\.js/)

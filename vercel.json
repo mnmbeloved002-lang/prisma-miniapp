@@ -17,15 +17,17 @@
       ]
     },
     {
-      "source": "/assets/(.*)\\.(map)$",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
-    },
-    {
       "source": "/assets/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
     }
   ],
   "rewrites": [
+    // Сначала отдаем статические PWA файлы "как есть"
+    { "source": "/manifest.webmanifest", "destination": "/manifest.webmanifest" },
+    { "source": "/robots.txt",          "destination": "/robots.txt" },
+    { "source": "/og.png",              "destination": "/og.png" },
+    { "source": "/vite.svg",            "destination": "/vite.svg" },
+    // Затем "жадное" правило для SPA
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

@@ -9,7 +9,8 @@ interface Props {
   onClose: () => void
 }
 
-export function ReaderPreview({ html, onOpenSource, onBookmark, onClose }: Props) {
+// --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
+export default function ReaderPreview({ html, onOpenSource, onBookmark, onClose }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const [canSpeak, setCanSpeak] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)

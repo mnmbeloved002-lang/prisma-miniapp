@@ -38,7 +38,7 @@ export default function AppShell() {
   const current = showBm ? bmList() : filtered
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-bg text-fg">
       <Header
         onSearch={setQuery}
         onToggleBookmarks={() => setShowBm(v => !v)}
@@ -63,7 +63,6 @@ export default function AppShell() {
             html={preview.previewHtml}
             onOpenSource={() => {
               try {
-                // отдаём ссылку «как есть»: в AppShell мы уже учитываем Telegram через openLink (раньше)
                 window.open(preview.canonicalUrl, '_blank', 'noopener,noreferrer')
               } catch {
                 window.location.assign(preview.canonicalUrl)

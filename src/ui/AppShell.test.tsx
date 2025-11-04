@@ -31,7 +31,6 @@ const mockedBmHas = vi.mocked(bmHas);
 const mockedBmAdd = vi.mocked(bmAdd);
 const mockedBmRemove = vi.mocked(bmRemove);
 
-
 // Мок IntersectionObserver (нужен для framer-motion)
 beforeEach(() => {
   const mockIntersectionObserver = vi.fn();
@@ -49,8 +48,28 @@ afterEach(() => {
 });
 
 const mockNews = [
-  { id: '1', title: 'Новость про Политику', category: ['политика'], canonicalUrl: 'http://policy.com' },
-  { id: '2', title: 'Новость про Спорт', category: ['спорт'], canonicalUrl: 'http://sport.com' },
+  { 
+    id: '1', 
+    title: 'Новость про Политику', 
+    summary: 'Политическое событие',
+    category: ['политика'], 
+    canonicalUrl: 'http://policy.com',
+    image: 'test1.jpg',
+    publishedAt: new Date().toISOString(),
+    source: 'RBC',
+    previewHtml: '<p>Test</p>'
+  },
+  { 
+    id: '2', 
+    title: 'Новость про Спорт', 
+    summary: 'Спортивное событие',
+    category: ['спорт'], 
+    canonicalUrl: 'http://sport.com',
+    image: 'test2.jpg',
+    publishedAt: new Date().toISOString(),
+    source: 'RBC',
+    previewHtml: '<p>Test</p>'
+  },
 ] as any;
 
 // ЕДИНАЯ ГРУППА ТЕСТОВ С РЕАЛЬНЫМ ВРЕМЕНЕМ
@@ -108,7 +127,17 @@ describe('AppShell (Integration Test)', () => {
 
   it('should show bookmarks when toggled', async () => {
     mockedGetNewsCached.mockResolvedValue(mockNews);
-    const bookmarkItem = { id: '3', title: 'Закладка', category: ['культура'] } as any;
+    const bookmarkItem = { 
+      id: '3', 
+      title: 'Закладка', 
+      category: ['культура'],
+      summary: 'Тест закладки',
+      canonicalUrl: 'http://bookmark.com',
+      image: 'test3.jpg',
+      publishedAt: new Date().toISOString(),
+      source: 'RBC',
+      previewHtml: '<p>Test</p>'
+    } as any;
     mockedBmList.mockReturnValue([bookmarkItem]);
     render(<AppShell />);
     await screen.findByText('Найдено: 2');
@@ -196,5 +225,65 @@ describe('AppShell (Integration Test)', () => {
     await userEvent.click(screen.getAllByRole('button', { name: /Открыть/i })[0]);
     await userEvent.click(await screen.findByRole('button', { name: 'Bookmark' }));
     expect(mockedBmRemove).toHaveBeenCalledWith(mockNews[0].id);
+  });
+
+  // --- НОВЫЕ ТЕСТЫ ДЛЯ 100% ПОКРЫТИЯ ВЕТОК ---
+
+  it('should show empty state when category filter matches no items', async () => {
+    mockedGetNewsCached.mockResolvedValue(mockNews);
+    render(<AppShell />);
+    await screen.findByText('Найдено: 2');
+    
+    // Выбираем категорию, которой нет в mockNews (например, 'технологии')
+    const techButton = screen.getByRole('button', { name: 'технологии' });
+    await user.click(techButton);
+    
+    // Должен показаться EmptyState
+    await screen.findByText('Найдено: 0');
+    expect(screen.getByTestId('empty-state')).toBeInTheDocument();
+  });
+
+  it('should show empty state when search query matches no items', async () => {
+    mockedGetNewsCached.mockResolvedValue(mockNews);
+    render(<AppShell />);
+    await screen.findByText('Найдено: 2');
+    
+    const searchbox = screen.getByRole('searchbox');
+    await user.type(searchbox, 'несуществующийзапрос');
+    
+    // Ждем дебаунс и проверяем пустое состояние
+    await screen.findByText('Найдено: 0');
+    expect(screen.getByTestId('empty-state')).toBeInTheDocument();
+  });
+
+  it('should handle multiple category filters with no matches', async () => {
+    mockedGetNewsCached.mockResolvedValue(mockNews);
+    render(<AppShell />);
+    await screen.findByText('Найдено: 2');
+    
+    // Выбираем несколько категорий, которых нет
+    const techButton = screen.getByRole('button', { name: 'технологии' });
+    const cultureButton = screen.getByRole('button', { name: 'культура' });
+    await user.click(techButton);
+    await user.click(cultureButton);
+    
+    await screen.findByText('Найдено: 0');
+    expect(screen.getByTestId('empty-state')).toBeInTheDocument();
+  });
+
+  it('should handle combination of search and category with no matches', async () => {
+    mockedGetNewsCached.mockResolvedValue(mockNews);
+    render(<AppShell />);
+    await screen.findByText('Найдено: 2');
+    
+    // Категория + поиск, которые вместе не дают результатов
+    const sportButton = screen.getByRole('button', { name: 'спорт' });
+    await user.click(sportButton);
+    
+    const searchbox = screen.getByRole('searchbox');
+    await user.type(searchbox, 'Политика'); // Ищем "Политика" в спортивных новостях
+    
+    await screen.findByText('Найдено: 0');
+    expect(screen.getByTestId('empty-state')).toBeInTheDocument();
   });
 });

@@ -1,30 +1,41 @@
-# === Builds / reports / coverage ===
-dist/
-coverage/
-.lighthouseci/
-*.report.json
-*.report.html
+# === Игнорируем артефакты аудита (НОВОЕ) ===
+.audit/
+*.txt
+*.tgz
+*.tar.gz
 
-# LHCI временные файлы
-localhost-index_html-*.report.json
-localhost-index_html-*.report.html
-
-# === Node / package managers ===
-node_modules/
-.pnpm-store/
-
-# === Editors / OS noise ===
-.vscode/
-.DS_Store
-
-# === Misc ===
+# === Node / Зависимости ===
+/node_modules
+/.pnpm-store/
 pnpm-debug.log*
 npm-debug.log*
-manifest.json
-playwright-report
-test-results
-blob-report
+
+# === Сборка ===
+/dist/
+
+# === Тесты / CI / Покрытие ===
+/coverage/
+/test-results/
+/playwright-report/
+
+# === Отчеты Lighthouse ===
+/.lighthouseci/
 *.report
-coverage
-dist
-.pnpm-store
+*.report.json
+*.report.html
+localhost-*index_html*.report*
+
+# === Редакторы / ОС ===
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# === Локальные переменные ===
+.env
+.env.*
+!.env.example
+
+# === Прочее (из вашего файла) ===
+manifest.json
+blob-report

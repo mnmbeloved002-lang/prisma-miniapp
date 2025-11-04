@@ -1,51 +1,51 @@
 // api/report-error.ts
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { z } from 'zod';
+type ReportPayload = {
+  message: string;
+  stack?: string;
+  userAgent?: string;
+  url?: string;
+  extra?: Record<string, unknown>;
+};
 
-const Payload = z.object({
-  message: z.string().min(1).max(10_000),
-  stack: z.string().max(50_000).optional(),
-  meta: z
-    .object({
-      url: z.string().url().optional(),
-      userAgent: z.string().optional(),
-      context: z.string().max(200).optional(),
-      env: z.enum(['dev', 'prod']).optional(),
-      extra: z.record(z.any()).optional(),
-    })
-    .optional(),
-});
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') return res.status(405).end();
-
-  const parse = Payload.safeParse(req.body ?? {});
-  if (!parse.success) {
-    console.warn('report-error: invalid payload', parse.error.flatten());
-    return res.status(400).json({ ok: false });
+export async function POST(req: Request): Promise<Response> {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return new Response(JSON.stringify({ ok: false, error: 'invalid_json' }), {
+      status: 400,
+      headers: { 'content-type': 'application/json' },
+    });
   }
 
-  const ua = (req.headers['user-agent'] as string | undefined) ?? parse.data.meta?.userAgent;
-  const ip =
-    (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim() ||
-    (req.socket?.remoteAddress ?? 'n/a');
+  const data = (isPlainObject(body) ? body : {}) as Partial<ReportPayload>;
+  if (typeof data.message !== 'string' || data.message.trim().length === 0) {
+    return new Response(JSON.stringify({ ok: false, error: 'message_required' }), {
+      status: 400,
+      headers: { 'content-type': 'application/json' },
+    });
+  }
 
-  const event = {
-    ts: new Date().toISOString(),
-    ip,
-    ua,
-    message: parse.data.message.slice(0, 10_000),
-    stack: parse.data.stack?.slice(0, 50_000),
-    meta: {
-      ...parse.data.meta,
-      // подстрахуемся от больших объектов
-      extra: parse.data.meta?.extra ? JSON.parse(JSON.stringify(parse.data.meta.extra)).slice?.(0, 0) ?? parse.data.meta.extra : undefined,
-    },
+  const payload: ReportPayload = {
+    message: data.message,
+    stack: typeof data.stack === 'string' ? data.stack : undefined,
+    userAgent: typeof data.userAgent === 'string' ? data.userAgent : undefined,
+    url: typeof data.url === 'string' ? data.url : undefined,
+    extra: isPlainObject(data.extra) ? data.extra : undefined,
   };
 
-  // Пишем в лог (дальше можно будет слать в Sentry/PostHog)
-  console.error('FE_ERROR', JSON.stringify(event));
+  // здесь можно писать в лог/метрику/бэкенд
+  // console.error('[client-error]', payload);
 
-  // Ничего не раскрываем наружу
-  return res.status(204).end();
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  });
 }
+
+// Для совместимости с некоторых роутерами:
+export const runtime = 'edge'; // убери/измени при необходимости

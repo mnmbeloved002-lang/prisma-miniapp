@@ -1,4 +1,3 @@
-// src/utils/reportError.test.ts
 import { reportError } from './reportError';
 
 describe('reportError', () => {

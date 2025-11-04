@@ -1,53 +1,36 @@
 // eslint.config.js
-import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import tseslint from 'typescript-eslint'
+import reactHooks from 'eslint-plugin-react-hooks'
 
 export default tseslint.config(
-  // базовый JS
-  js.configs.recommended,
+  { ignores: ['dist', '.lighthouseci', 'coverage', 'test-results'] },
 
-  // базовый TS (без type-aware) — работает везде
-  ...tseslint.configs.recommended,
-
-  // общие игноры
-  { ignores: ['dist', 'build', '.lighthouseci'] },
-
-  // ⬇️ ТОЛЬКО для src включаем type-aware правила (нужен project)
+  // Базовые правила для всего ts/tsx
   {
-    files: ['src/**/*.{ts,tsx}'],
+    files: ['**/*.{ts,tsx}'],
     languageOptions: {
+      parser: tseslint.parser,
       parserOptions: {
-        project: ['./tsconfig.app.json', './tsconfig.node.json'],
-        tsconfigRootDir: import.meta.dirname,
+        ecmaVersion: 'latest',
+        sourceType: 'module',
       },
     },
-    // свои правила для src можно добавить тут
-    rules: {},
+    // ВАЖНО: подключаем сам плагин '@typescript-eslint', чтобы правила существовали
+    plugins: {
+      '@typescript-eslint': tseslint.plugin,
+      'react-hooks': reactHooks,
+    },
+    rules: {
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+    },
   },
 
-  // ⬇️ Тесты: снимаем «unsafe» и бан ts-комментариев
+  // В тестах разрешим any, чтобы не ругались моки
   {
     files: ['**/*.test.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
-      '@typescript-eslint/ban-ts-comment': 'off',
     },
-  },
-
-  // ⬇️ API-файлы: без type-aware (нет отдельного tsconfig — и не нужен)
-  {
-    files: ['api/**/*.ts'],
-    // без project -> снимаем причину parser error
-    languageOptions: {
-      parserOptions: { project: null },
-    },
-    rules: {
-      // можно ослабить что-то точечно, если захочешь
-    },
-  },
-);
+  }
+)

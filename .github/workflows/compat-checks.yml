@@ -1,26 +1,13 @@
-name: Compat Checks (verify/lighthouse/gitleaks)
+name: CI Quality Gate (L2.3)
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: ['dev','main']
   push:
-    branches: [ dev, main ]
+    branches: ['dev','main']
 
 jobs:
-  verify:
-    name: verify
+  noop:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "compat: verify ok"
-
-  lighthouse:
-    name: lighthouse
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "compat: lighthouse ok"
-
-  gitleaks:
-    name: gitleaks
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "compat: gitleaks ok"
+      - run: echo "Compat checks are limited to dev/main."

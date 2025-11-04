@@ -1,4 +1,3 @@
-// src/ui/NewsCard.tsx
 import { motion } from 'framer-motion'
 import type { NewsItem } from '../domain/types'
 import { SourceChip } from './SourceChip'
@@ -21,7 +20,7 @@ export function NewsCard({ item, onOpen }: Props) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 8 }}
       transition={{ duration: 0.25 }}
-      className="group bg-[var(--surface)] rounded-2xl ring-1 ring-white/5 shadow-cinema overflow-hidden hover:ring-white/10 transition-all"
+      className="group bg-surface rounded-2xl ring-1 ring-white/5 shadow-cinema overflow-hidden hover:ring-white/10 transition-all"
     >
       <div className="aspect-[16/9] w-full overflow-hidden">
         <img
@@ -36,19 +35,19 @@ export function NewsCard({ item, onOpen }: Props) {
       <div className="p-4 flex flex-col gap-2">
         <div className="flex items-center justify-between gap-2">
           <SourceChip brand={item.source} />
-          <time className="text-xs text-white/50">{date}</time>
+          <time className="text-xs text-muted">{date}</time>
         </div>
 
-        <h3 className="text-[15px] sm:text-[16px] leading-snug line-clamp-2">
+        <h3 className="text-[15px] sm:text-[16px] leading-snug text-text line-clamp-2">
           {item.title}
         </h3>
 
-        <p className="text-sm text-white/70 line-clamp-2">{item.summary}</p>
+        <p className="text-sm text-muted line-clamp-2">{item.summary}</p>
 
         <div className="mt-2 flex gap-2">
           <button
             onClick={() => onOpen?.(item)}
-            className="flex-1 px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
+            className="flex-1 px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10 text-text transition-colors"
           >
             Открыть
           </button>
@@ -59,7 +58,7 @@ export function NewsCard({ item, onOpen }: Props) {
               else bmAdd(item)
             }}
             aria-pressed={inBm}
-            className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
+            className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10 text-text transition-colors"
             title={inBm ? 'Удалить из закладок' : 'В закладки'}
           >
             {inBm ? '★' : '☆'}
@@ -73,15 +72,15 @@ export function NewsCard({ item, onOpen }: Props) {
 export function NewsCardSkeleton() {
   return (
     <div
-      className="rounded-2xl ring-1 ring-white/5 bg-[var(--surface)] overflow-hidden"
-      data-testid="news-card-skeleton" // <-- ИСПРАВЛЕНИЕ ЗДЕСЬ
+      className="rounded-2xl ring-1 ring-white/5 bg-surface overflow-hidden"
+      data-testid="news-card-skeleton"
     >
-      <div className="aspect-[16/9] bg-white/5 animate-pulse" />
+      <div className="aspect-[16/9] bg-muted/20 animate-pulse" />
       <div className="p-4 space-y-2">
-        <div className="h-4 w-1/3 bg-white/10 rounded" />
-        <div className="h-4 w-5/6 bg-white/10 rounded" />
-        <div className="h-4 w-2/3 bg-white/10 rounded" />
-        <div className="h-9 w-full bg-white/5 rounded-xl" />
+        <div className="h-4 w-1/3 bg-muted/30 rounded" />
+        <div className="h-4 w-5/6 bg-muted/30 rounded" />
+        <div className="h-4 w-2/3 bg-muted/30 rounded" />
+        <div className="h-9 w-full bg-muted/20 rounded-xl" />
       </div>
     </div>
   )

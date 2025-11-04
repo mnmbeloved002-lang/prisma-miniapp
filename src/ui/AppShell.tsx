@@ -38,7 +38,7 @@ export default function AppShell() {
   const current = showBm ? bmList() : filtered
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-bg text-fg">
       <Header
         onSearch={setQuery}
         onToggleBookmarks={() => setShowBm(v => !v)}
@@ -49,7 +49,7 @@ export default function AppShell() {
 
       <FilterBar selected={cats} onChange={setCats} total={current.length} />
 
-      <main className="container mx-auto px-4 py-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <main className="container py-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {items === null
           ? Array.from({ length: 6 }).map((_, i) => <NewsCardSkeleton key={i} />)
           : current.length

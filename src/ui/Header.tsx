@@ -16,9 +16,9 @@ export const Header = memo(function Header({
       role="banner"
       data-testid="app-header"
       aria-label="Призма — шапка приложения"
-      className="sticky top-0 z-20 backdrop-blur bg-[var(--bg)]/70 border-b border-white/10"
+      className="sticky top-0 z-20 backdrop-blur bg-bg/70 border-b border-white/10"
     >
-      <div className="container mx-auto px-4 py-3 flex items-center gap-3">
+      <div className="container py-3 flex items-center gap-3">
         <h1 className="sr-only">Prisma MiniApp</h1>
 
         <div className="flex-1">
@@ -30,7 +30,7 @@ export const Header = memo(function Header({
             type="search"
             role="searchbox"
             placeholder="Поиск новостей…"
-            className="w-full px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 outline-none"
+            className="px-3 py-1.5 rounded-xl ring-1 ring-white/10 text-sm transition hover: bg-white/5 text-fg"
             onInput={(e) => onSearch?.((e.target as HTMLInputElement).value)}
           />
         </div>

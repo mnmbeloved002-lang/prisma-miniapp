@@ -34,7 +34,7 @@ export function FilterBar({ selected, onChange, total }: Props) {
           );
         })}
       </div>
-      <div className="text-xs text-muted">Найдено: {total}</div>
+      <div className="text-xs text-white/60">Найдено: {total}</div>
     </div>
   );
 }

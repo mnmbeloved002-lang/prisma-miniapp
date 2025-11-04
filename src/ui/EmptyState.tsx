@@ -7,7 +7,7 @@ export function EmptyState() {
     >
       <div className="text-3xl mb-2">😶‍🌫️</div>
       <h2 className="text-lg font-medium mb-1">Ничего не найдено</h2>
-      <p className="text-sm text-muted">
+      <p className="text-sm text-white/70">
         Попробуйте изменить запрос или снять часть фильтров.
       </p>
     </section>

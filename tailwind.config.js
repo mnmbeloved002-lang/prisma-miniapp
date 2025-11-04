@@ -1,20 +1,26 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./index.html', './src/**/*.{ts,tsx,js,jsx}'],
+  content: ["./index.html","./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        bg: '#0b0c0f',
-        surface: '#12141a',
-        text: '#e7e9ee',
-        muted: '#9aa3b2',
-        primary: '#6ea8fe',
+        bg: "var(--bg)",
+        surface: "var(--surface)",
+        fg: "var(--fg)",
+        muted: "var(--muted)",
+        primary: "var(--primary)",
+      },
+      borderRadius: {
+        xl: "var(--radius-xl)",
       },
       boxShadow: {
-        cinema: '0 6px 24px rgba(0,0,0,.28)',
+        cinema: "var(--shadow-cinema)",
       },
-      container: { center: true, screens: { lg: '1120px' } },
+      container: {
+        center: true,
+        padding: "1rem",
+      },
     },
   },
-  plugins: [require('@tailwindcss/typography')],
+  plugins: [],
 }

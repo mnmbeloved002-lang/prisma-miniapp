@@ -1,0 +1,15 @@
+:root{
+  /* цвета */
+  --bg: #0b0c0f;
+  --surface: #12141a;
+  --fg: #e7e9ee;
+  --muted: #9aa3b2;
+  --primary: #6ea8fe;
+
+  /* радиусы/тени */
+  --radius-xl: 16px;
+  --shadow-cinema: 0 6px 24px rgba(0,0,0,.28);
+}
+
+/* моментальный фон/текст (FCP) */
+html,body{background:var(--bg);color:var(--fg);}

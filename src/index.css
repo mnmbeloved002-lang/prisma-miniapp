@@ -55,4 +55,11 @@ button, a { min-height: 44px; }
     transition: none !important;
     scroll-behavior: auto !important;
   }
+@layer utilities {
+  .bg-bg         { background-color: var(--color-bg); }
+  .bg-surface    { background-color: var(--color-surface); }
+  .text-text     { color: var(--color-text); }
+  .text-muted    { color: var(--color-muted); }
+  .shadow-cinema { box-shadow: var(--shadow-cinema); }
+}
 }

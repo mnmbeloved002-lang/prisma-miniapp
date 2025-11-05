@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import "./styles/tokens.css";
+@import "tailwindcss";
 
 /* Безопасные зоны на вырезах */
 :root {
@@ -11,8 +11,6 @@
 html, body, #root { 
   height: 100%; 
 }
-
-/* Моментальный фон/текст (FCP) уже есть в tokens.css */
 
 body {
   margin: 0;

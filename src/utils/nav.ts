@@ -13,13 +13,24 @@ export function openLink(url: string) {
 
   // Внутри Telegram: откроем нативно (Instant View, если доступен)
   if (tg?.openLink) {
-    tg.openLink(url, { try_instant_view: true });
-    return;
+    try {
+      tg.openLink(url, { try_instant_view: true });
+      return;
+    } catch {
+      // Если Telegram WebApp выбросил ошибку, продолжаем к обычным методам
+      // Не логируем ошибку, чтобы не засорять консоль пользователя
+    }
   }
 
   // Обычный браузер: пытаемся новое окно, иначе — в этом же окне
   if (typeof window !== 'undefined') {
-    const win = window.open(url, '_blank', 'noopener,noreferrer');
-    if (!win) window.location.assign(url);
+    try {
+      const win = window.open(url, '_blank', 'noopener,noreferrer');
+      if (!win && window.location) {
+        window.location.assign(url);
+      }
+    } catch {
+      // Игнорируем ошибки открытия ссылок
+    }
   }
 }

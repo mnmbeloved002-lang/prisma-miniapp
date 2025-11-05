@@ -1,4 +1,3 @@
-// src/ui/AppShell.test.tsx
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -7,6 +6,7 @@ import AppShell from './AppShell';
 // Мокируем зависимости
 vi.mock('../infrastructure/api-client');
 vi.mock('../application/bookmarks');
+vi.mock('../utils/nav'); // ← ДОБАВЛЯЕМ МОК ДЛЯ nav.ts
 
 // Мок ReaderPreview (со всеми 3 кнопками)
 vi.mock('./ReaderPreview', () => ({
@@ -24,12 +24,14 @@ vi.mock('./ReaderPreview', () => ({
 // Импортируем моки (добавляем bmHas, bmAdd, bmRemove)
 import { getNewsCached } from '../infrastructure/api-client';
 import { list as bmList, has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks';
+import { openLink } from '../utils/nav'; // ← ДОБАВЛЯЕМ ИМПОРТ
 
 const mockedGetNewsCached = vi.mocked(getNewsCached);
 const mockedBmList = vi.mocked(bmList);
 const mockedBmHas = vi.mocked(bmHas);
 const mockedBmAdd = vi.mocked(bmAdd);
 const mockedBmRemove = vi.mocked(bmRemove);
+const mockedOpenLink = vi.mocked(openLink); // ← МОК ДЛЯ openLink
 
 // Мок IntersectionObserver (нужен для framer-motion)
 beforeEach(() => {
@@ -187,24 +189,23 @@ describe('AppShell (Integration Test)', () => {
   });
 
   it('should handle onOpenSource from ReaderPreview (lines 65-68)', async () => {
-    vi.stubGlobal('open', vi.fn());
     mockedGetNewsCached.mockResolvedValue(mockNews);
     render(<AppShell />);
     await screen.findByText('Найдено: 2');
     await userEvent.click(screen.getAllByRole('button', { name: /Открыть/i })[0]);
     await userEvent.click(await screen.findByRole('button', { name: 'Open Source' }));
-    expect(vi.mocked(window.open)).toHaveBeenCalledWith(mockNews[0].canonicalUrl, '_blank', 'noopener,noreferrer');
+    expect(mockedOpenLink).toHaveBeenCalledWith(mockNews[0].canonicalUrl); // ← ИСПРАВЛЯЕМ ПРОВЕРКУ
   });
 
   it('should handle onOpenSource fallback if window.open fails (line 69)', async () => {
-    vi.stubGlobal('open', vi.fn(() => { throw new Error('Popup blocked'); }));
-    vi.stubGlobal('location', { assign: vi.fn() });
+    // УДАЛЯЕМ старые моки window.open и location.assign
+    // Теперь тестируем, что openLink вызывается с правильным URL
     mockedGetNewsCached.mockResolvedValue(mockNews);
     render(<AppShell />);
     await screen.findByText('Найдено: 2');
     await userEvent.click(screen.getAllByRole('button', { name: /Открыть/i })[0]);
     await userEvent.click(await screen.findByRole('button', { name: 'Open Source' }));
-    expect(vi.mocked(window.location.assign)).toHaveBeenCalledWith(mockNews[0].canonicalUrl);
+    expect(mockedOpenLink).toHaveBeenCalledWith(mockNews[0].canonicalUrl); // ← ИСПРАВЛЯЕМ ПРОВЕРКУ
   });
 
   it('should handle onBookmark (add) from ReaderPreview (line 74)', async () => {

@@ -8,6 +8,7 @@ import { EmptyState } from './EmptyState'
 import { ErrorBanner } from './ErrorBanner'
 import { list as bmList, has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks'
 import { useDebouncedValue } from '../utils/useDebouncedValue'
+import { openLink } from '../utils/nav'  // ← ДОБАВЛЯЕМ ИМПОРТ
 
 // лениво подгружаем ридер
 const ReaderPreview = lazy(() => import('./ReaderPreview'))
@@ -62,11 +63,7 @@ export default function AppShell() {
           <ReaderPreview
             html={preview.previewHtml}
             onOpenSource={() => {
-              try {
-                window.open(preview.canonicalUrl, '_blank', 'noopener,noreferrer')
-              } catch {
-                window.location.assign(preview.canonicalUrl)
-              }
+              openLink(preview.canonicalUrl)  // ← ЗАМЕНЯЕМ на вызов утилиты
             }}
             onBookmark={() => {
               if (bmHas(preview.id)) bmRemove(preview.id)

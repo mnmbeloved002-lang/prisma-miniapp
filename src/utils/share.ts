@@ -28,6 +28,42 @@ declare global {
   }
 }
 
+/** Берём <link rel="canonical"> если он той же origin; иначе — чистим текущий URL. */
+function getCanonicalAppUrl(fallbackUrl?: string): string {
+  try {
+    const link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null
+    if (link?.href) {
+      try {
+        const canonical = new URL(link.href)
+        const curOrigin = typeof location !== 'undefined' ? location.origin : null
+        if (!curOrigin || canonical.origin === curOrigin) {
+          return canonical.toString()
+        }
+      } catch {
+        /* ignore bad canonical */
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+
+  const base = typeof location !== 'undefined' ? location.href : (fallbackUrl ?? '/')
+  const origin = typeof location !== 'undefined' ? location.origin : 'http://localhost'
+  const u = new URL(base, origin)
+
+  // убираем мусор от Telegram WebApp и вспомогательные query
+  u.hash = ''
+  ;[
+    'tgWebAppData',
+    'tgWebAppVersion',
+    'tgWebAppPlatform',
+    'tgWebAppThemeParams',
+    'v',
+  ].forEach((k) => u.searchParams.delete(k))
+
+  return u.toString()
+}
+
 /**
  * Универсальный шаринг ссылки:
  * 1) Telegram WebApp → shareURL
@@ -37,14 +73,15 @@ declare global {
  *
  * @returns true если показывали/скопировали успешно, иначе false
  */
-export async function shareLink(url: string, title?: string): Promise<boolean> {
+export async function shareLink(url?: string, title?: string): Promise<boolean> {
+  const shareUrl = getCanonicalAppUrl(url)
   const tg = window?.Telegram?.WebApp
   const nav = navigator as NavigatorWithShare
 
   // 1) Telegram WebApp
   try {
     if (tg?.shareURL) {
-      tg.shareURL(url)
+      tg.shareURL(shareUrl)
       return true
     }
   } catch {
@@ -54,7 +91,7 @@ export async function shareLink(url: string, title?: string): Promise<boolean> {
   // 2) Web Share API
   try {
     if (nav.share) {
-      await nav.share({ url, title })
+      await nav.share({ url: shareUrl, title })
       return true
     }
   } catch {
@@ -64,11 +101,11 @@ export async function shareLink(url: string, title?: string): Promise<boolean> {
   // 3) Clipboard API
   try {
     if (nav.clipboard?.writeText) {
-      await nav.clipboard.writeText(url)
+      await nav.clipboard.writeText(shareUrl)
       tg?.showPopup?.({
         title: 'Скопировано',
         message: 'Ссылка скопирована в буфер обмена.',
-        buttons: [{ type: 'ok' }]
+        buttons: [{ type: 'ok' }],
       })
       return true
     }
@@ -78,7 +115,7 @@ export async function shareLink(url: string, title?: string): Promise<boolean> {
 
   // 4) Фолбэк
   try {
-    alert(`Скопируй ссылку:\n${url}`)
+    alert(`Скопируй ссылку:\n${shareUrl}`)
   } catch {
     /* ignore */
   }

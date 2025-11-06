@@ -39,7 +39,7 @@ describe('NewsCard', () => {
     expect(screen.getByRole('heading', { name: /Новость о Витесте/i })).toBeInTheDocument();
     expect(screen.getByText(/Тестирование прошло успешно/i)).toBeInTheDocument();
     expect(screen.getByText('RBC')).toBeInTheDocument();
-    
+
     // ИСПРАВЛЕНИЕ: Проверяем дату без учета локали (Nov 03 или 03 нояб.)
     expect(screen.getByText(/Nov 03|03 нояб./i)).toBeInTheDocument();
   });
@@ -81,6 +81,22 @@ describe('NewsCard', () => {
     expect(mockedBookmarks.remove).toHaveBeenCalledTimes(1);
     expect(mockedBookmarks.remove).toHaveBeenCalledWith(mockItem.id);
     expect(mockedBookmarks.add).not.toHaveBeenCalled();
+  });
+
+  // --- ДОБАВЛЕНО: покрытие ветки priority=true ---
+  it('uses eager/high when priority=true', () => {
+    mockedBookmarks.has.mockReturnValue(false);
+
+    render(<NewsCard item={mockItem} onOpen={() => {}} priority />);
+
+    const img = screen.getByRole('img', { name: /Новость о Витесте/i });
+    expect(img).toHaveAttribute('loading', 'eager');
+
+    // DOM-атрибут будет в lower-case: fetchpriority
+    const fp = img.getAttribute('fetchpriority');
+    if (fp !== null) {
+      expect(fp).toBe('high');
+    }
   });
 });
 

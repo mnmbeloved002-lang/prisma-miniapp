@@ -1,4 +1,3 @@
-// src/ui/NewsCard.tsx
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import type { NewsItem } from '../domain/types'
@@ -8,7 +7,6 @@ import { has as bmHas, add as bmAdd, remove as bmRemove } from '../application/b
 type Props = {
   item: NewsItem
   onOpen?: (item: NewsItem) => void
-  /** Делает изображение карточки приоритетным для LCP */
   priority?: boolean
 }
 
@@ -38,14 +36,14 @@ export function NewsCard({ item, onOpen, priority }: Props) {
   const d = new Date(item.publishedAt)
   const date = d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })
 
-  // Управляем src и помечаем, что перешли на fallback (для предотвращения циклов)
+  // Управляем src и помечаем, что перешли на fallback
   const [imgSrc, setImgSrc] = useState<string>(item.image)
   const [isFallback, setIsFallback] = useState(false)
 
   const handleImgError = () => {
     if (!isFallback) {
       setImgSrc(svgFallback(item.title))
-      setIsFallback(true) // пометка — нужно для теста и чтобы избежать повторной подмены
+      setIsFallback(true)
     }
   }
 

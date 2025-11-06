@@ -39,3 +39,11 @@ Thumbs.db
 # === Прочее (из вашего файла) ===
 manifest.json
 blob-report
+*.report.html
+*.report.json
+.lighthouseci/
+
+# Lighthouse CI reports
+*.report.html
+*.report.json
+.lighthouseci/

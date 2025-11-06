@@ -2,6 +2,7 @@
 export function EmptyState() {
   return (
     <section
+      data-testid="empty-state"
       className="col-span-full flex flex-col items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10 px-6 py-16 text-center"
       aria-live="polite"
     >

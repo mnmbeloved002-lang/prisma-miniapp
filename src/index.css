@@ -1,16 +1,5 @@
-@import "tailwindcss";
 @import "./styles/tokens.css";
-
-/* Tailwind v4 design tokens */
-@theme {
-  --color-bg: #0b0c0f;
-  --color-surface: #12141a;
-  --color-text: #e7e9ee;
-  --color-muted: #9aa3b2;
-  --color-primary: #6ea8fe;
-
-  --shadow-cinema: 0 6px 24px rgba(0,0,0,.28);
-}
+@import "tailwindcss";
 
 /* Безопасные зоны на вырезах */
 :root {
@@ -19,12 +8,12 @@
 }
 
 /* Базовая разметка */
-html, body, #root { height: 100%; }
+html, body, #root { 
+  height: 100%; 
+}
 
 body {
   margin: 0;
-  background: var(--color-bg);
-  color: var(--color-text);
   -webkit-tap-highlight-color: transparent;
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
@@ -35,18 +24,31 @@ body {
 
 /* Мобильная типографика чуть крупнее */
 @media (max-width: 640px) {
-  body { font-size: 16px; line-height: 1.65; }
+  body { 
+    font-size: 16px; 
+    line-height: 1.65; 
+  }
 }
 
 /* Тап-таргеты */
-button, a { min-height: 44px; }
+button, a { 
+  min-height: 44px; 
+}
 
 /* Контейнер */
-.container { max-width: 1120px; margin-left: auto; margin-right: auto; }
+.container { 
+  max-width: 1120px; 
+  margin-left: auto; 
+  margin-right: auto; 
+}
 
 /* Prose для превью */
-.prose { line-height: 1.7; }
-.prose p { line-height: 1.7; }
+.prose { 
+  line-height: 1.7; 
+}
+.prose p { 
+  line-height: 1.7; 
+}
 
 /* Доступность: меньше резких анимаций */
 @media (prefers-reduced-motion: reduce) {
@@ -54,5 +56,12 @@ button, a { min-height: 44px; }
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Дополнительные утилиты (опционально) */
+@layer utilities {
+  .shadow-cinema { 
+    box-shadow: var(--shadow-cinema); 
   }
 }

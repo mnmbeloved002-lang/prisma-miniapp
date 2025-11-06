@@ -1,10 +1,11 @@
+/* src/styles/tokens.css */
 :root{
-  /* цвета */
-  --bg: #0b0c0f;
-  --surface: #12141a;
-  --surface-hover: #1a1d24;
-  --fg: #e7e9ee;
-  --muted: #9aa3b2;
+  /* цвета — мягкая тёмная тема */
+  --bg: #0e1116;
+  --surface: #151922;
+  --surface-hover: #1c2130;
+  --fg: #e9ecf2;
+  --muted: #a1a9b6;
   --primary: #6ea8fe;
   --success: #7dd3a6;
   --danger: #f28b82;
@@ -12,8 +13,8 @@
   /* радиусы/тени */
   --radius-xl: 16px;
   --radius-lg: 12px;
-  --shadow-cinema: 0 6px 24px rgba(0,0,0,.28);
-  --shadow-card: 0 4px 12px rgba(0,0,0,.16);
+  --shadow-cinema: 0 6px 24px rgba(0,0,0,.24);
+  --shadow-card: 0 4px 12px rgba(0,0,0,.14);
 }
 
 /* моментальный фон/текст (FCP) */

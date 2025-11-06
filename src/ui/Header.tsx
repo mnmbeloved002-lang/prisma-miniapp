@@ -1,3 +1,4 @@
+// src/ui/Header.tsx
 import { memo } from 'react'
 
 type Props = {
@@ -19,7 +20,15 @@ export const Header = memo(function Header({
       className="sticky top-0 z-20 backdrop-blur-lg bg-bg/80 supports-backdrop-blur:bg-bg/60 border-b border-white/10 transition-all duration-200"
     >
       <div className="container mx-auto px-4 py-3 flex items-center gap-3">
-        <h1 className="sr-only">Prisma MiniApp</h1>
+        {/* Бренд — видимый, компактный, не ломает тесты */}
+        <div className="shrink-0 min-w-[140px]">
+          <h1 className="text-sm sm:text-base font-semibold tracking-wide">
+            Prisma MiniApp
+          </h1>
+          <p className="hidden sm:block text-[11px] text-muted leading-tight">
+            новости без шума
+          </p>
+        </div>
 
         <div className="flex-1">
           <label className="sr-only" htmlFor="search">

@@ -21,16 +21,18 @@ export const Header = memo(function Header({
     >
       <div className="container mx-auto px-4 py-3 flex items-center gap-3">
         {/* Бренд — видимый, компактный, не ломает тесты */}
-        <div className="shrink-0 min-w-[140px]">
+        <div className="shrink-0 min-w-[140px] leading-tight">
           <h1 className="text-sm sm:text-base font-semibold tracking-wide">
             Prisma MiniApp
           </h1>
-          <p className="hidden sm:block text-[11px] text-muted leading-tight">
+          {/* слоган теперь виден и на мобиле: тонкий и неброский */}
+          <p className="text-[11px] text-muted">
             новости без шума
           </p>
         </div>
 
-        <div className="flex-1">
+        {/* min-w-0: чтобы инпут не «пихал» бренд и сам не резался */}
+        <div className="flex-1 min-w-0">
           <label className="sr-only" htmlFor="search">
             Поиск
           </label>

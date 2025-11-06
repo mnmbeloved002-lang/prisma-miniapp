@@ -6,9 +6,10 @@ import { has as bmHas, add as bmAdd, remove as bmRemove } from '../application/b
 type Props = {
   item: NewsItem
   onOpen?: (item: NewsItem) => void
+  priority?: boolean
 }
 
-export function NewsCard({ item, onOpen }: Props) {
+export function NewsCard({ item, onOpen, priority }: Props) {
   const inBm = bmHas(item.id)
   const d = new Date(item.publishedAt)
   const date = d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })
@@ -27,7 +28,8 @@ export function NewsCard({ item, onOpen }: Props) {
           src={item.image}
           alt={item.title}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.05]"
-          loading="lazy"
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : 'auto'}
           decoding="async"
         />
       </div>

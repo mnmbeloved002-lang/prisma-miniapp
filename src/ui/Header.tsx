@@ -16,7 +16,7 @@ export const Header = memo(function Header({
       role="banner"
       data-testid="app-header"
       aria-label="Призма — шапка приложения"
-      className="sticky top-0 z-20 backdrop-blur bg-[var(--bg)]/70 border-b border-white/10"
+      className="sticky top-0 z-20 backdrop-blur-lg bg-bg/80 supports-backdrop-blur:bg-bg/60 border-b border-white/10 transition-all duration-200"
     >
       <div className="container mx-auto px-4 py-3 flex items-center gap-3">
         <h1 className="sr-only">Prisma MiniApp</h1>
@@ -30,7 +30,7 @@ export const Header = memo(function Header({
             type="search"
             role="searchbox"
             placeholder="Поиск новостей…"
-            className="w-full px-3 py-2 rounded-xl bg-white/5 ring-1 ring-white/10 outline-none"
+            className="w-full px-3 py-2 rounded-xl bg-surface border border-white/10 text-fg placeholder-muted outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/30 transition-colors"
             onInput={(e) => onSearch?.((e.target as HTMLInputElement).value)}
           />
         </div>
@@ -39,10 +39,10 @@ export const Header = memo(function Header({
           title="Показать закладки"
           aria-pressed={!!showBookmarks}
           data-testid="bookmarks-btn"
-          className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
+          className="px-3 py-2 rounded-xl bg-surface border border-white/10 text-fg hover:bg-surface-hover hover:border-white/20 active:scale-95 transition-all duration-150"
           onClick={onToggleBookmarks}
         >
-          ☆ Закладки
+          {showBookmarks ? '★ Закладки' : '☆ Закладки'}
         </button>
       </div>
     </header>

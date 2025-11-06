@@ -47,3 +47,6 @@ blob-report
 *.report.html
 *.report.json
 .lighthouseci/
+
+# audit bundles
+phase1-deep-audit*.tgz

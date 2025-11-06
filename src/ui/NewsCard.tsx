@@ -1,4 +1,6 @@
+// src/ui/NewsCard.tsx
 import { motion } from 'framer-motion'
+import type { SyntheticEvent } from 'react'
 import type { NewsItem } from '../domain/types'
 import { SourceChip } from './SourceChip'
 import { has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks'
@@ -6,7 +8,36 @@ import { has as bmHas, add as bmAdd, remove as bmRemove } from '../application/b
 type Props = {
   item: NewsItem
   onOpen?: (item: NewsItem) => void
+  /** Делает картинку LCP-дружественной для первой карточки */
   priority?: boolean
+}
+
+// Неброский SVG-заполнитель, чтобы не было «битой» иконки
+const FALLBACK_SVG =
+  'data:image/svg+xml;charset=UTF-8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="no image">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#1a1d24"/>
+          <stop offset="1" stop-color="#0f1217"/>
+        </linearGradient>
+      </defs>
+      <rect width="800" height="450" fill="url(#g)"/>
+      <g fill="#9aa3b2" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+        <text x="50%" y="50%" font-size="24" text-anchor="middle" dominant-baseline="middle">no image</text>
+      </g>
+    </svg>`
+  )
+
+function handleImgError(e: SyntheticEvent<HTMLImageElement>) {
+  const img = e.currentTarget
+  // чтобы не зациклиться, если вдруг и fallback не загрузится
+  if (img.dataset.fallback === '1') return
+  img.dataset.fallback = '1'
+  img.src = FALLBACK_SVG
+  img.decoding = 'async'
+  img.loading = 'lazy'
 }
 
 export function NewsCard({ item, onOpen, priority }: Props) {
@@ -31,6 +62,7 @@ export function NewsCard({ item, onOpen, priority }: Props) {
           loading={priority ? 'eager' : 'lazy'}
           fetchPriority={priority ? 'high' : 'auto'}
           decoding="async"
+          onError={handleImgError}
         />
       </div>
 

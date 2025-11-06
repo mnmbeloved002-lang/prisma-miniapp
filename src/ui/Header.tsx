@@ -43,6 +43,13 @@ export const Header = memo(function Header({
             placeholder="Поиск новостей…"
             className="w-full px-3 py-2 rounded-xl bg-surface border border-white/10 text-fg placeholder-muted outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/30 transition-colors"
             onInput={(e) => onSearch?.((e.target as HTMLInputElement).value)}
+            /* ↓ добавлено: лучшее поведение клавиатуры и без автокоррекции */
+            inputMode="search"
+            enterKeyHint="search"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
           />
         </div>
 

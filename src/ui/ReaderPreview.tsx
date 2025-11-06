@@ -9,6 +9,18 @@ interface Props {
   onClose: () => void
 }
 
+function getCanonicalUrl(): string {
+  try {
+    const link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null
+    if (link?.href) return link.href
+  } catch { /* ignore */ }
+  try {
+    return location.origin + '/'
+  } catch {
+    return '/'
+  }
+}
+
 export default function ReaderPreview({ html, onOpenSource, onBookmark, onClose }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const [canSpeak, setCanSpeak] = useState(false)
@@ -16,6 +28,10 @@ export default function ReaderPreview({ html, onOpenSource, onBookmark, onClose 
 
   useEffect(() => {
     setCanSpeak('speechSynthesis' in window)
+    // при размонтировании — стоп озвучку
+    return () => {
+      try { window.speechSynthesis.cancel() } catch { /* ignore */ }
+    }
   }, [])
 
   const speakFromHtml = () => {
@@ -38,19 +54,27 @@ export default function ReaderPreview({ html, onOpenSource, onBookmark, onClose 
     try {
       window.speechSynthesis.cancel()
       setIsSpeaking(false)
-    } catch {/* ignore */}
+    } catch { /* ignore */ }
   }
+
+  const handleClose = () => {
+    stopSpeaking()
+    onClose()
+  }
+
+  const shareUrl = getCanonicalUrl()
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col">
       {/* Верхняя панель: слева «Просмотр», справа — действия */}
-      <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-white/10 bg-surface/95">
+      <div className="sticky top-0 flex items-center justify-between gap-3 px-4 py-3 border-b border-white/10 bg-surface/95">
         <h2 className="text-base sm:text-lg font-semibold">Просмотр</h2>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <button
             onClick={onBookmark}
             className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
             title="В закладки / убрать из закладок"
+            aria-label="Переключить закладку"
           >
             ★
           </button>
@@ -59,22 +83,25 @@ export default function ReaderPreview({ html, onOpenSource, onBookmark, onClose 
             onClick={onOpenSource}
             className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
             title="Открыть источник"
+            aria-label="Открыть источник"
           >
             Открыть
           </button>
 
           <button
-            onClick={() => shareLink(location.href)}
+            onClick={() => shareLink(shareUrl)}
             className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
             title="Поделиться ссылкой"
+            aria-label="Поделиться"
           >
             Поделиться
           </button>
 
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
             title="Закрыть"
+            aria-label="Закрыть"
           >
             ✕
           </button>
@@ -88,18 +115,18 @@ export default function ReaderPreview({ html, onOpenSource, onBookmark, onClose 
         dangerouslySetInnerHTML={{ __html: html }}
       />
 
-      {/* Нижняя панель TTS остаётся, немного плотнее на мобиле */}
-      <div className="flex justify-center gap-3 py-3 sm:py-4 border-t border-white/10 bg-surface/95">
-        <button
-          onClick={isSpeaking ? stopSpeaking : speakFromHtml}
-          disabled={!canSpeak}
-          className={`px-4 py-2 rounded-xl ring-1 ring-white/10 ${
-            canSpeak ? 'hover:bg-white/10' : 'opacity-50 cursor-not-allowed'
-          }`}
-        >
-          {canSpeak ? (isSpeaking ? '⏹ Остановить' : '🔊 Слушать') : '🔇 Не поддерживается'}
-        </button>
-      </div>
+      {/* Нижняя панель: показываем только если поддерживается TTS */}
+      {canSpeak && (
+        <div className="flex justify-center gap-3 py-3 sm:py-4 border-t border-white/10 bg-surface/95">
+          <button
+            onClick={isSpeaking ? stopSpeaking : speakFromHtml}
+            className="px-4 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
+            aria-label={isSpeaking ? 'Остановить озвучку' : 'Включить озвучку'}
+          >
+            {isSpeaking ? '⏹ Остановить' : '🔊 Слушать'}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -58,7 +58,7 @@ export default function AppShell() {
                   key={n.id}
                   item={n}
                   onOpen={setPreview}
-                  priority={i < 3}
+                  priority={i === 3}
                 />
               ))
             : <EmptyState />}

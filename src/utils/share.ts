@@ -6,11 +6,8 @@ type WebShareData = {
   url?: string
 }
 
-interface NavigatorWithShare extends Navigator {
+type MaybeShareNavigator = Navigator & {
   share?: (data: WebShareData) => Promise<void>
-  clipboard?: {
-    writeText: (text: string) => Promise<void>
-  }
 }
 
 type TgPopupButton =
@@ -76,7 +73,7 @@ function getCanonicalAppUrl(fallbackUrl?: string): string {
 export async function shareLink(url?: string, title?: string): Promise<boolean> {
   const shareUrl = getCanonicalAppUrl(url)
   const tg = window?.Telegram?.WebApp
-  const nav = navigator as NavigatorWithShare
+  const nav = navigator as MaybeShareNavigator
 
   // 1) Telegram WebApp
   try {
@@ -98,10 +95,10 @@ export async function shareLink(url?: string, title?: string): Promise<boolean> 
     /* ignore */
   }
 
-  // 3) Clipboard API
+  // 3) Clipboard API (тип — нативный, без переопределений)
   try {
-    if (nav.clipboard?.writeText) {
-      await nav.clipboard.writeText(shareUrl)
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(shareUrl)
       tg?.showPopup?.({
         title: 'Скопировано',
         message: 'Ссылка скопирована в буфер обмена.',

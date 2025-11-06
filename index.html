@@ -9,6 +9,9 @@
     <meta name="description" content="Лёгкая новостная лента с быстрым ридером и закладками. Без рекламы, без шума." />
     <link rel="canonical" href="https://example.com/" />
 
+    <!-- Favicon (убирает 404 в консоли/LHCI) -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+
     <!-- PWA / цвета UI -->
     <meta name="theme-color" content="#0b1220" />
     <meta name="color-scheme" content="dark light" />
@@ -46,7 +49,7 @@
     <script type="module" src="/src/main.tsx"></script>
   </head>
   <body>
-<div id="root">
+  <div id="root">
     <!-- ВИДИМЫЙ скелет, чтобы был FCP даже без JS -->
     <div id="boot-skeleton" style="
       height:56px;

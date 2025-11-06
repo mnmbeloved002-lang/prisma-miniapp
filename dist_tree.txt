@@ -1,0 +1,12 @@
+== tree dist ==
+dist
+├── assets
+│   ├── index-BuAEA4XV.css
+│   └── index-Ck75_E9k.js
+├── index.html
+├── manifest.webmanifest
+├── news.json
+├── robots.txt
+└── vite.svg
+
+1 directory, 7 files

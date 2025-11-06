@@ -1,0 +1,5 @@
+asset-js: /assets/index-Ck75_E9k.js OK
+asset-css: /assets/index-BuAEA4XV.css OK
+boot-skeleton: PRESENT
+root-div: PRESENT
+errors: none

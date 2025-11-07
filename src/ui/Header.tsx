@@ -19,20 +19,21 @@ export const Header = memo(function Header({
       aria-label="Призма — шапка приложения"
       className="sticky top-0 z-20 backdrop-blur-lg bg-bg/80 supports-backdrop-blur:bg-bg/60 border-b border-white/10 transition-all duration-200"
     >
-      <div className="container mx-auto px-4 py-3 flex items-center gap-3">
-        {/* Бренд — видимый, компактный, не ломает тесты */}
+      {/* gap-2 на xs, чтобы выиграть пару пикселей; на >=sm как было */}
+      <div className="container mx-auto px-4 py-3 flex items-center gap-2 sm:gap-3">
+        {/* Бренд — видимый, компактный */}
         <div className="shrink-0 min-w-[140px] leading-tight">
           <h1 className="text-sm sm:text-base font-semibold tracking-wide">
             Prisma MiniApp
           </h1>
-          {/* слоган теперь виден и на мобиле: тонкий и неброский */}
+          {/* слоган виден и на мобиле: тонкий и неброский */}
           <p className="text-[11px] text-muted">
             новости без шума
           </p>
         </div>
 
-        {/* min-w-0: чтобы инпут не «пихал» бренд и сам не резался */}
-        <div className="flex-1 min-w-0">
+        {/* Критично: flex-auto + basis-0 + min-w-0 — берём всю доступную ширину между брендом и кнопкой */}
+        <div className="flex-auto basis-0 min-w-0">
           <label className="sr-only" htmlFor="search">
             Поиск
           </label>
@@ -43,7 +44,7 @@ export const Header = memo(function Header({
             placeholder="Поиск новостей…"
             className="w-full px-3 py-2 rounded-xl bg-surface border border-white/10 text-fg placeholder-muted outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/30 transition-colors"
             onInput={(e) => onSearch?.((e.target as HTMLInputElement).value)}
-            /* ↓ добавлено: лучшее поведение клавиатуры и без автокоррекции */
+            /* ↓ лучшая клавиатура и без автокоррекции на мобилке */
             inputMode="search"
             enterKeyHint="search"
             autoComplete="off"
@@ -53,11 +54,12 @@ export const Header = memo(function Header({
           />
         </div>
 
+        {/* Кнопка не сжимается — не ворует ширину у поля */}
         <button
           title="Показать закладки"
           aria-pressed={!!showBookmarks}
           data-testid="bookmarks-btn"
-          className="px-3 py-2 rounded-xl bg-surface border border-white/10 text-fg hover:bg-surface-hover hover:border-white/20 active:scale-95 transition-all duration-150"
+          className="shrink-0 px-3 py-2 rounded-xl bg-surface border border-white/10 text-fg hover:bg-surface-hover hover:border-white/20 active:scale-95 transition-all duration-150"
           onClick={onToggleBookmarks}
         >
           {showBookmarks ? '★ Закладки' : '☆ Закладки'}

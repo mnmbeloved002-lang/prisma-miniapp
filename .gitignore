@@ -50,3 +50,6 @@ blob-report
 
 # audit bundles
 phase1-deep-audit*.tgz
+
+# backups
+*.bundle

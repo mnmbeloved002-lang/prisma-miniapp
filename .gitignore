@@ -53,3 +53,8 @@ phase1-deep-audit*.tgz
 
 # backups
 *.bundle
+
+# local backups & tools
+.local/
+*.bak
+.lighthouseci/

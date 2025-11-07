@@ -8,9 +8,8 @@ import { EmptyState } from './EmptyState'
 import { ErrorBanner } from './ErrorBanner'
 import { list as bmList, has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks'
 import { useDebouncedValue } from '../utils/useDebouncedValue'
-import { openLink } from '../utils/nav'  // ← ДОБАВЛЯЕМ ИМПОРТ
+import { openLink } from '../utils/nav'
 
-// лениво подгружаем ридер
 const ReaderPreview = lazy(() => import('./ReaderPreview'))
 
 export default function AppShell() {
@@ -54,7 +53,14 @@ export default function AppShell() {
         {items === null
           ? Array.from({ length: 6 }).map((_, i) => <NewsCardSkeleton key={i} />)
           : current.length
-            ? current.map(n => <NewsCard key={n.id} item={n} onOpen={setPreview} />)
+            ? current.map((n, i) => (
+                <NewsCard
+                  key={n.id}
+                  item={n}
+                  onOpen={setPreview}
+                  priority={i === 3}
+                />
+              ))
             : <EmptyState />}
       </main>
 
@@ -62,9 +68,7 @@ export default function AppShell() {
         {preview && (
           <ReaderPreview
             html={preview.previewHtml}
-            onOpenSource={() => {
-              openLink(preview.canonicalUrl)  // ← ЗАМЕНЯЕМ на вызов утилиты
-            }}
+            onOpenSource={() => { openLink(preview.canonicalUrl) }}
             onBookmark={() => {
               if (bmHas(preview.id)) bmRemove(preview.id)
               else bmAdd(preview)

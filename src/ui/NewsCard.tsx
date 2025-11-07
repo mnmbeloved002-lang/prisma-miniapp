@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import type { NewsItem } from '../domain/types'
 import { SourceChip } from './SourceChip'
@@ -6,12 +7,45 @@ import { has as bmHas, add as bmAdd, remove as bmRemove } from '../application/b
 type Props = {
   item: NewsItem
   onOpen?: (item: NewsItem) => void
+  priority?: boolean
 }
 
-export function NewsCard({ item, onOpen }: Props) {
+// Генерируем компактный SVG-заглушку (data URL)
+function svgFallback(title: string): string {
+  const label = (title || 'Новость').slice(0, 32)
+  const svg = encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+      <defs>
+        <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+          <stop stop-color="#1e293b" offset="0"/>
+          <stop stop-color="#0f172a" offset="1"/>
+        </linearGradient>
+      </defs>
+      <rect width="800" height="450" fill="url(#g)"/>
+      <g fill="#94a3b8" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial" text-anchor="middle">
+        <text x="400" y="215" font-size="26" opacity="0.9">Изображение недоступно</text>
+        <text x="400" y="255" font-size="20" opacity="0.7">${label}</text>
+      </g>
+    </svg>`
+  )
+  return `data:image/svg+xml;charset=utf-8,${svg}`
+}
+
+export function NewsCard({ item, onOpen, priority }: Props) {
   const inBm = bmHas(item.id)
   const d = new Date(item.publishedAt)
   const date = d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })
+
+  // Управляем src и помечаем, что перешли на fallback
+  const [imgSrc, setImgSrc] = useState<string>(item.image)
+  const [isFallback, setIsFallback] = useState(false)
+
+  const handleImgError = () => {
+    if (!isFallback) {
+      setImgSrc(svgFallback(item.title))
+      setIsFallback(true)
+    }
+  }
 
   return (
     <motion.article
@@ -24,10 +58,13 @@ export function NewsCard({ item, onOpen }: Props) {
     >
       <div className="aspect-[16/9] w-full overflow-hidden">
         <img
-          src={item.image}
+          src={imgSrc}
           alt={item.title}
+          onError={handleImgError}
+          data-fallback={isFallback ? '1' : undefined}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.05]"
-          loading="lazy"
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : 'auto'}
           decoding="async"
         />
       </div>

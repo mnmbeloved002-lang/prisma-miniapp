@@ -58,3 +58,4 @@ phase1-deep-audit*.tgz
 .local/
 *.bak
 .lighthouseci/
+.lighthouseci/

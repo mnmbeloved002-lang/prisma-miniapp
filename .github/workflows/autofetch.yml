@@ -31,7 +31,7 @@ jobs:
         run: npm ci || npm i --no-audit --no-fund
 
       - name: Autofetch (stub)
-        run: node scripts/autofetch-stub.js
+        run: node scripts/autofetch-stub.cjs
 
       - name: Check open content PRs
         id: openprs

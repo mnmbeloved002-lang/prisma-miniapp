@@ -59,3 +59,13 @@ phase1-deep-audit*.tgz
 *.bak
 .lighthouseci/
 .lighthouseci/
+# audit/output artifacts (локальные слепки, отчёты)
+asset_probe.txt
+dist_sha256.txt
+dist_tree.txt
+env_versions.txt
+git_log_last15.txt
+headers.css.txt
+headers.txt
+phase1-deep-audit*.tgz
+phase1-deep-audit*.tar.gz

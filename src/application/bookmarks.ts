@@ -1,61 +1,86 @@
 // src/application/bookmarks.ts
-import { storage } from '../infrastructure/storage';
-import type { NewsItem } from '../domain/types';
+import type { NewsItem } from '../domain/types'
+import { storage } from '../infrastructure/storage'
 
-const KEY = 'bookmarks-v1';
+const KEY = 'bookmarks-v1'
 
-/**
- * Внутренняя функция для получения текущего списка из storage.
- */
-function getList(): NewsItem[] {
-  return storage.get<NewsItem[]>(KEY) ?? [];
+let cache: NewsItem[] | null = null
+let loaded = false
+
+function ensureLoaded() {
+  if (!loaded) {
+    loaded = true
+    const data = storage.get<NewsItem[]>(KEY)
+    cache = Array.isArray(data) ? data.slice() : []
+  }
 }
 
-/**
- * Возвращает полный список закладок.
- */
+function persist() {
+  if (cache !== null) {
+    storage.set(KEY, cache)
+  }
+}
+
 export function list(): NewsItem[] {
-  return getList();
+  ensureLoaded()
+  return cache!.slice()
 }
 
-/**
- * Проверяет, есть ли ID в закладках.
- */
+export function getList(): NewsItem[] {
+  return list()
+}
+
 export function has(id: string): boolean {
-  // Мы не кэшируем результат, чтобы React всегда видел свежие данные
-  return getList().some(item => item.id === id);
+  ensureLoaded()
+  return cache!.some((n) => n.id === id)
 }
 
-/**
- * Добавляет новость в закладки, если ее там еще нет.
- */
 export function add(item: NewsItem): void {
-  const items = getList();
-  if (!items.some(i => i.id === item.id)) {
-    storage.set(KEY, [...items, item]);
-  }
+  ensureLoaded()
+  if (has(item.id)) return
+  // Добавляем в начало списка (новые закладки сверху)
+  cache = [item, ...cache!]
+  persist()
 }
 
-/**
- * Удаляет новость из закладок по ID.
- */
 export function remove(id: string): void {
-  const items = getList();
-  const filtered = items.filter(item => item.id !== id);
-
-  // Перезаписываем, только если что-то изменилось
-  if (filtered.length !== items.length) {
-    storage.set(KEY, filtered);
+  ensureLoaded()
+  const initialLength = cache!.length
+  cache = cache!.filter((n) => n.id !== id)
+  if (cache.length !== initialLength) {
+    persist()
   }
 }
 
-/**
- * Переключает состояние закладки (добавляет, если нет / удаляет, если есть).
- */
 export function toggle(item: NewsItem): void {
   if (has(item.id)) {
-    remove(item.id);
+    remove(item.id)
   } else {
-    add(item);
+    add(item)
+  }
+}
+
+// Синхронизация между вкладками
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === KEY) {
+      loaded = false // Форсим перечитывание при следующем обращении
+      cache = null
+      // Опционально: можно диспатчить кастомное событие для уведомления UI
+      // window.dispatchEvent(new CustomEvent('bookmarks-changed'))
+    }
+  })
+}
+
+/** Вспомогательно для unit-тестов */
+export function __unsafe__resetForTests(seed?: NewsItem[]) {
+  loaded = false
+  cache = null
+  if (seed !== undefined) {
+    cache = [...seed]
+    loaded = true
+    storage.set(KEY, cache) // Синхронизируем с storage для тестов
+  } else {
+    storage.del(KEY) // Полная очистка
   }
 }

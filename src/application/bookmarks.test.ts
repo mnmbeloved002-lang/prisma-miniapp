@@ -1,6 +1,6 @@
 // src/application/bookmarks.test.ts
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { add, remove, has, list, toggle, __unsafe__resetForTests } from './bookmarks';
+import { add, remove, has, list, getList, toggle, __unsafe__resetForTests } from './bookmarks';
 import { storage } from '../infrastructure/storage'; // named import
 import type { NewsItem } from '../domain/types';
 
@@ -85,6 +85,7 @@ describe('Bookmarks Application Logic', () => {
   it('should return the full list', () => {
     mockedStorage.get.mockReturnValue([item1, item2]);
     expect(list()).toEqual([item1, item2]);
+    expect(getList()).toEqual([item1, item2]); // Добавлен вызов getList для покрытия
   });
 
   it('should return empty list if storage is empty', () => {

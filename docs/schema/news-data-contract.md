@@ -1,3 +1,25 @@
-# News Data Contract (MiniApp)
-Поля: id(uuid), title(10–180, без HTML), preview(≤240, без HTML), tags(1–5, 2–24), date(ISO8601 UTC …Z), url(https://).
-Инварианты: уникальность id/url/title+date; сортировка по date DESC; запрет HTML.
+# News Data Contract
+
+## Спецификация полей
+- id: UUID v4, уникальный
+- title: 10-180 символов, без HTML  
+- preview: ≤240 символов, без HTML
+- tags: 1-5 тегов, каждый 2-24 символа
+- date: ISO 8601 UTC (оканчивается на Z)
+- url: HTTPS только, уникальный
+
+## Правила качества
+- Уникальность: id, url, title+date
+- Сортировка: по date DESC
+- Безопасность: без HTML тегов
+
+## Чек-лист валидации
+- [ ] Уникальные id
+- [ ] Уникальные url
+- [ ] Дата в формате UTC (Z)
+- [ ] URL начинается с https://
+- [ ] Title 10-180 символов
+- [ ] Preview ≤240 символов  
+- [ ] Tags: 1-5 элементов по 2-24 символа
+- [ ] Сортировка по date DESC
+- [ ] Размер файла ≤ 1MB

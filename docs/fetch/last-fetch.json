@@ -1,29 +1,29 @@
 {
-  "timestamp": "2025-11-11T04:51:39.725Z",
+  "timestamp": "2025-11-11T05:05:58.709Z",
   "sourceCount": 2,
   "news": [
     {
-      "id": "mock-1762836698717-h5xo5zsnw",
+      "id": "mock-1762837557703-74jrbvmid",
       "title": "Тестовая новость от Lenta.ru",
       "preview": "Это тестовая новость для проверки работы пайплайна",
       "tags": [
         "тест",
         "заглушка"
       ],
-      "date": "2025-11-11T04:51:38Z",
-      "url": "https://example.com/test-news-1762836698721",
+      "date": "2025-11-11T05:05:57Z",
+      "url": "https://example.com/test-news-1762837557705",
       "source": "Lenta.ru"
     },
     {
-      "id": "mock-1762836699723-gnc2xksmu",
+      "id": "mock-1762837558708-5ert3wtrk",
       "title": "Тестовая новость от РИА Новости",
       "preview": "Это тестовая новость для проверки работы пайплайна",
       "tags": [
         "тест",
         "заглушка"
       ],
-      "date": "2025-11-11T04:51:39Z",
-      "url": "https://example.com/test-news-1762836699724",
+      "date": "2025-11-11T05:05:58Z",
+      "url": "https://example.com/test-news-1762837558708",
       "source": "РИА Новости"
     }
   ]

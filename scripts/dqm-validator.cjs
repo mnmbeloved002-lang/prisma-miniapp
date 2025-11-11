@@ -24,3 +24,4 @@ function checkDataQuality(news) {
 
 // Тест
 checkDataQuality([{preview: "test"}, {preview: ""}]);
+// UAT тестовая запись

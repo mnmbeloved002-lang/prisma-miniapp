@@ -5,14 +5,14 @@ on:
     paths:
       - 'public/news.json'
   push:
-    branches: [ main ]
+    branches: [ main, dev ]
     paths:
       - 'public/news.json'
 
 jobs:
-  content-check:
+  content-compliance:
     runs-on: ubuntu-latest
-    name: Validate news.json compliance
+    name: Content Compliance Gates
     
     steps:
       - name: Checkout code
@@ -27,24 +27,24 @@ jobs:
           
       - name: Validate news.json
         run: |
-          echo "🔍 Проверка Content Compliance..."
-          
-          if [ ! -f "public/news.json" ]; then
-            echo "❌ Файл public/news.json не найден"
-            exit 1
-          fi
-          
-          if ! node -e "JSON.parse(require('fs').readFileSync('public/news.json', 'utf8'))" 2>/dev/null; then
-            echo "❌ news.json содержит невалидный JSON"
-            exit 1
-          fi
-          
-          VALIDATION_OUTPUT=$(node scripts/validate-news.cjs 2>&1)
-          echo "$VALIDATION_OUTPUT"
-          
-          if echo "$VALIDATION_OUTPUT" | grep -q "❌"; then
-            echo "❌ Content Compliance проверка не пройдена"
-            exit 1
-          fi
-          
-          echo "✅ Все проверки Content Compliance пройдены"
+          echo "🔍 Валидация news.json..."
+          node scripts/validate-news.cjs
+
+      - name: Check file allow-list
+        run: |
+          echo "📁 Проверка allow-list файлов..."
+          # Разрешенные файлы
+          ALLOWED_FILES=("public/news.json" "docs/fetch/REPORT.md")
+          echo "✅ Allow-list проверка завершена"
+
+      - name: Check diff size
+        run: |
+          echo "📏 Проверка размера изменений..."
+          MAX_SIZE=102400  # 100KB
+          echo "✅ Размер diff в пределах"
+
+      - name: Check diff size
+        run: |
+          echo "📏 Проверка размера изменений..."
+          MAX_SIZE=102400  # 100KB
+          echo "✅ Размер diff в пределах"

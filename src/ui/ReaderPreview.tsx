@@ -1,24 +1,11 @@
-// src/ui/ReaderPreview.tsx
 import { useEffect, useRef, useState } from 'react'
-import { shareLink } from '../utils/share'
+import { shareLink } from '../utils/share' // Убираем buildItemShareUrl
 
 interface Props {
   html: string
   onOpenSource: () => void
   onBookmark: () => void
   onClose: () => void
-}
-
-function getCanonicalUrl(): string {
-  try {
-    const link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null
-    if (link?.href) return link.href
-  } catch { /* ignore */ }
-  try {
-    return location.origin + '/'
-  } catch {
-    return '/'
-  }
 }
 
 export default function ReaderPreview({ html, onOpenSource, onBookmark, onClose }: Props) {
@@ -28,7 +15,6 @@ export default function ReaderPreview({ html, onOpenSource, onBookmark, onClose 
 
   useEffect(() => {
     setCanSpeak('speechSynthesis' in window)
-    // при размонтировании — стоп озвучку
     return () => {
       try { window.speechSynthesis.cancel() } catch { /* ignore */ }
     }
@@ -62,11 +48,13 @@ export default function ReaderPreview({ html, onOpenSource, onBookmark, onClose 
     onClose()
   }
 
-  const shareUrl = getCanonicalUrl()
+  const handleShare = () => {
+    shareLink() // URL автоматически определяется внутри shareLink
+  }
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col">
-      {/* Верхняя панель: слева «Просмотр», справа — действия */}
+      {/* Верхняя панель */}
       <div className="sticky top-0 flex items-center justify-between gap-3 px-4 py-3 border-b border-white/10 bg-surface/95">
         <h2 className="text-base sm:text-lg font-semibold">Просмотр</h2>
         <div className="flex items-center gap-2">
@@ -89,7 +77,7 @@ export default function ReaderPreview({ html, onOpenSource, onBookmark, onClose 
           </button>
 
           <button
-            onClick={() => shareLink(shareUrl)}
+            onClick={handleShare}
             className="px-3 py-2 rounded-xl ring-1 ring-white/10 hover:bg-white/10"
             title="Поделиться ссылкой"
             aria-label="Поделиться"
@@ -108,14 +96,14 @@ export default function ReaderPreview({ html, onOpenSource, onBookmark, onClose 
         </div>
       </div>
 
-      {/* Контент с нормальной шириной и отступами, хорошо на мобиле */}
+      {/* Контент */}
       <div
         ref={ref}
         className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 max-w-3xl mx-auto leading-relaxed text-[15px] sm:text-base bg-surface text-fg"
         dangerouslySetInnerHTML={{ __html: html }}
       />
 
-      {/* Нижняя панель: показываем только если поддерживается TTS */}
+      {/* Нижняя панель TTS */}
       {canSpeak && (
         <div className="flex justify-center gap-3 py-3 sm:py-4 border-t border-white/10 bg-surface/95">
           <button

@@ -1,5 +1,3 @@
-// src/utils/share.ts
-
 type WebShareData = {
   title?: string
   text?: string
@@ -10,13 +8,10 @@ type MaybeShareNavigator = Navigator & {
   share?: (data: WebShareData) => Promise<void>
 }
 
-type TgPopupButton =
-  | { id?: string; type?: 'ok' | 'close' | 'cancel' | 'destructive' | 'default'; text?: string }
-
 interface TelegramWebApp {
   shareURL?: (url: string) => void
   openTelegramLink?: (url: string) => void
-  showPopup?: (params: { title?: string; message: string; buttons?: TgPopupButton[] }) => void
+  showPopup?: (params: { title?: string; message: string; buttons?: any[] }) => void
 }
 
 declare global {
@@ -25,53 +20,58 @@ declare global {
   }
 }
 
-/** Берём <link rel="canonical"> если он той же origin; иначе — чистим текущий URL. */
-function getCanonicalAppUrl(fallbackUrl?: string): string {
+// Мусорные параметры для удаления
+const JUNK_PARAMS = [
+  'tgWebAppData',
+  'tgShareScore',
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+  'fbclid',
+  'gclid',
+  'yclid',
+  'mc_cid',
+  'mc_eid',
+  'tgWebAppVersion',
+  'tgWebAppPlatform',
+  'tgWebAppThemeParams',
+  'v',
+];
+
+function stripParams(u: URL): URL {
+  for (const p of JUNK_PARAMS) u.searchParams.delete(p);
+  if ([...u.searchParams.keys()].length === 0) u.search = '';
+  u.hash = '';
+  return u;
+}
+
+export function normalizeShareUrl(raw: string, canonicalUrl?: string): string {
   try {
-    const link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null
-    if (link?.href) {
-      try {
-        const canonical = new URL(link.href)
-        const curOrigin = typeof location !== 'undefined' ? location.origin : null
-        if (!curOrigin || canonical.origin === curOrigin) {
-          return canonical.toString()
-        }
-      } catch {
-        /* ignore bad canonical */
-      }
-    }
+    const base = canonicalUrl?.trim() ? canonicalUrl : raw;
+    const url = new URL(base, typeof window !== 'undefined' ? window.location.href : 'https://example.com');
+    return stripParams(url).toString();
   } catch {
-    /* ignore */
+    return '';
   }
+}
 
-  const base = typeof location !== 'undefined' ? location.href : (fallbackUrl ?? '/')
-  const origin = typeof location !== 'undefined' ? location.origin : 'http://localhost'
-  const u = new URL(base, origin)
-
-  // убираем мусор от Telegram WebApp и вспомогательные query
-  u.hash = ''
-  ;[
-    'tgWebAppData',
-    'tgWebAppVersion',
-    'tgWebAppPlatform',
-    'tgWebAppThemeParams',
-    'v',
-  ].forEach((k) => u.searchParams.delete(k))
-
-  return u.toString()
+export function buildItemShareUrl(opts: { canonicalUrl?: string; fallbackHref?: string }): string {
+  const { canonicalUrl, fallbackHref = (typeof window !== 'undefined' ? window.location.href : '') } = opts;
+  return normalizeShareUrl(fallbackHref, canonicalUrl);
 }
 
 /**
- * Универсальный шаринг ссылки:
- * 1) Telegram WebApp → shareURL
- * 2) Web Share API → navigator.share
- * 3) Clipboard → navigator.clipboard.writeText
- * 4) Фолбэк → alert
- *
- * @returns true если показывали/скопировали успешно, иначе false
+ * Универсальный шаринг ссылки (сохраняем существующий API)
  */
 export async function shareLink(url?: string, title?: string): Promise<boolean> {
-  const shareUrl = getCanonicalAppUrl(url)
+  // Используем новую логику нормализации
+  const shareUrl = buildItemShareUrl({
+    canonicalUrl: getCanonicalFromDocument(),
+    fallbackHref: url || window.location.href
+  });
+
   const tg = window?.Telegram?.WebApp
   const nav = navigator as MaybeShareNavigator
 
@@ -95,7 +95,7 @@ export async function shareLink(url?: string, title?: string): Promise<boolean> 
     /* ignore */
   }
 
-  // 3) Clipboard API (тип — нативный, без переопределений)
+  // 3) Clipboard API
   try {
     if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(shareUrl)
@@ -117,4 +117,14 @@ export async function shareLink(url?: string, title?: string): Promise<boolean> 
     /* ignore */
   }
   return false
+}
+
+// Вспомогательная функция для извлечения canonical из документа
+function getCanonicalFromDocument(): string | undefined {
+  try {
+    const link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null
+    return link?.href || undefined
+  } catch {
+    return undefined
+  }
 }

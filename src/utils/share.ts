@@ -50,9 +50,27 @@ function stripParams(u: URL): URL {
 export function normalizeShareUrl(raw: string, canonicalUrl?: string): string {
   try {
     const base = canonicalUrl?.trim() ? canonicalUrl : raw;
-    const url = new URL(base, typeof window !== 'undefined' ? window.location.href : 'https://example.com');
-    return stripParams(url).toString();
+    
+    // Пробуем создать URL без base для абсолютных URL
+    try {
+      const url = new URL(base);
+      return stripParams(url).toString();
+    } catch {
+      // Если не получилось, пробуем с base
+      const url = new URL(base, typeof window !== 'undefined' ? window.location.href : 'https://example.com');
+      
+      // Проверяем, не создали ли мы мусорный URL
+      // Если путь содержит закодированные невалидные символы, считаем это ошибкой
+      const pathname = url.pathname;
+      if (pathname.includes('%3A') || pathname.includes('%2E') || 
+          /[^a-zA-Z0-9\-._~!$&'()*+,;=:@/?%]/.test(decodeURIComponent(pathname))) {
+        return '';
+      }
+      
+      return stripParams(url).toString();
+    }
   } catch {
+    // Если все попытки провалились, возвращаем пустую строку
     return '';
   }
 }
@@ -72,13 +90,16 @@ export async function shareLink(url?: string, title?: string): Promise<boolean> 
     fallbackHref: url || window.location.href
   });
 
+  // Если получили пустую строку, используем чистый origin + pathname
+  const finalShareUrl = shareUrl || getCleanFallbackUrl();
+
   const tg = window?.Telegram?.WebApp
   const nav = navigator as MaybeShareNavigator
 
   // 1) Telegram WebApp
   try {
     if (tg?.shareURL) {
-      tg.shareURL(shareUrl)
+      tg.shareURL(finalShareUrl)
       return true
     }
   } catch {
@@ -88,7 +109,7 @@ export async function shareLink(url?: string, title?: string): Promise<boolean> 
   // 2) Web Share API
   try {
     if (nav.share) {
-      await nav.share({ url: shareUrl, title })
+      await nav.share({ url: finalShareUrl, title })
       return true
     }
   } catch {
@@ -98,7 +119,7 @@ export async function shareLink(url?: string, title?: string): Promise<boolean> 
   // 3) Clipboard API
   try {
     if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(shareUrl)
+      await navigator.clipboard.writeText(finalShareUrl)
       tg?.showPopup?.({
         title: 'Скопировано',
         message: 'Ссылка скопирована в буфер обмена.',
@@ -112,7 +133,7 @@ export async function shareLink(url?: string, title?: string): Promise<boolean> 
 
   // 4) Фолбэк
   try {
-    alert(`Скопируй ссылку:\n${shareUrl}`)
+    alert(`Скопируй ссылку:\n${finalShareUrl}`)
   } catch {
     /* ignore */
   }
@@ -126,5 +147,15 @@ function getCanonicalFromDocument(): string | undefined {
     return link?.href || undefined
   } catch {
     return undefined
+  }
+}
+
+// Фолбэк на случай полностью невалидного URL
+function getCleanFallbackUrl(): string {
+  try {
+    const url = new URL(window.location.href);
+    return `${url.origin}${url.pathname}`;
+  } catch {
+    return '';
   }
 }

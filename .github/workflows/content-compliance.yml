@@ -1,0 +1,50 @@
+name: Content Compliance
+
+on:
+  pull_request:
+    paths:
+      - 'public/news.json'
+  push:
+    branches: [ main ]
+    paths:
+      - 'public/news.json'
+
+jobs:
+  content-check:
+    runs-on: ubuntu-latest
+    name: Validate news.json compliance
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Validate news.json
+        run: |
+          echo "🔍 Проверка Content Compliance..."
+          
+          if [ ! -f "public/news.json" ]; then
+            echo "❌ Файл public/news.json не найден"
+            exit 1
+          fi
+          
+          if ! node -e "JSON.parse(require('fs').readFileSync('public/news.json', 'utf8'))" 2>/dev/null; then
+            echo "❌ news.json содержит невалидный JSON"
+            exit 1
+          fi
+          
+          VALIDATION_OUTPUT=$(node scripts/validate-news.cjs 2>&1)
+          echo "$VALIDATION_OUTPUT"
+          
+          if echo "$VALIDATION_OUTPUT" | grep -q "❌"; then
+            echo "❌ Content Compliance проверка не пройдена"
+            exit 1
+          fi
+          
+          echo "✅ Все проверки Content Compliance пройдены"

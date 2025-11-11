@@ -70,3 +70,18 @@ headers.txt
 phase1-deep-audit*.tgz
 phase1-deep-audit*.tar.gz
 .vercel
+
+# Временные файлы парсинга
+docs/fetch/REPORT.md
+docs/fetch/last-fetch.json
+docs/fetch/normalized-news.json
+
+# Автоматические бэкапы (они создаются скриптами, не коммитим)
+archive/backups/
+
+# Временные скрипты проверки (мы их уже зафиксировали в основном скрипте)
+scripts/quality-audit.cjs
+scripts/quality-audit-fixed.cjs
+
+# Файлы, созданные в процессе разработки
+docs/uat/final-phase3-report.md

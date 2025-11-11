@@ -19,7 +19,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://127.0.0.1:4173',
     headless: true,
-    viewport: { width: 1280, height: 800 },
+    // viewport: { width: 1280, height: 800 }, // УДАЛЕНО - дублируется с devices['Desktop Chrome']
     trace: 'retain-on-failure',
     video: 'retain-on-failure',
     ...devices['Desktop Chrome'],

@@ -20,20 +20,26 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with: 
+          fetch-depth: 0
+      
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with: 
+          node-version: '20'
 
       - name: Autofetch (stub)
         run: node scripts/autofetch-stub.js
 
       - name: Check open content PRs
         id: openprs
-        env: { GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+        env: 
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           n=$(gh pr list --state open --label content --json number --jq 'length')
           echo "open_count=$n" >> $GITHUB_OUTPUT
-          if [ "$n" -gt 0 ]; then echo "skip_pr=true" >> $GITHUB_ENV; fi
+          if [ "$n" -gt 0 ]; then 
+            echo "skip_pr=true" >> $GITHUB_ENV
+          fi
 
       - name: Detect changes (public/news.json)
         id: diff

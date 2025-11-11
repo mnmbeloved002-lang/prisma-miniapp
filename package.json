@@ -6,9 +6,10 @@
   "author": "Prisma Dev Team",
   "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@10.20.0",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "node ./scripts/branch-guard.mjs && tsc && vite build",
     "preview": "vite preview --strictPort --port 4173 --host",
     "serve:dist": "node scripts/serve-dist.js",
     "lint": "eslint src api vite.config.ts",
@@ -87,9 +88,6 @@
     "*.{json,md,yml,yaml}": [
       "prettier --write"
     ]
-  },
-  "pnpm": {
-    "packageManager": "pnpm@10.20.0"
   },
   "size-limit": [
     {

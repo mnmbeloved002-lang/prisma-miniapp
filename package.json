@@ -11,7 +11,7 @@
     "lint": "eslint src api vite.config.ts",
     "size": "size-limit",
     "mutation": "stryker run",
-    "a11y": "playwright test tests/a11y/axe-smoke.spec.ts",
+    "a11y": "playwright test -c playwright.a11y.config.ts",
     "vr": "playwright test tests/e2e/smoke.spec.ts -g \"screenshot\" || true",
     "dev": "vite",
     "build": "node ./scripts/branch-guard.mjs && tsc && vite build",
@@ -34,7 +34,12 @@
     "e2e:headed": "playwright test --headed",
     "e2e:ci": "playwright test --reporter=line",
     "cov:gaps": "node scripts/coverage-gaps.mjs",
-    "cov:full": "pnpm vitest run --coverage && node scripts/coverage-gaps.mjs -c"
+    "cov:full": "pnpm vitest run --coverage && node scripts/coverage-gaps.mjs -c",
+    "test:ci": "pnpm lint && pnpm typecheck && vitest run --coverage && playwright test -c playwright.smoke.config.ts",
+    "sec:osv": "npx -y osv-scanner --lockfile=pnpm-lock.yaml --recursive --fail-on=high",
+    "sec:semgrep": "npx -y @semgrep/cli@1 semgrep ci --config p/ci",
+    "sec:all": "pnpm sec:osv && pnpm sec:semgrep",
+    "e2e:vis": "playwright test -c playwright.visual.config.ts"
   },
   "dependencies": {
     "framer-motion": "^12.23.24",
@@ -101,12 +106,6 @@
       "prettier --write"
     ]
   },
-  "size-limit": [
-    {
-      "path": "dist/assets/*.js",
-      "limit": "100 kB"
-    }
-  ],
   "npmpackagejsonlint": {
     "extends": "npm-package-json-lint-config-default",
     "rules": {
@@ -120,5 +119,14 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/mnmbeloved002-lang/prisma-miniapp.git"
+  },
+  "pnpm": {
+    "overrides": {
+      "esbuild": "^0.25.0",
+      "undici": "^5.29.0",
+      "path-to-regexp": "^6.3.0",
+      "tar": "^7.5.2",
+      "tmp": "^0.2.4"
+    }
   }
 }

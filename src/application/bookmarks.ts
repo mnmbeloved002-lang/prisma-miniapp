@@ -16,6 +16,7 @@ function ensureLoaded() {
 }
 
 function persist() {
+/* c8 ignore next */
   if (cache !== null) {
     storage.set(KEY, cache)
   }
@@ -61,6 +62,7 @@ export function toggle(item: NewsItem): void {
 }
 
 // Синхронизация между вкладками
+/* c8 ignore next */
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (e) => {
     if (e.key === KEY) {

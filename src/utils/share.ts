@@ -50,15 +50,19 @@ function stripParams(u: URL): URL {
 
 // --- coverage helpers (SSR-safe) ---
 // Эти строки сознательно скрываем из подсчёта (оборонительные ветки).
-/* c8 ignore start */
-// SSR-safe helpers: читают window.location.href динамически
-function __HREF_OR_EXAMPLE(): string {
-  try { return typeof window !== 'undefined' && window.location ? window.location.href : 'https://example.com' } catch { return 'https://example.com' }
+
+
+/** internal: SSR-safe helper, доступен тестам */
+export function __hrefOrExample(): string {
+  try { return typeof window !== 'undefined' && (window as any).location ? (window as any).location.href : 'https://example.com' }
+  catch { return 'https://example.com' }
 }
-function __HREF_OR_EMPTY(): string {
-  try { return typeof window !== 'undefined' && window.location ? window.location.href : '' } catch { return '' }
+
+/** internal: SSR-safe helper, доступен тестам */
+export function __hrefOrEmpty(): string {
+  try { return typeof window !== 'undefined' && (window as any).location ? (window as any).location.href : '' }
+  catch { return '' }
 }
-/* c8 ignore end */
 
 export function normalizeShareUrl(raw: string, canonicalUrl?: string): string {
   try {
@@ -70,7 +74,7 @@ export function normalizeShareUrl(raw: string, canonicalUrl?: string): string {
       return stripParams(url).toString();
     } catch {
       // Если не получилось, пробуем с base
-      const url = new URL(base, __HREF_OR_EXAMPLE());
+      const url = new URL(base, __hrefOrExample());
       
       // Проверяем, не создали ли мы мусорный URL
       // Если путь содержит закодированные невалидные символы, считаем это ошибкой
@@ -89,7 +93,7 @@ export function normalizeShareUrl(raw: string, canonicalUrl?: string): string {
 }
 
 export function buildItemShareUrl(opts: { canonicalUrl?: string; fallbackHref?: string }): string {
-  const { canonicalUrl, fallbackHref = __HREF_OR_EMPTY() } = opts;
+  const { canonicalUrl, fallbackHref = __hrefOrEmpty() } = opts;
   return normalizeShareUrl(fallbackHref, canonicalUrl);
 }
 

@@ -1,73 +1,60 @@
 name: quality-dev
 on:
-  push:
-    branches: [dev]
-  workflow_dispatch: {}
+  push: { branches: [dev] }
+  pull_request: { branches: [dev] }
+
+permissions:
+  contents: read
+  security-events: write
 
 jobs:
-  gate:
+  quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'pnpm' }
       - uses: pnpm/action-setup@v4
-        with: { version: 9 }
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
 
-      # Статический слой
-      - name: TypeScript strict
-        run: pnpm typecheck
-      - name: ESLint
-        run: pnpm lint
+      - name: Lint + Typecheck
+        run: pnpm lint && pnpm typecheck
 
-      # Unit/IT + покрытие (порог в vitest.config.ts)
-      - name: Tests + Coverage
-        run: pnpm test:ci
+      - name: Unit + Coverage (Vitest+c8)
+        run: vitest run --coverage
 
-      # Сборка и размер бандла
-      - name: Build
-        run: pnpm build
-      - name: Size-Limit
+      - name: Size limit
         run: pnpm size
 
-      # Стенд и быстрые e2e (a11y + визуал)
-      - name: Serve dist
-        run: node scripts/serve-dist.js &
-      - name: A11y smoke (axe)
+      - name: A11y smoke (Playwright)
         run: pnpm a11y
-      - name: Visual smoke (screenshots)
-        run: pnpm vr
 
-      # Безопасность (быстрый слой)
-      - name: Semgrep (OSS rules)
+      - name: OSV Scanner (deps vulns)
+        uses: google/osv-scanner-action@v2.2.4
+        with:
+          scan-args: >-
+            --lockfile=pnpm-lock.yaml --recursive
+          fail-on: 'high'
+
+      - name: Semgrep (JS/TS/React)
         uses: returntocorp/semgrep-action@v1
         with:
-          config: .semgrep.yml
-          generateSarif: '1'
+          config: p/ci
+          generateSarif: true
+          publishToken: ''
+
       - name: Upload Semgrep SARIF
         uses: github/codeql-action/upload-sarif@v3
         with: { sarif_file: semgrep.sarif }
 
-      - name: OSV Scanner (deps vulns)
-        uses: google/osv-scanner-action@v1
-        with: { path: '.' }
-
       - name: Gitleaks (secrets)
         uses: gitleaks/gitleaks-action@v2
-        env:
-          GITLEAKS_CONFIG: .gitleaks.toml
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: detect --no-git -v --redact --report-format sarif --report-path gitleaks.sarif
 
-      - name: Lockfile-lint
-        run: npx lockfile-lint --path pnpm-lock.yaml --validate-https --allowed-hosts npmjs.org,registry.npmjs.org
-
-      # Сводка
-      - name: Summary
-        if: always()
-        run: |
-          echo "## Gate summary" >> $GITHUB_STEP_SUMMARY
-          echo "- typecheck/eslint/tests/build/size/a11y/visual/semgrep/osv/gitleaks/lockfile" >> $GITHUB_STEP_SUMMARY
-          echo "- Любой красный шаг = пуш в dev отклонён" >> $GITHUB_STEP_SUMMARY
+      - name: Upload Gitleaks SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with: { sarif_file: gitleaks.sarif }

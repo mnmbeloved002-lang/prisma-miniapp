@@ -29,7 +29,9 @@
     "lhci": "CHROME_PATH=/usr/bin/chromium lhci autorun --config=lighthouserc.json --collect.staticDistDir=dist --collect.numberOfRuns=1 --collect.settings.chromeFlags=\"--no-sandbox --disable-dev-shm-usage\" --upload.target=filesystem",
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
-    "e2e:ci": "playwright test --reporter=line"
+    "e2e:ci": "playwright test --reporter=line",
+    "cov:gaps": "node scripts/coverage-gaps.mjs",
+    "cov:full": "pnpm vitest run --coverage && node scripts/coverage-gaps.mjs -c"
   },
   "dependencies": {
     "framer-motion": "^12.23.24",

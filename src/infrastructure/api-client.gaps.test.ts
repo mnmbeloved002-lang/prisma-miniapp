@@ -5,8 +5,11 @@ const ok = (body: any, init: Partial<Response> = {}) =>
   new Response(JSON.stringify(body), { status: init.status ?? 200, headers: init.headers as any })
 
 describe('api-client gap coverage', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals()
+  let __errSpy: any;
+  beforeEach(() => { __errSpy = vi.spyOn(console, 'error').mockImplementation(() => {}) });
+afterEach(() => {
+    __errSpy?.mockRestore?.()
+vi.unstubAllGlobals()
     vi.restoreAllMocks()
   })
 

@@ -13,7 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: 10 }
+        with:
+          run_install: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -33,7 +34,7 @@ jobs:
         run: pnpm a11y
 
       - name: OSV Scanner (deps vulns)
-        uses: google/osv-scanner-action/osv-scanner-action@v2.2.4
+        uses: google/osv-scanner-action@v2.2.4
         with:
           scan-args: >-
             --lockfile=pnpm-lock.yaml --recursive

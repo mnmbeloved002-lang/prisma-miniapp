@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json.schemastore.org/stryker-mutator",
+  "testRunner": "command",
+  "commandRunner": { "command": "pnpm vitest run --coverage=false" },
+  "mutate": ["src/**/*.ts", "src/**/*.tsx", "!src/**/*.test.*"],
+  "checkers": ["typescript"],
+  "coverageAnalysis": "off",
+  "reporters": ["html","clear-text","progress"],
+  "ignorePatterns": ["dist","coverage","node_modules"]
+}

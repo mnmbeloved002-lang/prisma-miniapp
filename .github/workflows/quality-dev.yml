@@ -1,0 +1,73 @@
+name: quality-dev
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch: {}
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - run: pnpm install --frozen-lockfile
+
+      # Статический слой
+      - name: TypeScript strict
+        run: pnpm typecheck
+      - name: ESLint
+        run: pnpm lint
+
+      # Unit/IT + покрытие (порог в vitest.config.ts)
+      - name: Tests + Coverage
+        run: pnpm test:ci
+
+      # Сборка и размер бандла
+      - name: Build
+        run: pnpm build
+      - name: Size-Limit
+        run: pnpm size
+
+      # Стенд и быстрые e2e (a11y + визуал)
+      - name: Serve dist
+        run: node scripts/serve-dist.js &
+      - name: A11y smoke (axe)
+        run: pnpm a11y
+      - name: Visual smoke (screenshots)
+        run: pnpm vr
+
+      # Безопасность (быстрый слой)
+      - name: Semgrep (OSS rules)
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: .semgrep.yml
+          generateSarif: '1'
+      - name: Upload Semgrep SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with: { sarif_file: semgrep.sarif }
+
+      - name: OSV Scanner (deps vulns)
+        uses: google/osv-scanner-action@v1
+        with: { path: '.' }
+
+      - name: Gitleaks (secrets)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_CONFIG: .gitleaks.toml
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lockfile-lint
+        run: npx lockfile-lint --path pnpm-lock.yaml --validate-https --allowed-hosts npmjs.org,registry.npmjs.org
+
+      # Сводка
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Gate summary" >> $GITHUB_STEP_SUMMARY
+          echo "- typecheck/eslint/tests/build/size/a11y/visual/semgrep/osv/gitleaks/lockfile" >> $GITHUB_STEP_SUMMARY
+          echo "- Любой красный шаг = пуш в dev отклонён" >> $GITHUB_STEP_SUMMARY

@@ -1,10 +1,10 @@
-name: OSV-Scanner
+name: OSV Scan
 
 on:
   push:
     branches: [dev]
   schedule:
-    - cron: "30 12 * * 1" # еженедельно по понедельникам 12:30 UTC
+    - cron: '30 12 * * 1' # еженедельно, понедельник 12:30 UTC
 
 permissions:
   actions: read
@@ -13,16 +13,22 @@ permissions:
 
 jobs:
   scan:
-    uses: google/osv-scanner-action@v2.2.4
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    with:
-      # по умолчанию сканирует весь репо рекурсивно; при желании сузить — пропиши свои аргументы
-      scan-args: |-
-        --recursive
-        ./
-      # при необходимости — переименуй файл результатов и/или смягчи фейл
-      # results-file-name: results.sarif
-      # fail-on-vuln: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: OSV Scanner
+        uses: google/osv-scanner-action@v2.2.4
+        with:
+          # скан всего репо рекурсивно; при желании сузить — подставь свои аргументы
+          scan-args: >-
+            --recursive
+            ./
+          fail-on-vuln: true

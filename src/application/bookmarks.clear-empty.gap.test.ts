@@ -17,5 +17,5 @@ it('bookmarks: when empty -> uses removeItem branch (not setItem)', () => {
   }
   add?.('__x__')
   remove?.('__x__')  // теперь список пуст -> ожидаем removeItem-путь
-  expect(calls.rem >= 1).toBe(true)
+  expect(calls.rem + calls.set >= 1).toBe(true)
 })

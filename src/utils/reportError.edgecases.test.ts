@@ -1,40 +1,68 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+// src/utils/reportError.edgecases.test.ts
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'; // <-- vi ДОЛЖЕН БЫТЬ ЗДЕСЬ
 import { reportError } from './reportError';
 
 describe('reportError (edgecases to 100%)', () => {
-  const origNavigator = globalThis.navigator as any;
-  const origLocation = globalThis.location as any;
+  const origNavigator = globalThis.navigator as any;
+  const origLocation = globalThis.location as any;
+  let fetchSpy: vi.SpyInstance; // <-- ОШИБКА БЫЛА ЗДЕСЬ, т.к. 'vi' не был импортирован
 
-  beforeEach(() => {
-    // Уберём их, чтобы пройти ветки без UA и URL
-    
-    delete (globalThis as any).navigator;
+  beforeEach(() => {
+    // Уберём их, чтобы пройти ветки без UA и URL
+    delete (globalThis as any).navigator;
+    delete (globalThis as any).location;
+    // Мокируем fetch
+    fetchSpy = vi.spyOn(globalThis, 'fetch' as any).mockResolvedValue({} as any);
+  });
 
-    delete (globalThis as any).location;
-  });
+  afterEach(() => {
+    // Вернём окружение
+    globalThis.navigator = origNavigator;
+  	globalThis.location = origLocation;
+  	vi.restoreAllMocks();
+  });
 
-  afterEach(() => {
-    // Вернём окружение
- 
-    globalThis.navigator = origNavigator;
- 
-    globalThis.location = origLocation;
-    vi.restoreAllMocks();
-  });
+  it('serializes Error when UA/URL are absent', async () => {
+  	const err = new Error('No env branches');
+  	await expect(reportError(err, {})).resolves.toBeUndefined();
 
-  it('serializes Error when UA/URL are absent', async () => {
-    const spy = vi.spyOn(globalThis, 'fetch' as any).mockResolvedValue({} as any);
+  	expect(fetchSpy).toHaveBeenCalledTimes(1);
+  	const [, init] = fetchSpy.mock.calls[0]!;
+  	const body = JSON.parse((init as RequestInit).body as string);
 
-    const err = new Error('No env branches');
-    await expect(reportError(err, {})).resolves.toBeUndefined();
+  	expect(body.message).toBe('No env branches');
+  	expect(body.userAgent).toBeUndefined();
+  	expect(body.url).toBeUndefined();
+  	expect(body.meta).toEqual({}); // Ветка 1 (валидный объект)
+  });
 
-    expect(spy).toHaveBeenCalledTimes(1);
-    const [, init] = spy.mock.calls[0]!;
-    const body = JSON.parse((init as RequestInit).body as string);
+  /**
+   * ЦЕЛЬ: Покрыть строку 2 (Ветка 2: 'meta' - falsy)
+   */
+  it('should handle invalid (null) meta correctly', async () => {
+  	const err = new Error('Invalid meta test');
+  	await reportError(err, null as any); // Передаем 'null'
 
-    expect(body.message).toBe('No env branches');
-    // userAgent и url должны отсутствовать/быть undefined — это и есть непокрытые ветки
-    expect(body.userAgent).toBeUndefined();
-    expect(body.url).toBeUndefined();
-  });
+  	expect(fetchSpy).toHaveBeenCalledTimes(1);
+  	const [, init] = fetchSpy.mock.calls[0]!;
+  	const body = JSON.parse((init as RequestInit).body as string);
+
+  	// Проверяем, что 'safeMeta' стал пустым объектом '{}'
+  	expect(body.meta).toEqual({});
+  });
+
+  /**
+   * ЦЕЛЬ: Покрыть строку 2 (Ветка 3: 'meta' - truthy, но не объект)
+   */
+  it('should handle invalid (string) meta correctly', async () => {
+  	const err = new Error('Invalid string meta');
+  	await reportError(err, 'i-am-a-string' as any); // Передаем 'string'
+
+  	expect(fetchSpy).toHaveBeenCalledTimes(1);
+  	const [, init] = fetchSpy.mock.calls[0]!;
+  	const body = JSON.parse((init as RequestInit).body as string);
+
+  	// Проверяем, что 'safeMeta' также стал пустым объектом '{}'
+  	expect(body.meta).toEqual({});
+  });
 });

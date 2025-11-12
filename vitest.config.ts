@@ -20,7 +20,7 @@ export default defineConfig({
       // V8 — основной провайдер покрытия в Vitest; Istanbul держим как редкий fallback.
       provider: 'v8', 
       // --- (КОНЕЦ ИСПРАВЛЕНИЯ) ---
-      reporter: ['text', 'html'],
+      reporter: ['text', 'html', 'json'],
       thresholds: { lines: 35, functions: 35, branches: 35, statements: 35 },
     },
   },

@@ -17,7 +17,7 @@ export default defineConfig({
     ],
     coverage: {
       // --- (ИСПРАВЛЕНИЕ) ---
-      // v8 быстрый, но неточный. 'istanbul' - медленный, но 100% точный.
+      // V8 — основной провайдер покрытия в Vitest; Istanbul держим как редкий fallback.
       provider: 'v8', 
       // --- (КОНЕЦ ИСПРАВЛЕНИЯ) ---
       reporter: ['text', 'html'],

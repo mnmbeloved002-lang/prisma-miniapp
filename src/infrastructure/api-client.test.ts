@@ -1,3 +1,9 @@
+
+/* test-only: silence expected network errors */
+import { beforeAll, afterAll, vi } from 'vitest';
+let __errorSpy: ReturnType<typeof vi.spyOn>;
+beforeAll(() => { __errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {}); });
+afterAll(() => { __errorSpy?.mockRestore(); });
 /* test-only: silence intentional network errors */
 import { beforeEach, afterEach, vi } from 'vitest';
 const __origConsoleError = console.error;

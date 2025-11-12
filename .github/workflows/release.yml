@@ -17,39 +17,23 @@ jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           persist-credentials: false
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-
-
+          run_install: false
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
           cache: 'pnpm'
-
       - name: Install deps
         run: pnpm install --frozen-lockfile
-
-      # 🔁 Надёжный запуск c 3 попытками (боремся с 502/5xx)
-      - name: Run Semantic Release (with retry)
+      - name: Release
+        run: npx semantic-release
         env:
-          # можно оставить GITHUB_TOKEN; если создашь PAT -> см. примечание ниже
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -e
-          for i in 1 2 3; do
-            echo "semantic-release attempt $i..."
-            npx semantic-release && exit 0
-            echo "semantic-release failed (attempt $i). Waiting 25s and retrying..."
-            sleep 25
-          done
-          echo "semantic-release failed after 3 attempts"
-          exit 1

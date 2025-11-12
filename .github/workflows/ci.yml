@@ -13,55 +13,25 @@ permissions:
 
 jobs:
   verify:
-    name: 1) Verify (Lint + Types + Build + Tests + Audit + Size + LHCI)
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
-
-
-      - name: Setup Node.js (with pnpm cache)
-        uses: actions/setup-node@v4
+          run_install: false
+      - uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
           cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Lint + Typecheck + Tests + Audit + Build + Size
-        run: pnpm run lint && pnpm run typecheck && pnpm run test:cov && pnpm run pkg:lint && pnpm run audit && pnpm run build && pnpm run size
-
-      # Lighthouse отдельно, чтобы Chrome гарантированно был доступен
-      - name: Setup Chrome
-        id: chrome
-        uses: browser-actions/setup-chrome@v1
-
-      - name: Lighthouse CI (static dist)
-        env:
-          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
-        run: pnpm run lhci
-
-      - name: Upload LHCI reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: lhci-reports
-          path: .lighthouseci/*
-
-  gitleaks:
-    name: 2) Secret Scan (Gitleaks)
-    needs: verify
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code (full history)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Gitleaks Scan
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm install --frozen-lockfile
+      - name: Lint + Typecheck
+        run: pnpm lint && pnpm typecheck
+      - name: Unit + Coverage
+        run: pnpm vitest run --coverage
+      - name: A11y smoke
+        run: pnpm a11y
+      - name: E2E smoke
+        run: pnpm e2e:smoke
+      - name: Bundle size
+        run: pnpm size

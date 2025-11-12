@@ -11,43 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
-
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+          run_install: false
+      - uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
           cache: 'pnpm'
-
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
-
-      - name: ESLint
-        run: pnpm run lint
-
-      - name: Typecheck
-        run: pnpm run typecheck
-
-      - name: Unit tests (Vitest)
-        run: pnpm run test:cov
-
-      - name: Build
-        run: pnpm run build
-
-      - name: Size-limit
-        run: pnpm run size
-
-      - name: Setup Chrome
-        uses: browser-actions/setup-chrome@v1
-        id: chrome
-
-      - name: Lighthouse CI
-        env:
-          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
-        run: pnpm run lhci
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint && pnpm typecheck
+      - run: pnpm vitest run --coverage

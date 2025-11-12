@@ -4,7 +4,7 @@ on:
   push:
     branches: [dev]
   schedule:
-    - cron: '30 12 * * 1' # еженедельно, понедельник 12:30 UTC
+    - cron: '30 12 * * 1'
 
 permissions:
   actions: read
@@ -27,7 +27,6 @@ jobs:
       - name: OSV Scanner
         uses: google/osv-scanner-action@v2.2.4
         with:
-          # скан всего репо рекурсивно; при желании сузить — подставь свои аргументы
           scan-args: >-
             --recursive
             ./

@@ -1,13 +1,13 @@
 name: CI Quality Gate (L2.3)
 on:
-  push:
-    branches: [dev]
+  push: { branches: [dev] }
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [main]
 permissions:
   contents: read
   pull-requests: read
+  security-events: write
 jobs:
   verify:
     runs-on: ubuntu-latest

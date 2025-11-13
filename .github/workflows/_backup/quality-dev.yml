@@ -2,14 +2,13 @@ name: quality-dev
 on:
   push: { branches: [dev] }
   pull_request: { branches: [dev] }
-
 permissions:
   contents: read
   security-events: write
-
 jobs:
   quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -17,15 +16,16 @@ jobs:
           run_install: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.x
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
+      - run: npx playwright install --with-deps
 
       - name: Lint + Typecheck
         run: pnpm lint && pnpm typecheck
 
-      - name: Unit + Coverage (Vitest+c8)
-        run: vitest run --coverage
+      - name: Unit + Coverage (Vitest)
+        run: pnpm vitest run --coverage
 
       - name: Size limit
         run: pnpm size
@@ -45,17 +45,18 @@ jobs:
         with:
           config: p/ci
           generateSarif: true
-          publishToken: ''
 
       - name: Upload Semgrep SARIF
         uses: github/codeql-action/upload-sarif@v3
-        with: { sarif_file: semgrep.sarif }
+        with:
+          sarif_file: semgrep.sarif
 
       - name: Gitleaks (secrets)
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v2.3.0
         with:
-          args: detect --no-git -v --redact --report-format sarif --report-path gitleaks.sarif
+          args: detect --source . --no-banner -v --redact --report-format sarif --report-path gitleaks.sarif
 
       - name: Upload Gitleaks SARIF
         uses: github/codeql-action/upload-sarif@v3
-        with: { sarif_file: gitleaks.sarif }
+        with:
+          sarif_file: gitleaks.sarif

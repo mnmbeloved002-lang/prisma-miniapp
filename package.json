@@ -173,5 +173,10 @@
       "api/**/*.{ts,js}",
       "tests/**/*.{ts,tsx}"
     ]
+  },
+  "depcheck": {
+    "ignores": [
+      "k6"
+    ]
   }
 }

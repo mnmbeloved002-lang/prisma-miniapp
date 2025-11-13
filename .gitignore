@@ -85,3 +85,7 @@ scripts/quality-audit-fixed.cjs
 
 # Файлы, созданные в процессе разработки
 docs/uat/final-phase3-report.md
+
+# CI temp
+.tmp-ci/
+

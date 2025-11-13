@@ -24,7 +24,6 @@ jobs:
 
       - name: Create PR if changes
         uses: peter-evans/create-pull-request@v6
-        with:
           title: "autofetch: update news.json"
           branch: bot/autofetch-${{ github.run_id }}
           labels: content,autofetch,bot

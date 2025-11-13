@@ -13,9 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-  with:
-    run_install: false
-          run_install: false
+        with:
           run_install: false
       - uses: actions/setup-node@v4
         with:
@@ -44,6 +42,7 @@ jobs:
 
       - name: Semgrep (JS/TS/React)
         uses: returntocorp/semgrep-action@v1
+        with:
           config: p/ci
           generateSarif: true
           publishToken: ''
@@ -54,6 +53,7 @@ jobs:
 
       - name: Gitleaks (secrets)
         uses: gitleaks/gitleaks-action@v2
+        with:
           args: detect --no-git -v --redact --report-format sarif --report-path gitleaks.sarif
 
       - name: Upload Gitleaks SARIF

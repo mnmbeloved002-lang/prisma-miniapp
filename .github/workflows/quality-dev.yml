@@ -1,0 +1,48 @@
+name: quality-dev
+
+on:
+  push: { branches: [dev] }
+  pull_request: { branches: [dev] }
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: npx playwright install --with-deps
+
+      - name: Lint + Typecheck
+        run: pnpm lint && pnpm typecheck
+
+      - name: Unit + Coverage
+        run: pnpm vitest run --coverage
+
+      - name: A11y smoke
+        run: pnpm a11y
+
+      - name: E2E smoke
+        run: pnpm e2e:smoke
+
+      - name: Size
+        run: pnpm size
+
+      - name: OSV Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@v2.2.4
+        with:
+          scan-args: >-
+            --lockfile=pnpm-lock.yaml --recursive .
+          fail-on-vuln: true
+          gh-annotations: false

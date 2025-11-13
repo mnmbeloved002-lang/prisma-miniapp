@@ -1,7 +1,9 @@
 name: visual-regression
+
 on:
   push: { branches: [dev] }
   workflow_dispatch:
+
 jobs:
   visual:
     runs-on: ubuntu-latest

@@ -1,6 +1,7 @@
 name: Release (L2 Automation)
 on:
-  push: { branches: [main] }
+  push:
+    branches: [main]
 permissions:
   contents: write
   issues: write

@@ -16,4 +16,5 @@ jobs:
           node-version: 'lts/*'
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
+      - run: npx playwright install --with-deps
       - run: pnpm lint && pnpm typecheck && pnpm vitest run --coverage

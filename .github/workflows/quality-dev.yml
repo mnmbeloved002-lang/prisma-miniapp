@@ -5,10 +5,11 @@ on:
 permissions:
   contents: read
   security-events: write
+  actions: read
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -16,47 +17,32 @@ jobs:
           run_install: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 22
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: npx playwright install --with-deps
-
       - name: Lint + Typecheck
         run: pnpm lint && pnpm typecheck
-
-      - name: Unit + Coverage (Vitest)
+      - name: Unit + Coverage (Vitest+v8)
         run: pnpm vitest run --coverage
-
       - name: Size limit
         run: pnpm size
-
       - name: A11y smoke (Playwright)
         run: pnpm a11y
-
-      - name: OSV Scanner (deps vulns)
-        uses: google/osv-scanner-action@v2.2.4
+      - name: OSV Scanner
+        uses: google/osv-scanner-action@v2
         with:
           scan-args: >-
-            --lockfile=pnpm-lock.yaml --recursive
-          fail-on: 'high'
-
+            --lockfile=pnpm-lock.yaml --recursive .
+          fail-on-vuln: true
+          gh-annotations: false
       - name: Semgrep (JS/TS/React)
         uses: returntocorp/semgrep-action@v1
         with:
           config: p/ci
           generateSarif: true
-
-      - name: Upload Semgrep SARIF
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: semgrep.sarif
-
+          publishToken: ''
       - name: Gitleaks (secrets)
         uses: gitleaks/gitleaks-action@v2.3.0
-        with:
-          args: detect --source . --no-banner -v --redact --report-format sarif --report-path gitleaks.sarif
-
-      - name: Upload Gitleaks SARIF
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: gitleaks.sarif
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

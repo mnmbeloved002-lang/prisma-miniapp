@@ -28,5 +28,5 @@ jobs:
       - run: pnpm lint && pnpm typecheck
       - run: pnpm vitest run --coverage
       - run: pnpm a11y
-      - run: pnpm e2e:smoke
+      - run: npx playwright test -c playwright.smoke.config.ts
       - run: pnpm size

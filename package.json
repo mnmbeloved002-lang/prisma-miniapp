@@ -39,7 +39,8 @@
     "sec:osv": "npx -y osv-scanner --lockfile=pnpm-lock.yaml --recursive --fail-on=high",
     "sec:semgrep": "npx -y @semgrep/cli@1 semgrep ci --config p/ci",
     "sec:all": "pnpm sec:osv && pnpm sec:semgrep",
-    "e2e:vis": "playwright test -c playwright.visual.config.ts"
+    "e2e:vis": "playwright test -c playwright.visual.config.ts",
+    "e2e:smoke": "playwright test -c playwright.smoke.config.ts"
   },
   "dependencies": {
     "framer-motion": "^12.23.24",

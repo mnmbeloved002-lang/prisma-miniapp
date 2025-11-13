@@ -35,7 +35,7 @@ jobs:
         run: pnpm a11y
 
       - name: E2E smoke
-        run: pnpm e2e:smoke
+        run: npx playwright test -c playwright.smoke.config.ts
 
       - name: Size
         run: pnpm size

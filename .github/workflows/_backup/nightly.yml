@@ -1,0 +1,42 @@
+name: nightly
+on:
+  schedule:
+    - cron: "15 2 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  deep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'pnpm' }
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Serve dist
+        run: node scripts/serve-dist.js &
+
+      - name: Stryker (mutation)
+        run: pnpm mutation
+
+      - name: k6 smoke
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: tests/perf/k6-smoke.js
+          flags: --env TARGET=http://127.0.0.1:4173/
+
+      - name: Syft SBOM
+        uses: anchore/sbom-action@v0
+        with: { path: ".", output-file: "sbom.spdx.json" }
+
+      - name: Grype scan
+        uses: anchore/scan-action@v4
+        with: { sbom: "sbom.spdx.json", fail-build: true }
+
+      - name: Knip (dead code)
+        run: npx knip --strict

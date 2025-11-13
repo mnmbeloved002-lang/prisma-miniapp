@@ -1,6 +1,7 @@
 name: CI Quality Gate (L2.3)
 
 on:
+  workflow_dispatch: {}
   push: { branches: [dev] }
   pull_request:
     types: [opened, synchronize, reopened]

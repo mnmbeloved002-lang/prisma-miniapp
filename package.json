@@ -139,5 +139,39 @@
       "path": "dist/assets/*.css",
       "limit": "60 kB"
     }
-  ]
+  ],
+  "knip": {
+    "ignore": [
+      "api/**",
+      "scripts/**",
+      "tests/perf/**",
+      "src/setupTests.ts",
+      "src/ui/NewItemsBar.tsx",
+      "src/utils/usePersistentState.ts",
+      "src/utils/useTTSState.ts",
+      "tests/e2e/telegram-types.d.ts",
+      "stryker.conf.json"
+    ],
+    "ignoreDependencies": [
+      "zod",
+      "@eslint/js",
+      "eslint-config-prettier",
+      "globals",
+      "lint-staged",
+      "@tailwindcss/typography",
+      "@vercel/node",
+      "autoprefixer",
+      "axe-core"
+    ],
+    "ignoreExports": [
+      "src/config.ts#FEATURES",
+      "src/utils/share.ts#__hrefOrExample",
+      "src/utils/share.ts#__hrefOrEmpty"
+    ],
+    "project": [
+      "src/**/*.{ts,tsx}",
+      "api/**/*.{ts,js}",
+      "tests/**/*.{ts,tsx}"
+    ]
+  }
 }

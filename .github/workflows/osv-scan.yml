@@ -1,10 +1,8 @@
-name: OSV Scan
-
+name: OSV-Scanner
 on:
-  push:
-    branches: [dev]
+  push: { branches: [dev] }
   schedule:
-    - cron: '30 12 * * 1'
+    - cron: "30 12 * * 1"
 
 permissions:
   actions: read
@@ -17,7 +15,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-          run_install: false
+  with:
+    run_install: false
           run_install: false
       - uses: actions/setup-node@v4
         with:
@@ -29,5 +28,7 @@ jobs:
         with:
           scan-args: >-
             --recursive
-            ./
+            --lockfile=pnpm-lock.yaml
+            .
           fail-on-vuln: true
+          gh-annotations: false

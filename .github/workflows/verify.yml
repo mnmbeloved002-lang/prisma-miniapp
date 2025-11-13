@@ -1,10 +1,7 @@
 name: Verify
-
 on:
-  pull_request:
-    branches: ['*']
-  push:
-    branches: ['dev','main']
+  pull_request: { branches: ['*'] }
+  push: { branches: ['dev','main'] }
 
 jobs:
   quality:
@@ -13,7 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-          run_install: false
+  with:
+    run_install: false
           run_install: false
       - uses: actions/setup-node@v4
         with:

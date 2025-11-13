@@ -1,32 +1,22 @@
 name: visual-regression
 on:
-  push:
-    branches: [dev]
+  push: { branches: [dev] }
   workflow_dispatch:
 
 jobs:
   visual:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    concurrency:
-      group: visual-${{ github.ref }}
-      cancel-in-progress: true
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
-          run_install: false
+  with:
+    run_install: false
           run_install: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22.x'
           cache: 'pnpm'
-
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
-
-      - name: Install Playwright browsers + OS deps
-        run: npx playwright install --with-deps
-
-      - name: Run visual regression
-        run: pnpm e2e:vis
+      - run: pnpm install --frozen-lockfile
+      - run: npx playwright install --with-deps
+      - run: pnpm e2e:vis

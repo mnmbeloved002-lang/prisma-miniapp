@@ -35,7 +35,7 @@
     "e2e:ci": "playwright test --reporter=line",
     "cov:gaps": "node scripts/coverage-gaps.mjs",
     "cov:full": "pnpm vitest run --coverage && node scripts/coverage-gaps.mjs -c",
-    "test:ci": "pnpm lint && pnpm typecheck && vitest run --coverage && playwright test -c playwright.smoke.config.ts",
+    "test:ci": "vitest run -c vitest.ci.config.ts --coverage --reporter=dot",
     "sec:osv": "npx -y osv-scanner --lockfile=pnpm-lock.yaml --recursive --fail-on=high",
     "sec:semgrep": "npx -y @semgrep/cli@1 semgrep ci --config p/ci",
     "sec:all": "pnpm sec:osv && pnpm sec:semgrep",

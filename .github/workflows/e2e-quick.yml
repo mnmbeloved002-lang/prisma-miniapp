@@ -6,6 +6,9 @@ on:
 
 jobs:
   osv_scan:
+    permissions:
+      contents: read
+      security-events: write
     uses: google/osv-scanner/.github/workflows/osv-scanner-reusable.yml@v1
     with:
       scan-args: --lockfile=pnpm-lock.yaml

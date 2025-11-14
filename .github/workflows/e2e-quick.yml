@@ -28,6 +28,13 @@ jobs:
 
       - name: Install Chromium only
 
+      - name: Build
+        run: pnpm -s build
+
+      - name: Size-Limit (gzip thresholds)
+        run: pnpm -s size
+
+
       - name: Unit+IT (Vitest + coverage)
         run: pnpm -s test:ci
 

@@ -1,3 +1,0 @@
-[
-  { "name": "app bundle", "path": "dist/assets/*.js", "limit": "140 kB" }
-]

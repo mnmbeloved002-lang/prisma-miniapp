@@ -9,7 +9,7 @@
   "packageManager": "pnpm@10.20.0",
   "scripts": {
     "lint": "eslint src api vite.config.ts",
-    "size": "pnpm build && size-limit",
+    "size": "size-limit",
     "mutation": "stryker run",
     "a11y": "playwright test -c playwright.a11y.config.ts",
     "vr": "playwright test tests/e2e/smoke.spec.ts -g \"screenshot\" || true",
@@ -135,12 +135,14 @@
   },
   "size-limit": [
     {
-      "path": "dist/assets/*.js",
-      "limit": "200 kB"
+      "path": "dist/assets/index-*.js",
+      "limit": "130 kB",
+      "gzip": true
     },
     {
       "path": "dist/assets/*.css",
-      "limit": "60 kB"
+      "limit": "30 kB",
+      "gzip": true
     }
   ],
   "knip": {

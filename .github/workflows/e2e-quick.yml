@@ -1,57 +1,36 @@
 name: e2e-quick
 
 on:
-  pull_request: { branches: [dev] }
+  pull_request:
+    branches: [dev]
   workflow_dispatch: {}
 
 jobs:
-  # 1) Готовим артефакт с локфайлом для OSV
-  prepare_lockfile:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Prepare lockfile artifact
-        run: cp pnpm-lock.yaml osv-lockfile-${{ github.sha }}.yaml
-      - uses: actions/upload-artifact@v4
-        with:
-          name: osv-lockfile-${{ github.sha }}
-          path: osv-lockfile-${{ github.sha }}.yaml
-          retention-days: 2
-
-  # 2) УМЕСТНОЕ ПОДКЛЮЧЕНИЕ REUSABLE WORKFLOW OSV
-  osv_scan:
-    needs: prepare_lockfile
-    permissions:
-      contents: read
-      security-events: write
-    uses: google/osv-scanner/.github/workflows/osv-scanner-reusable.yml@main
-    with:
-      download-artifact: osv-lockfile-${{ github.sha }}
-      scan-args: >-
-        --lockfile=osv-scanner:osv-lockfile-${{ github.sha }}.yaml
-      fail-on-vuln: true
-
-  # 3) Быстрый E2E/Unit контур (как был), с правами для SARIF от Semgrep
   e2e_quick:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # нужны для загрузки SARIF в Code Scanning
     permissions:
       contents: read
       security-events: write
     env:
       PLAYWRIGHT_BROWSERS_PATH: .playwright
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Gitleaks (secrets scan)
         uses: gitleaks/gitleaks-action@v2
-        env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
-        with: { fail: true }
+        with:
+          args: detect --source . --no-git --redact -v
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
-        with: { version: 10.20.0 }
+        with:
+          version: 10.20.0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -62,6 +41,17 @@ jobs:
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
+      # OSV без action/reusable — через официальный контейнер
+      - name: OSV-Scanner (lockfile)
+        run: |
+          docker run --rm -v "${GITHUB_WORKSPACE}:/w" ghcr.io/google/osv-scanner:latest \
+            --lockfile=/w/pnpm-lock.yaml --format sarif --output=/w/osv.sarif
+
+      - name: Upload OSV SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ./osv.sarif
+
       - name: Semgrep (SAST)
         uses: returntocorp/semgrep-action@v1
         with:
@@ -71,7 +61,8 @@ jobs:
 
       - name: Upload Semgrep SARIF
         uses: github/codeql-action/upload-sarif@v3
-        with: { sarif_file: semgrep.sarif }
+        with:
+          sarif_file: semgrep.sarif
 
       - name: Install Chromium only
         run: npx playwright install --with-deps chromium

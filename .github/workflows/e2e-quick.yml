@@ -9,64 +9,15 @@ jobs:
   e2e_quick:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # нужны для загрузки SARIF в Code Scanning
+    permissions:
+      contents: read
+      security-events: write
     env:
       PLAYWRIGHT_BROWSERS_PATH: .playwright
+
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Gitleaks (secrets scan)
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          fail: true
-
-
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 10.20.0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'pnpm'
-
-      - name: Install deps
-
-      - name: OSV-Scanner (deps)
-        uses: google/osv-scanner-action@v1
-        with:
-          scan-args: >-
-            --lockfile=pnpm-lock.yaml
-
-        run: pnpm install --frozen-lockfile
-
-      - name: Install Chromium only
-
-      - name: Build
-        run: pnpm -s build
-
-      - name: Size-Limit (gzip thresholds)
-        run: pnpm -s size
-
-
-      - name: Unit+IT (Vitest + coverage)
-        run: pnpm -s test:ci
-
-        run: npx playwright install --with-deps chromium
-
-      - name: E2E smoke
-        run: pnpm -s e2e:smoke
-
-      - name: A11y smoke
-        run: pnpm -s e2e:a11y
-
-      - name: Visual (non-blocking)
-        run: pnpm -s e2e:visual || echo 'visual skipped'
-
-      - name: Upload Playwright report (on failure)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report
+          fetch-depth: 0

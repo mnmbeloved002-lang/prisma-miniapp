@@ -1,20 +1,38 @@
 name: e2e-quick
+
 on:
-  pull_request:
-    branches: [dev]
+  pull_request: { branches: [dev] }
   workflow_dispatch: {}
 
 jobs:
+  # 1) Готовим артефакт с локфайлом для OSV
+  prepare_lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare lockfile artifact
+        run: cp pnpm-lock.yaml osv-lockfile-${{ github.sha }}.yaml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: osv-lockfile-${{ github.sha }}
+          path: osv-lockfile-${{ github.sha }}.yaml
+          retention-days: 2
+
+  # 2) УМЕСТНОЕ ПОДКЛЮЧЕНИЕ REUSABLE WORKFLOW OSV
   osv_scan:
+    needs: prepare_lockfile
     permissions:
       contents: read
       security-events: write
-    uses: google/osv-scanner/.github/workflows/osv-scanner-reusable.yml@v1
+    uses: google/osv-scanner/.github/workflows/osv-scanner-reusable.yml@main
     with:
-      scan-args: --lockfile=pnpm-lock.yaml
+      download-artifact: osv-lockfile-${{ github.sha }}
+      scan-args: >-
+        --lockfile=osv-scanner:osv-lockfile-${{ github.sha }}.yaml
+      fail-on-vuln: true
 
+  # 3) Быстрый E2E/Unit контур (как был), с правами для SARIF от Semgrep
   e2e_quick:
-    needs: [osv_scan]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -28,21 +46,18 @@ jobs:
 
       - name: Gitleaks (secrets scan)
         uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          fail: true
+        env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+        with: { fail: true }
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
-        with:
-          version: 10.20.0
+        with: { version: 10.20.0 }
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'pnpm'
+          cache: pnpm
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
@@ -56,8 +71,7 @@ jobs:
 
       - name: Upload Semgrep SARIF
         uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: semgrep.sarif
+        with: { sarif_file: semgrep.sarif }
 
       - name: Install Chromium only
         run: npx playwright install --with-deps chromium

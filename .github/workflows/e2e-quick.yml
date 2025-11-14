@@ -2,7 +2,7 @@ name: e2e-quick
 
 on:
   pull_request:
-    branches: [dev]
+    branches: [dev, main]
   workflow_dispatch: {}
 
 jobs:

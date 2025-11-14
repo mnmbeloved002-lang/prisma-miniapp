@@ -43,7 +43,8 @@
     "e2e:smoke": "playwright test -c playwright.smoke.config.ts",
     "e2e:a11y": "playwright test -c playwright.a11y.config.ts",
     "e2e:visual": "playwright test -c playwright.visual.config.ts",
-    "e2e:quick": "pnpm -s e2e:smoke && pnpm -s e2e:a11y && pnpm -s e2e:visual"
+    "e2e:quick": "pnpm -s e2e:smoke && pnpm -s e2e:a11y && pnpm -s e2e:visual",
+    "lh:ci": "lhci autorun --collect.staticDistDir=dist --upload.target=filesystem"
   },
   "dependencies": {
     "framer-motion": "^12.23.24",

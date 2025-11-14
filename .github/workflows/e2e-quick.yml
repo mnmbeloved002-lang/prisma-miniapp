@@ -32,6 +32,13 @@ jobs:
           cache: 'pnpm'
 
       - name: Install deps
+
+      - name: OSV-Scanner (deps)
+        uses: google/osv-scanner-action@v1
+        with:
+          scan-args: >-
+            --lockfile=pnpm-lock.yaml
+
         run: pnpm install --frozen-lockfile
 
       - name: Install Chromium only

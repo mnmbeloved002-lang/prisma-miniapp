@@ -5,7 +5,13 @@ on:
   workflow_dispatch: {}
 
 jobs:
+  osv_scan:
+    uses: google/osv-scanner/.github/workflows/osv-scanner-reusable.yml@v1
+    with:
+      scan-args: --lockfile=pnpm-lock.yaml
+
   e2e_quick:
+    needs: [osv_scan]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -37,11 +43,6 @@ jobs:
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
-
-      - name: OSV-Scanner (deps)
-        uses: google/osv-scanner/.github/workflows/osv-scanner-reusable.yml@v1
-        with:
-          scan-args: --lockfile=pnpm-lock.yaml
 
       - name: Semgrep (SAST)
         uses: returntocorp/semgrep-action@v1

@@ -1,5 +1,4 @@
 name: e2e-quick
-
 on:
   pull_request:
     branches: [dev]
@@ -7,12 +6,11 @@ on:
 
 jobs:
   e2e_quick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       security-events: write
-  e2e_quick:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
     env:
       PLAYWRIGHT_BROWSERS_PATH: .playwright
     steps:
@@ -35,16 +33,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+          cache: 'pnpm'
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
-       - name: OSV-Scanner (deps)
-        uses: google/osv-scanner/.github/workflows/osv-scanner-reusable.yml
+      - name: OSV-Scanner (deps)
+        uses: google/osv-scanner/.github/workflows/osv-scanner-reusable.yml@v1
         with:
-          scan-args: >-
-            --lockfile=pnpm-lock.yaml
+          scan-args: --lockfile=pnpm-lock.yaml
 
       - name: Semgrep (SAST)
         uses: returntocorp/semgrep-action@v1

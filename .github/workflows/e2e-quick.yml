@@ -34,6 +34,18 @@ jobs:
       - name: Install deps
 
       - name: OSV-Scanner (deps)
+      - name: Semgrep (SAST)
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: p/javascript
+          generateSarif: true
+          publishResults: false
+
+      - name: Upload Semgrep SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+
         uses: google/osv-scanner-action@v1
         with:
           scan-args: >-

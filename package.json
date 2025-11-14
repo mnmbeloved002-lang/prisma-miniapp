@@ -40,7 +40,10 @@
     "sec:semgrep": "npx -y @semgrep/cli@1 semgrep ci --config p/ci",
     "sec:all": "pnpm sec:osv && pnpm sec:semgrep",
     "e2e:vis": "playwright test -c playwright.visual.config.ts",
-    "e2e:smoke": "playwright test -c playwright.smoke.config.ts"
+    "e2e:smoke": "playwright test -c playwright.smoke.config.ts",
+    "e2e:a11y": "playwright test -c playwright.a11y.config.ts",
+    "e2e:visual": "playwright test -c playwright.visual.config.ts",
+    "e2e:quick": "pnpm -s e2e:smoke && pnpm -s e2e:a11y && pnpm -s e2e:visual"
   },
   "dependencies": {
     "framer-motion": "^12.23.24",

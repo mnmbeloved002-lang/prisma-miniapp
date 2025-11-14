@@ -1,19 +1,16 @@
-import { defineConfig } from '@playwright/test';
+import base from './playwright.config';
 
-export default defineConfig({
+const baseUse = (base as any).use ?? {};
+const baseURL = baseUse.baseURL ?? 'http://127.0.0.1:4173';
+
+export default {
+  ...base,
   testDir: 'tests/e2e',
-  testMatch: 'smoke.spec.ts',
-  timeout: 60_000,
-  use: {
-    baseURL: process.env.TARGET || 'http://127.0.0.1:4173',
-    headless: true,
-    trace: 'on-first-retry',
-  },
-  webServer: {
-    command: 'pnpm build && node scripts/serve-dist.js',
-    port: 4173,
-    reuseExistingServer: true,
-    timeout: 60_000,
-  },
-  reporter: [['list']],
-});
+  testMatch: ['**/smoke.spec.ts'], // запускать только smoke
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...baseUse, browserName: 'chromium', baseURL },
+    },
+  ],
+};

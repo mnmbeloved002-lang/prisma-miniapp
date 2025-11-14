@@ -89,3 +89,4 @@ docs/uat/final-phase3-report.md
 # CI temp
 .tmp-ci/
 
+.playwright/

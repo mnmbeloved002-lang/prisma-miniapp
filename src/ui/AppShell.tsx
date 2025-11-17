@@ -1,26 +1,34 @@
 import { useEffect, useState, lazy, Suspense } from 'react'
-import { getNewsCached } from '../infrastructure/api-client'
+
+import { list as bmList, has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks'
 import type { NewsItem, Category } from '../domain/types'
-import { Header } from './Header'
-import { FilterBar } from './FilterBar'
-import { NewsCard, NewsCardSkeleton } from './NewsCard'
+import { getNewsCached } from '../infrastructure/api-client'
+import { useAppStore } from '../store/appStore'
+import { openLink } from '../utils/nav'
+import { useDebouncedValue } from '../utils/useDebouncedValue'
+
 import { EmptyState } from './EmptyState'
 import { ErrorBanner } from './ErrorBanner'
-import { list as bmList, has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks'
-import { useDebouncedValue } from '../utils/useDebouncedValue'
-import { openLink } from '../utils/nav'
+import { FilterBar } from './FilterBar'
+import { Header } from './Header'
+import { NewsCard, NewsCardSkeleton } from './NewsCard'
 
 const ReaderPreview = lazy(() => import('./ReaderPreview'))
 
 export default function AppShell() {
   const [items, setItems] = useState<NewsItem[] | null>(null)
   const [err, setErr] = useState<string | null>(null)
-  const [query, setQuery] = useState('')
   const [cats, setCats] = useState<Category[]>([])
-  const [showBm, setShowBm] = useState(false)
   const [preview, setPreview] = useState<NewsItem | null>(null)
 
-  const debouncedQuery = useDebouncedValue(query, 300)
+  // Глобальный стор (Zustand): поиск и "только закладки"
+  const searchQuery = useAppStore(state => state.searchQuery)
+  const setSearchQuery = useAppStore(state => state.setSearchQuery)
+
+  const showBookmarksOnly = useAppStore(state => state.showBookmarksOnly)
+  const toggleShowBookmarksOnly = useAppStore(state => state.toggleShowBookmarksOnly)
+
+  const debouncedQuery = useDebouncedValue(searchQuery, 300)
 
   useEffect(() => {
     getNewsCached()
@@ -35,14 +43,14 @@ export default function AppShell() {
       : true)
   )
 
-  const current = showBm ? bmList() : filtered
+  const current = showBookmarksOnly ? bmList() : filtered
 
   return (
     <div className="min-h-screen bg-bg text-fg">
       <Header
-        onSearch={setQuery}
-        onToggleBookmarks={() => setShowBm(v => !v)}
-        showBookmarks={showBm}
+        onSearch={value => setSearchQuery(value)}
+        onToggleBookmarks={() => toggleShowBookmarksOnly()}
+        showBookmarks={showBookmarksOnly}
       />
 
       {err && <ErrorBanner message={err} onRetry={() => location.reload()} />}
@@ -68,7 +76,9 @@ export default function AppShell() {
         {preview && (
           <ReaderPreview
             html={preview.previewHtml}
-            onOpenSource={() => { openLink(preview.canonicalUrl) }}
+            onOpenSource={() => {
+              openLink(preview.canonicalUrl)
+            }}
             onBookmark={() => {
               if (bmHas(preview.id)) bmRemove(preview.id)
               else bmAdd(preview)

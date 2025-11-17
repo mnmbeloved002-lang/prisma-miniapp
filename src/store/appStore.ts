@@ -1,36 +1,51 @@
-import { create } from 'zustand';
+// src/store/appStore.ts
+import { create } from 'zustand'
 
-export type SortOrder = 'newest' | 'oldest';
+type ViewMode = 'all' | 'bookmarks'
 
-interface UiState {
-  tagFilter: string | null;
-  searchQuery: string;
-  sortOrder: SortOrder;
-  showBookmarksOnly: boolean;
-  ttsEnabled: boolean;
+interface AppState {
+  // Глобальный поиск по новостям
+  searchQuery: string
+  // Режим "показывать только закладки"
+  showBookmarksOnly: boolean
+  // Режим представления (если понадобится расширять)
+  viewMode: ViewMode
+
+  // actions
+  setSearchQuery: (value: string) => void
+  setShowBookmarksOnly: (value: boolean) => void
+  toggleShowBookmarksOnly: () => void
+  setViewMode: (mode: ViewMode) => void
 }
 
-interface UiActions {
-  setTagFilter: (tag: string | null) => void;
-  setSearchQuery: (q: string) => void;
-  setSortOrder: (order: SortOrder) => void;
-  toggleBookmarksOnly: () => void;
-  setTtsEnabled: (enabled: boolean) => void;
-}
-
-export type AppStore = UiState & UiActions;
-
-export const useAppStore = create<AppStore>((set) => ({
-  tagFilter: null,
+export const useAppStore = create<AppState>((set) => ({
   searchQuery: '',
-  sortOrder: 'newest',
   showBookmarksOnly: false,
-  ttsEnabled: true,
+  viewMode: 'all',
 
-  setTagFilter: (tagFilter) => set({ tagFilter }),
-  setSearchQuery: (searchQuery) => set({ searchQuery }),
-  setSortOrder: (sortOrder) => set({ sortOrder }),
-  toggleBookmarksOnly: () =>
-    set((state) => ({ showBookmarksOnly: !state.showBookmarksOnly })),
-  setTtsEnabled: (ttsEnabled) => set({ ttsEnabled }),
-}));
+  setSearchQuery: (value) =>
+    set({
+      searchQuery: value,
+    }),
+
+  setShowBookmarksOnly: (value) =>
+    set({
+      showBookmarksOnly: value,
+      viewMode: value ? 'bookmarks' : 'all',
+    }),
+
+  toggleShowBookmarksOnly: () =>
+    set((state) => {
+      const next = !state.showBookmarksOnly
+      return {
+        showBookmarksOnly: next,
+        viewMode: next ? 'bookmarks' : 'all',
+      }
+    }),
+
+  setViewMode: (mode) =>
+    set({
+      viewMode: mode,
+      showBookmarksOnly: mode === 'bookmarks',
+    }),
+}))

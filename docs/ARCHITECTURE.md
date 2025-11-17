@@ -1,3 +1,2 @@
-# ARCHITECTURE (Phase 1)
-
-Scope: feed, preview, filters, bookmarks, cache TTL+ETag, offline.
+# Prisma Miniapp — Architecture Overview (v2025-11)
+...сюда вставляешь текст из блока выше...

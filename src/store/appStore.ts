@@ -1,51 +1,27 @@
-// src/store/appStore.ts
 import { create } from 'zustand'
 
-type ViewMode = 'all' | 'bookmarks'
-
-interface AppState {
-  // Глобальный поиск по новостям
+export type AppStoreState = {
   searchQuery: string
-  // Режим "показывать только закладки"
   showBookmarksOnly: boolean
-  // Режим представления (если понадобится расширять)
-  viewMode: ViewMode
-
-  // actions
   setSearchQuery: (value: string) => void
-  setShowBookmarksOnly: (value: boolean) => void
   toggleShowBookmarksOnly: () => void
-  setViewMode: (mode: ViewMode) => void
+  reset: () => void
 }
 
-export const useAppStore = create<AppState>((set) => ({
+const initialState: Pick<AppStoreState, 'searchQuery' | 'showBookmarksOnly'> = {
   searchQuery: '',
   showBookmarksOnly: false,
-  viewMode: 'all',
+}
 
-  setSearchQuery: (value) =>
-    set({
-      searchQuery: value,
-    }),
+export const useAppStore = create<AppStoreState>((set) => ({
+  ...initialState,
 
-  setShowBookmarksOnly: (value) =>
-    set({
-      showBookmarksOnly: value,
-      viewMode: value ? 'bookmarks' : 'all',
-    }),
+  setSearchQuery: (value: string) => set({ searchQuery: value }),
 
   toggleShowBookmarksOnly: () =>
-    set((state) => {
-      const next = !state.showBookmarksOnly
-      return {
-        showBookmarksOnly: next,
-        viewMode: next ? 'bookmarks' : 'all',
-      }
-    }),
+    set((state) => ({
+      showBookmarksOnly: !state.showBookmarksOnly,
+    })),
 
-  setViewMode: (mode) =>
-    set({
-      viewMode: mode,
-      showBookmarksOnly: mode === 'bookmarks',
-    }),
+  reset: () => set(initialState),
 }))

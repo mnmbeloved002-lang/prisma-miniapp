@@ -90,3 +90,7 @@ docs/uat/final-phase3-report.md
 .tmp-ci/
 
 .playwright/
+
+# local gitleaks binary
+/gitleaks
+/gitleaks.tar.gz

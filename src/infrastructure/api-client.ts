@@ -1,6 +1,7 @@
 import { CACHE_TTL_MS } from '../config';
-import { storage } from './storage';
 import type { NewsItem } from '../domain/types';
+
+import { storage } from './storage';
 
 // 1. Определяем тип *реального* ответа от API
 type NewsResponse = {

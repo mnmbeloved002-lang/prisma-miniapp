@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+
 import { shareLink } from '../utils/share' // Убираем buildItemShareUrl
 
 interface Props {

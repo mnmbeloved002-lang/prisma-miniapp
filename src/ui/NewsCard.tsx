@@ -1,8 +1,11 @@
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import type { NewsItem } from '../domain/types'
-import { SourceChip } from './SourceChip'
+import { useState } from 'react'
+
 import { has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks'
+import type { NewsItem } from '../domain/types'
+
+import { SourceChip } from './SourceChip'
+
 
 type Props = {
   item: NewsItem

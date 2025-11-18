@@ -1,5 +1,6 @@
 // src/App.tsx
 import { useEffect } from 'react';
+
 import AppShell from './ui/AppShell';
 import { initTelegramUI } from './utils/tg';
 

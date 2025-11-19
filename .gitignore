@@ -94,3 +94,15 @@ docs/uat/final-phase3-report.md
 # local gitleaks binary
 /gitleaks
 /gitleaks.tar.gz
+
+# Reports & Artifacts (ERL-18)
+reports/
+playwright-report/
+stryker-report/
+lighthouse/
+*.log
+*.png
+*.jpg
+*.jpeg
+*.zip
+*.tar.gz

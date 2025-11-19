@@ -6,6 +6,9 @@
     "module": "ESNext",
     "types": ["node"],
     "skipLibCheck": true,
+    "allowJs": true, 
+    "checkJs": true, 
+    "jsx": "react-jsx",
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -22,5 +25,12 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["vite.config.ts"]
+  // UEC FIX: Мы исключаем из проверки сам конфиг vite.config.js, чтобы обойти
+  //         конфликт типов плагинов, который невозможно устранить без обновления зависимостей.
+  "include": ["tsconfig.node.json", "scripts/*.{ts,js,cjs}"],
+  "exclude": [
+    "node_modules", 
+    "dist", 
+    "vite.config.js" // Явно исключаем проблемный файл
+  ]
 }

@@ -1,4 +1,7 @@
-// src/ui/FilterBar.tsx
+import React from "react";
+
+import { useState, useEffect, useRef, lazy, Suspense, memo } from "react";
+
 import type { Category } from '../domain/types';
 
 type Props = {

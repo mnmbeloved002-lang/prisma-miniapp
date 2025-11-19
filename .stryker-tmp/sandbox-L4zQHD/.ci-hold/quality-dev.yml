@@ -1,0 +1,65 @@
+name: quality-dev
+
+on:
+  push: { branches: [dev] }
+  pull_request: { branches: [dev] }
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: npx playwright install --with-deps
+
+      - name: Lint + Typecheck
+        run: pnpm lint && pnpm typecheck
+
+      - name: Unit + Coverage (Vitest+v8)
+        run: pnpm vitest run --coverage
+
+      - name: Size limit
+        run: pnpm size
+
+      - name: A11y smoke
+        run: pnpm a11y
+
+      - name: Gitleaks (secrets)
+        uses: gitleaks/gitleaks-action@v2.3.0
+        with:
+          report-format: sarif
+          report-path: gitleaks.sarif
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Gitleaks SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: gitleaks.sarif
+
+  osv:
+    # ВАЖНО: OSV вызывается как reusable workflow, а не как шаг!
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.2.4"
+    with:
+      scan-args: |-
+        --recursive
+        --lockfile=pnpm-lock.yaml
+        ./
+      fail-on-vuln: true
+      upload-sarif: true
+    permissions:
+      actions: read
+      security-events: write
+      contents: read

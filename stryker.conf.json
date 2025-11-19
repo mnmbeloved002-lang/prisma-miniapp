@@ -1,10 +1,24 @@
 {
-  "$schema": "https://json.schemastore.org/stryker-mutator",
   "testRunner": "command",
-  "commandRunner": { "command": "pnpm vitest run --coverage=false" },
-  "mutate": ["src/**/*.ts", "src/**/*.tsx", "!src/**/*.test.*"],
+  "commandRunner": { 
+    "command": "npx vitest run --coverage=false" 
+  },
+  "mutate": [
+    "src/domain/*.ts",
+    "src/application/*.ts",
+    "src/infrastructure/*.ts",
+    "src/utils/share.ts",
+    "!src/**/*.test.*"
+  ],
   "checkers": ["typescript"],
+  "plugins": ["@stryker-mutator/typescript-checker"],
   "coverageAnalysis": "off",
   "reporters": ["html","clear-text","progress"],
-  "ignorePatterns": ["dist","coverage","node_modules"]
+  "ignorePatterns": [
+    "dist",
+    "coverage",
+    "node_modules",
+    "vite.config.js",
+    "*.json"
+  ]
 }

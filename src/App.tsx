@@ -1,4 +1,6 @@
-// src/App.tsx
+import React from "react";
+
+
 import { useEffect } from 'react';
 
 import AppShell from './ui/AppShell';

@@ -1,0 +1,37 @@
+name: L2 Quality Gate (Mutation Testing)
+
+on:
+  schedule:
+    - cron: '0 1 * * *' # Ежедневно в 01:00 UTC
+  workflow_dispatch: {} # Разрешить ручной запуск
+
+jobs:
+  mutation_scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60 # Увеличенный таймаут для Stryker
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Может понадобиться Stryker
+
+      # 1. Setup Environment
+      - name: Setup Node/pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+
+      # 2. Run Mutation Testing (Stryker)
+      - name: Run Stryker Mutation Test
+        run: pnpm mutation
+
+      # 3. Artifact Upload (Опционально: для сохранения HTML-отчета)
+      - name: Upload Stryker Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutation-report
+          path: reports/mutation/

@@ -1,5 +1,8 @@
-// src/ui/Header.tsx
-import { memo } from 'react'
+import React from "react";
+
+import { useState, useEffect, useRef, lazy, Suspense, memo } from "react";
+
+
 
 type Props = {
   onSearch?: (v: string) => void

@@ -1,0 +1,49 @@
+name: CI Quality Gate (L2.3)
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev]
+  workflow_dispatch: {}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Lint & typecheck
+        run: pnpm lint && pnpm typecheck
+
+      - name: Unit tests (Vitest + coverage)
+        run: pnpm vitest run --coverage
+
+      - name: Build
+        run: pnpm build
+
+      - name: Size limit
+        run: pnpm size
+
+      - name: A11y smoke (Playwright + axe)
+        run: pnpm a11y
+
+      - name: E2E smoke (Playwright)
+        run: npx pnpm e2e:smoke

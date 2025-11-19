@@ -1,0 +1,61 @@
+name: Security & Code Quality Scan (Nightly)
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Ежедневно в полночь UTC
+  workflow_dispatch: {}
+  pull_request: # Запускать на PR в dev для быстрого фидбека
+    branches: [dev]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Требуется для полного сканирования Gitleaks
+
+      # 1. Setup Environment
+      - name: Setup Node/pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+
+      # 2. OSV-Scanner (Dependencies Vulnerabilities)
+      - name: OSV-Scanner (Dependencies)
+        uses: ossf/osv-scanner-action@v1
+        with:
+          lockfile: pnpm-lock.yaml # Проверка зависимостей по lock-файлу
+
+      # 3. Gitleaks (Secrets in History/Code)
+      - name: Gitleaks Secret Scan
+        # Используем отдельный Action, так как он проще и надежнее, чем локальный бинарь
+        uses: gitleaks/gitleaks-action@v2.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: detect --source . --no-banner --redact --report-format sarif --report-path gitleaks-report.sarif
+      - name: Upload Gitleaks SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: gitleaks-report.sarif
+
+      # 4. Semgrep (SAST - Static Analysis Security Testing)
+      - name: Setup Python & Semgrep
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Install Semgrep
+        run: python3 -m pip install --user semgrep
+      - name: Run Semgrep (SAST)
+        run: ~/.local/bin/semgrep ci --config p/ci --sarif > semgrep-report.sarif || true
+        # Используем полный путь и || true для совместимости и стабильности в CI
+      - name: Upload Semgrep SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep-report.sarif

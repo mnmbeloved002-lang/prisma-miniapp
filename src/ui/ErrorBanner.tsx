@@ -1,4 +1,7 @@
-// src/ui/ErrorBanner.tsx
+import React from "react";
+
+import { useState, useEffect, useRef, lazy, Suspense, memo } from "react";
+
 export function ErrorBanner({
   message,
   onRetry,

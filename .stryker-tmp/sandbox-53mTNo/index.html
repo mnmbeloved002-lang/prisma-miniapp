@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    <title>Prisma MiniApp — новости без шума</title>
+    <meta name="description" content="Лёгкая новостная лента с быстрым ридером и закладками. Без рекламы, без шума." />
+    <link rel="canonical" href="https://example.com/" />
+
+    <!-- Favicon (убирает 404 в консоли/LHCI) -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+
+    <!-- PWA / цвета UI -->
+    <meta name="theme-color" content="#0b1220" />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- robots -->
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+
+    <!-- OG / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Prisma MiniApp" />
+    <meta property="og:title" content="Prisma MiniApp — новости без шума" />
+    <meta property="og:description" content="Лёгкая новостная лента с быстрым ридером и закладками." />
+    <meta property="og:url" content="https://example.com/" />
+    <meta property="og:image" content="/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Критический фон/шрифты для моментального FCP -->
+    <style>
+      :root {
+        --bg: #0b1220; --fg: #e5e7eb; --surface: #0f172a;
+      }
+      html, body { background: var(--bg); color: var(--fg); }
+      /* Мгновенная заглушка шапки, чтобы избежать NO_FCP */
+      #root::before{
+        content:""; display:block; height:56px; border-bottom:1px solid rgba(255,255,255,.08);
+        backdrop-filter:saturate(120%) blur(8px);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; transition: none !important; }
+      }
+    </style>
+
+    <!-- Vite сам подставит хэши ассетов -->
+    <script type="module" src="/src/main.tsx"></script>
+  </head>
+  <body>
+  <div id="root">
+    <!-- ВИДИМЫЙ скелет, чтобы был FCP даже без JS -->
+    <div id="boot-skeleton" style="
+      height:56px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      backdrop-filter:saturate(120%) blur(8px);
+    "></div>
+  </div>
+  </body>
+</html>

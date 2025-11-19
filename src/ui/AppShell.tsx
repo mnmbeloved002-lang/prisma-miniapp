@@ -1,4 +1,9 @@
-import { useEffect, useState, lazy, Suspense } from 'react'
+import React from "react";
+
+import { useState, useEffect, useRef, lazy, Suspense, memo } from "react";
+
+
+
 
 import { list as bmList, has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks'
 import type { NewsItem, Category } from '../domain/types'

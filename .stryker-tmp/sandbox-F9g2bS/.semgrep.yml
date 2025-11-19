@@ -1,0 +1,13 @@
+rules:
+  - id: ts-no-eval
+    message: Avoid eval()
+    severity: ERROR
+    languages: [typescript, javascript]
+    pattern: eval($X)
+  - id: maybe-catastrophic-regexp
+    message: Potential catastrophic backtracking
+    severity: WARNING
+    languages: [typescript, javascript]
+    pattern-either:
+      - pattern: /(.+)+$/
+      - pattern: /^(.+)+$/

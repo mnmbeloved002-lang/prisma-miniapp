@@ -1,4 +1,9 @@
-type Props = {
+import React from "react";
+
+import { useState, useEffect, useRef, lazy, Suspense, memo } from "react";
+
+// src/ui/NewItemsBar.tsx
+interface Props {
   count: number
   onShow: () => void
 }

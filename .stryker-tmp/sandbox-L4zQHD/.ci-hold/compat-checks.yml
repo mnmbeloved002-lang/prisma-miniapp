@@ -1,0 +1,13 @@
+name: CI Quality Gate (L2.3)
+
+on:
+  pull_request:
+    branches: ['dev','main']
+  push:
+    branches: ['dev','main']
+
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Compat checks are limited to dev/main."

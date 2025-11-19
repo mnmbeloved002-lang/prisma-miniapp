@@ -1,4 +1,7 @@
-// src/ui/SourceChip.tsx
+import React from "react";
+
+import { useState, useEffect, useRef, lazy, Suspense, memo } from "react";
+
 type Props = { brand: string }
 
 const LOGOS: Record<string, string> = {

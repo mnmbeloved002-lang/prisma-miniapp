@@ -1,0 +1,32 @@
+name: Content Compliance Gates
+
+on:
+  pull_request:
+    branches: [dev, main]
+    # Назначаем этот job только для PR, которые изменяют контент-файлы
+    paths:
+      - 'public/news.json'
+      - 'docs/checksums/chain.log'
+  workflow_dispatch: {}
+
+jobs:
+  compliance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository (fetch 2 commits for diff)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # Нужно для сравнения HEAD^ HEAD
+
+      - name: Setup Node/pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+
+      - name: Run Content Compliance Check
+        # Запускаем наш скрипт, который выполняет все 4 MUST-проверки
+        run: node scripts/content-compliance.cjs

@@ -1,0 +1,29 @@
+name: CI Quality Gate (L2.3)
+on:
+  push: { branches: [dev] }
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: npx playwright install --with-deps
+      - run: pnpm lint && pnpm typecheck
+      - run: pnpm vitest run --coverage
+      - run: pnpm a11y
+      - run: pnpm e2e:smoke
+      - run: pnpm size

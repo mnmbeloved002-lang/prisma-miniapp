@@ -1,4 +1,7 @@
-// src/components/HelloButton.test.tsx
+import React from "react";
+
+import { useState, useEffect, useRef, lazy, Suspense, memo } from "react";
+
 import { render, screen, fireEvent } from '@testing-library/react';
 import { HelloButton } from './HelloButton';
 

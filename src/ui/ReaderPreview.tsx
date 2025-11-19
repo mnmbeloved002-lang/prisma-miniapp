@@ -1,4 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import React from "react";
+
+import { useState, useEffect, useRef, lazy, Suspense, memo } from "react";
+
+
+
 
 import { shareLink } from '../utils/share' // Убираем buildItemShareUrl
 

@@ -1,46 +1,24 @@
-# STATE MANAGEMENT — PRISMA RITUAL AI ECOSYSTEM (ERL-39 MUST)
+# STATE MANAGEMENT — PRISMA RITUAL AI ECOSYSTEM (ERL-39/41/43/44)
 
-Выбран единый глобальный стор: **Zustand 4.5.5** + persist middleware + encrypt
+**Единый глобальный стор — Zustand 4.5.5 + persist + encrypt**
 
-## Почему Zustand
-- Zero-cost (0 KB gzipped)
-- Нет boilerplate (в отличие от Redux)
-- Полная типизация TS
-- persist + encrypt (для закладок и фильтров в Telegram CloudStorage)
-- Идеально для Miniapp (быстрый, лёгкий)
+## Срезы store под Prisma Ritual AI (ERL-44 SHOULD)
 
-## Структура стора
-src/application/store/appStore.ts
+| Ключ              | Тип          | Описание |
+|-------------------|--------------|----------|
+| filters           | string[]     | Активные теги/категории ритуалов |
+| sortOrder         | 'date'|'energy' | Сортировка |
+| viewMode          | 'list'|'card' | Режим отображения |
+| showBookmarks     | boolean      | Показывать только сохранённые ритуалы |
+| ttsEnabled        | boolean      | Глобальный TTS on/off |
+| darkMode          | boolean      | Синхрон с Telegram |
+| selectedRitualId  | string | null | ID текущего открытого ритуала |
+| streak            | number       | Текущий стрик дней (для TON-дропов) |
+| userProfile       | { zodiac: string, mood: string } | Профиль для персонализации ритуала |
+| dailyRitualId     | string | null | ID ритуала на сегодня (для пуша 8:00) |
 
-- UI-стейт: фильтры, режимы, модалки
-- Data-кэш: React Query / SWR (отдельный слой)
-- Локальный стейт компонентов — useState (модалки)
-
-## Запрещено
-- Redux / MobX / Context API для глобального состояния
-- useState для данных, которые живут дольше компонента
+**Запрещено**  
+- useState для любого из этих ключей в UI  
+- Хранение данных ритуалов в store — только в domain/infrastructure
 
 Обновлено: 2025-11-20
-
-## Глобальный UI-стейт (ERL-41 MUST)
-В Zustand хранятся только ключевые флаги:
-- filters, sortOrder, viewMode
-- showBookmarks
-- ttsEnabled, darkMode
-- selectedNewsId и т.д.
-
-Локальный стейт (useState) — только для модалок и временных вещей.
-
-## Данные контента (ERL-42 MUST)
-- news.json / rituals.json / любой модуль-контент — только в infrastructure → domain → application/store
-- Запрещено useState для данных контента в UI-компонентах
-- Допустимо только селекторы из Zustand
-
-## Локальный стейт (ERL-43 SHOULD)
-- useState используется ТОЛЬКО для локальных UI-деталей:
-  - модалки
-  - раскрытие/свёртывание
-  - формы ввода
-  - анимации
-  - scroll-position
-- Запрещено useState для данных контента, фильтров, закладок, TTS и т.д.

@@ -1,0 +1,23 @@
+# STATE MANAGEMENT — PRISMA RITUAL AI ECOSYSTEM (ERL-39 MUST)
+
+Выбран единый глобальный стор: **Zustand 4.5.5** + persist middleware + encrypt
+
+## Почему Zustand
+- Zero-cost (0 KB gzipped)
+- Нет boilerplate (в отличие от Redux)
+- Полная типизация TS
+- persist + encrypt (для закладок и фильтров в Telegram CloudStorage)
+- Идеально для Miniapp (быстрый, лёгкий)
+
+## Структура стора
+src/application/store/appStore.ts
+
+- UI-стейт: фильтры, режимы, модалки
+- Data-кэш: React Query / SWR (отдельный слой)
+- Локальный стейт компонентов — useState (модалки)
+
+## Запрещено
+- Redux / MobX / Context API для глобального состояния
+- useState для данных, которые живут дольше компонента
+
+Обновлено: 2025-11-20

@@ -35,3 +35,12 @@ src/application/store/appStore.ts
 - news.json / rituals.json / любой модуль-контент — только в infrastructure → domain → application/store
 - Запрещено useState для данных контента в UI-компонентах
 - Допустимо только селекторы из Zustand
+
+## Локальный стейт (ERL-43 SHOULD)
+- useState используется ТОЛЬКО для локальных UI-деталей:
+  - модалки
+  - раскрытие/свёртывание
+  - формы ввода
+  - анимации
+  - scroll-position
+- Запрещено useState для данных контента, фильтров, закладок, TTS и т.д.

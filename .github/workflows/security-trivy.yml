@@ -1,0 +1,39 @@
+# .github/workflows/security-trivy.yml
+name: 🛡️ Trivy Security Scan (SCA)
+
+on:
+  push:
+    branches: ['main', 'master']
+  pull_request:
+    branches: ['main', 'master']
+  # Запускаем еженедельно для соответствия SHOULD
+  schedule:
+    - cron: '0 0 * * 1' # Каждый понедельник
+
+jobs:
+  trivy_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Требуется для некоторых режимов Trivy
+
+      - name: Run Trivy vulnerability scanner on filesystem
+        uses: aquasecurity/trivy-action@master
+        with:
+          # Сканируем весь рабочий каталог
+          scan-type: 'fs'
+          # Формат вывода в SARIF для совместимости с GitHub Security
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          # Строгий уровень, при котором ломается CI
+          severity: 'HIGH,CRITICAL'
+          # Сканирование пакетов Node.js (package-lock.json/pnpm-lock.yaml)
+          vuln-type: 'os,library'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() # Загрузить результаты, даже если скан не удался
+        with:
+          sarif_file: 'trivy-results.sarif'

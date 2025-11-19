@@ -1,0 +1,35 @@
+{
+  "$schema": "https://raw.githubusercontent.com/webpro/knip/main/schema.json",
+  "entry": [
+    "src/main.tsx",
+    "api/**/*.ts"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "api/**/*.{ts,tsx}"
+  ],
+  "ignore": [
+    "**/*.d.ts",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/test-utils/**",
+    "**/mocks/**",
+    "**/*.config.ts",
+    "**/*.config.js"
+  ],
+  "ignoreDependencies": [
+    "@tailwindcss/typography",
+    "@eslint/js"
+  ],
+  "ignoreExportsUsedInFile": true,
+  "rules": {
+    "files": "error",
+    "dependencies": "error",
+    "devDependencies": "error",
+    "unlisted": "error",
+    "unresolved": "error",
+    "binaries": "off",
+    "exports": "error",
+    "types": "error"
+  }
+}

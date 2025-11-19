@@ -653,3 +653,10 @@ You can always set the exit code when leaks are encountered with the --exit-code
 ```
 
 ### Join the Discord! [![Discord](https://img.shields.io/discord/1102689410522284044.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/8Hzbrnkr7E)
+
+## Запуск проверок (ERL-45 MUST)
+```bash
+pnpm typecheck   # tsc --noEmit (strict mode)
+pnpm lint        # Biome/ESLint
+pnpm test        # Vitest unit + integration
+pnpm playwright test   # e2e

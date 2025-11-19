@@ -30,3 +30,8 @@ src/application/store/appStore.ts
 - selectedNewsId и т.д.
 
 Локальный стейт (useState) — только для модалок и временных вещей.
+
+## Данные контента (ERL-42 MUST)
+- news.json / rituals.json / любой модуль-контент — только в infrastructure → domain → application/store
+- Запрещено useState для данных контента в UI-компонентах
+- Допустимо только селекторы из Zustand

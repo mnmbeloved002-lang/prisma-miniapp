@@ -21,3 +21,12 @@ src/application/store/appStore.ts
 - useState для данных, которые живут дольше компонента
 
 Обновлено: 2025-11-20
+
+## Глобальный UI-стейт (ERL-41 MUST)
+В Zustand хранятся только ключевые флаги:
+- filters, sortOrder, viewMode
+- showBookmarks
+- ttsEnabled, darkMode
+- selectedNewsId и т.д.
+
+Локальный стейт (useState) — только для модалок и временных вещей.

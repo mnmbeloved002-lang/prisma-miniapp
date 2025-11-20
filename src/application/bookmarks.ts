@@ -1,16 +1,16 @@
 // src/application/bookmarks.ts
-import type { NewsItem } from '../domain/types'
+import type { RitualItem } from '../domain/types'
 import { storage } from '../infrastructure/storage'
 
 const KEY = 'bookmarks-v1'
 
-let cache: NewsItem[] | null = null
+let cache: RitualItem[] | null = null
 let loaded = false
 
 function ensureLoaded() {
   if (!loaded) {
     loaded = true
-    const data = storage.get<NewsItem[]>(KEY)
+    const data = storage.get<RitualItem[]>(KEY)
     cache = Array.isArray(data) ? data.slice() : []
   }
 }
@@ -22,12 +22,12 @@ function persist() {
   }
 }
 
-export function list(): NewsItem[] {
+export function list(): RitualItem[] {
   ensureLoaded()
   return cache!.slice()
 }
 
-export function getList(): NewsItem[] {
+export function getList(): RitualItem[] {
   return list()
 }
 
@@ -36,7 +36,7 @@ export function has(id: string): boolean {
   return cache!.some((n) => n.id === id)
 }
 
-export function add(item: NewsItem): void {
+export function add(item: RitualItem): void {
   ensureLoaded()
   if (has(item.id)) return
   // Добавляем в начало списка (новые закладки сверху)
@@ -53,7 +53,7 @@ export function remove(id: string): void {
   }
 }
 
-export function toggle(item: NewsItem): void {
+export function toggle(item: RitualItem): void {
   if (has(item.id)) {
     remove(item.id)
   } else {
@@ -75,7 +75,7 @@ if (typeof window !== 'undefined') {
 }
 
 /** Вспомогательно для unit-тестов */
-export function __unsafe__resetForTests(seed?: NewsItem[]) {
+export function __unsafe__resetForTests(seed?: RitualItem[]) {
   loaded = false
   cache = null
   if (seed !== undefined) {

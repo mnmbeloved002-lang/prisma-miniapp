@@ -7,14 +7,14 @@ import { motion } from 'framer-motion'
 
 
 import { has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks'
-import type { NewsItem } from '../domain/types'
+import type { RitualItem } from '../domain/types'
 
 import { SourceChip } from './SourceChip'
 
 
 type Props = {
-  item: NewsItem
-  onOpen?: (item: NewsItem) => void
+  item: RitualItem
+  onOpen?: (item: RitualItem) => void
   priority?: boolean
 }
 
@@ -39,7 +39,7 @@ function svgFallback(title: string): string {
   return `data:image/svg+xml;charset=utf-8,${svg}`
 }
 
-export function NewsCard({ item, onOpen, priority }: Props) {
+export function RitualCard({ item, onOpen, priority }: Props) {
   const inBm = bmHas(item.id)
   const d = new Date(item.publishedAt)
   const date = d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })
@@ -114,11 +114,11 @@ export function NewsCard({ item, onOpen, priority }: Props) {
   )
 }
 
-export function NewsCardSkeleton() {
+export function RitualCardSkeleton() {
   return (
     <div
       className="rounded-2xl border border-white/5 bg-surface overflow-hidden shadow-cinema"
-      data-testid="news-card-skeleton"
+      data-testid="ritual-card-skeleton"
     >
       <div className="aspect-[16/9] bg-muted/20 animate-pulse" />
       <div className="p-4 space-y-3">

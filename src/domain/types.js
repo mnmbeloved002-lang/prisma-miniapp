@@ -22,13 +22,13 @@ export const CategorySchema = z.enum([
   'культура',
 ]);
 
-export const NewsItemSchema = z.object({
+export const RitualItemSchema = z.object({
   id: z.string().uuid(),
   // MUST 85, 86: Длина и запрет HTML
   title: NoHtmlSchema.min(1).max(256),
   // MUST 85, 86: Длина и запрет HTML
   summary: NoHtmlSchema.min(1).max(1024),
-  image: z.string().url().startsWith('/images/news/', { message: 'Image URL must start with /images/news/' }),
+  image: z.string().url().startsWith('/images/ritual/', { message: 'Image URL must start with /images/ritual/' }),
   source: z.string().min(1).max(128),
   // MUST 88: Требование HTTPS
   canonicalUrl: z.string().url().max(512).startsWith('https://', { message: 'URL must use HTTPS protocol.' }), 
@@ -41,17 +41,17 @@ export const NewsItemSchema = z.object({
   bookmarked: z.boolean().default(false),
 });
 
-// MUST 82: Корневая схема (NewsFeed)
-export const NewsFeedSchema = z.object({
+// MUST 82: Корневая схема (RitualFeed)
+export const RitualFeedSchema = z.object({
   timestamp: z.string().datetime({ offset: true }), 
   normalizedCount: z.number().int().min(0),
   totalUniqueCount: z.number().int().min(0),
-  news: z.array(NewsItemSchema),
+  ritual: z.array(RitualItemSchema),
 });
 
 // Экспортируем все схемы и типы
 export default {
-    NewsItemSchema,
-    NewsFeedSchema,
+    RitualItemSchema,
+    RitualFeedSchema,
     CategorySchema
 };

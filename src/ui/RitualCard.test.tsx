@@ -6,9 +6,9 @@ import { useState, useEffect, useRef, lazy, Suspense, memo } from "react";
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { NewsCard, NewsCardSkeleton } from './NewsCard';
+import { RitualCard, RitualCardSkeleton } from './RitualCard';
 import * as bookmarks from '../application/bookmarks';
-import type { NewsItem } from '../domain/types';
+import type { RitualItem } from '../domain/types';
 
 vi.mock('../application/bookmarks', () => ({
   has: vi.fn(),
@@ -18,16 +18,16 @@ vi.mock('../application/bookmarks', () => ({
 
 const mockedBookmarks = vi.mocked(bookmarks);
 
-const mockItem = {
+const mockRitual = {
   id: '1',
   title: 'Новость о Витесте',
   summary: 'Тестирование прошло успешно.',
   publishedAt: new Date('2025-11-03T10:00:00Z').toISOString(),
   source: 'RBC',
   image: 'test.png',
-} as NewsItem;
+} as RitualItem;
 
-describe('NewsCard', () => {
+describe('RitualCard', () => {
   const user = userEvent.setup();
 
   beforeEach(() => {
@@ -36,7 +36,7 @@ describe('NewsCard', () => {
 
   it('should render all item details correctly', () => {
     mockedBookmarks.has.mockReturnValue(false);
-    render(<NewsCard item={mockItem} />);
+    render(<RitualCard item={mockRitual} />);
 
     expect(screen.getByRole('heading', { name: /Новость о Витесте/i })).toBeInTheDocument();
     expect(screen.getByText(/Тестирование прошло успешно/i)).toBeInTheDocument();
@@ -47,16 +47,16 @@ describe('NewsCard', () => {
   it('should call onOpen callback when "Открыть" is clicked', async () => {
     mockedBookmarks.has.mockReturnValue(false);
     const onOpenMock = vi.fn();
-    render(<NewsCard item={mockItem} onOpen={onOpenMock} />);
+    render(<RitualCard item={mockRitual} onOpen={onOpenMock} />);
 
     await user.click(screen.getByRole('button', { name: /Открыть/i }));
     expect(onOpenMock).toHaveBeenCalledTimes(1);
-    expect(onOpenMock).toHaveBeenCalledWith(mockItem);
+    expect(onOpenMock).toHaveBeenCalledWith(mockRitual);
   });
 
   it('should show "☆" (add) when item is NOT bookmarked', async () => {
     mockedBookmarks.has.mockReturnValue(false);
-    render(<NewsCard item={mockItem} />);
+    render(<RitualCard item={mockRitual} />);
 
     const button = screen.getByTitle(/В закладки/i);
     expect(button).toHaveTextContent('☆');
@@ -64,13 +64,13 @@ describe('NewsCard', () => {
 
     await user.click(button);
     expect(mockedBookmarks.add).toHaveBeenCalledTimes(1);
-    expect(mockedBookmarks.add).toHaveBeenCalledWith(mockItem);
+    expect(mockedBookmarks.add).toHaveBeenCalledWith(mockRitual);
     expect(mockedBookmarks.remove).not.toHaveBeenCalled();
   });
 
   it('should show "★" (remove) when item IS bookmarked', async () => {
     mockedBookmarks.has.mockReturnValue(true);
-    render(<NewsCard item={mockItem} />);
+    render(<RitualCard item={mockRitual} />);
 
     const button = screen.getByTitle(/Удалить из закладок/i);
     expect(button).toHaveTextContent('★');
@@ -78,13 +78,13 @@ describe('NewsCard', () => {
 
     await user.click(button);
     expect(mockedBookmarks.remove).toHaveBeenCalledTimes(1);
-    expect(mockedBookmarks.remove).toHaveBeenCalledWith(mockItem.id);
+    expect(mockedBookmarks.remove).toHaveBeenCalledWith(mockRitual.id);
     expect(mockedBookmarks.add).not.toHaveBeenCalled();
   });
 
   it('uses eager/high when priority=true', () => {
     mockedBookmarks.has.mockReturnValue(false);
-    render(<NewsCard item={mockItem} priority />);
+    render(<RitualCard item={mockRitual} priority />);
 
     const img = screen.getByRole('img', { name: /Новость о Витесте/i }) as HTMLImageElement;
     expect(img.getAttribute('loading')).toBe('eager');
@@ -93,7 +93,7 @@ describe('NewsCard', () => {
 
   it('uses lazy/auto when priority is not provided', () => {
     mockedBookmarks.has.mockReturnValue(false);
-    render(<NewsCard item={mockItem} />);
+    render(<RitualCard item={mockRitual} />);
     const img = screen.getByRole('img', { name: /Новость о Витесте/i }) as HTMLImageElement;
     expect(img.getAttribute('loading')).toBe('lazy');
     expect(img.getAttribute('fetchpriority')).toBe('auto');
@@ -102,9 +102,9 @@ describe('NewsCard', () => {
   describe('Image error handling', () => {
     it('should switch to SVG fallback on image load error', () => {
       mockedBookmarks.has.mockReturnValue(false);
-      render(<NewsCard item={mockItem} />);
+      render(<RitualCard item={mockRitual} />);
 
-      const img = screen.getByAltText(mockItem.title);
+      const img = screen.getByAltText(mockRitual.title);
       expect(img).not.toHaveAttribute('data-fallback');
 
       fireEvent.error(img);
@@ -115,9 +115,9 @@ describe('NewsCard', () => {
 
     it('should not switch to fallback again if already in fallback state', () => {
       mockedBookmarks.has.mockReturnValue(false);
-      render(<NewsCard item={mockItem} />);
+      render(<RitualCard item={mockRitual} />);
 
-      const img = screen.getByAltText(mockItem.title);
+      const img = screen.getByAltText(mockRitual.title);
       
       fireEvent.error(img);
       const firstSrc = img.getAttribute('src');
@@ -129,11 +129,11 @@ describe('NewsCard', () => {
     it('should generate fallback SVG with truncated title for long titles', () => {
       const longTitle = 'Очень длинное название новости которое должно быть обрезано до тридцати двух символов';
       const longTitleItem = {
-        ...mockItem,
+        ...mockRitual,
         title: longTitle
       };
       
-      render(<NewsCard item={longTitleItem} />);
+      render(<RitualCard item={longTitleItem} />);
       const img = screen.getByAltText(longTitleItem.title);
       
       fireEvent.error(img);
@@ -146,11 +146,11 @@ describe('NewsCard', () => {
     // ДОБАВЛЕННЫЙ ТЕСТ для покрытия ветки с пустым заголовком
     it('should use "Новость" as fallback for empty title', () => {
       const emptyTitleItem = {
-        ...mockItem,
+        ...mockRitual,
         title: ''
       };
       
-      render(<NewsCard item={emptyTitleItem} />);
+      render(<RitualCard item={emptyTitleItem} />);
       const img = screen.getByAltText('');
       
       fireEvent.error(img);
@@ -161,9 +161,9 @@ describe('NewsCard', () => {
   });
 });
 
-describe('NewsCardSkeleton', () => {
+describe('RitualCardSkeleton', () => {
   it('should render a skeleton structure', () => {
-    const { container } = render(<NewsCardSkeleton />);
+    const { container } = render(<RitualCardSkeleton />);
     expect(container.querySelector('.aspect-\\[16\\/9\\]')).toBeInTheDocument();
   });
 });

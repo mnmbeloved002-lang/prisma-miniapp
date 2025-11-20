@@ -2,7 +2,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { add, remove, has, list, getList, toggle, __unsafe__resetForTests } from './bookmarks';
 import { storage } from '../infrastructure/storage'; // named import
-import type { NewsItem } from '../domain/types';
+import type { RitualItem } from '../domain/types';
 
 // Мокируем модуль storage
 vi.mock('../infrastructure/storage', () => ({
@@ -17,7 +17,7 @@ vi.mock('../infrastructure/storage', () => ({
 const mockedStorage = vi.mocked(storage);
 
 // Типизированный мок новости
-const createMockItem = (id: string): NewsItem =>
+const createMockItem = (id: string): RitualItem =>
   ({
     id,
     title: `Test ${id}`,
@@ -28,7 +28,7 @@ const createMockItem = (id: string): NewsItem =>
     publishedAt: '...',
     category: [],
     previewHtml: '...',
-  }) as NewsItem;
+  }) as RitualItem;
 
 const item1 = createMockItem('1');
 const item2 = createMockItem('2');

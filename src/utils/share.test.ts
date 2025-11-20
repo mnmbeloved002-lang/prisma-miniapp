@@ -54,10 +54,10 @@ describe('buildItemShareUrl', () => {
 
   it('uses canonicalUrl when provided', () => {
     const result = buildItemShareUrl({
-      canonicalUrl: 'https://news.com/article',
+      canonicalUrl: 'https://ritual.com/article',
       fallbackHref: 'https://app.com/fallback'
     });
-    expect(result).toBe('https://news.com/article');
+    expect(result).toBe('https://ritual.com/article');
   });
 
   it('uses fallbackHref when no canonicalUrl', () => {

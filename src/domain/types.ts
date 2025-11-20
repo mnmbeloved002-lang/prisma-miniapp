@@ -1,6 +1,6 @@
 export type Category = 'политика' | 'экономика' | 'спорт' | 'технологии' | 'общество' | 'культура';
 
-export interface NewsItem {
+export interface RitualItem {
   id: string;
   title: string;
   summary: string;

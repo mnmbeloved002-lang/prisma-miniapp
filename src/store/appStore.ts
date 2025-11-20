@@ -16,7 +16,7 @@ const initialState = {
   streak: 0,
 }
 
-export const useAppStore = create<AppStoreState>((set) => ({
+export const useRitualStore = create<AppStoreState>((set) => ({
   ...initialState,
   setZodiacSign: (sign) => set({ zodiacSign: sign }),
   setMood: (mood) => set({ mood }),

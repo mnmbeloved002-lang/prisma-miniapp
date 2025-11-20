@@ -1,51 +1,64 @@
 import React from 'react'
-import { render, screen, waitFor, act } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
+import { vi, describe, it, expect, beforeEach } from 'vitest'
 import AppShell from './AppShell'
-import { loadTodayRitual } from '../application/ritual-service'
-import type { Ritual } from '../domain/ritual-types'
+import { useRitualStore } from '../application/ritual-store'
 
-vi.mock('../application/ritual-service')
+// Мокаем сам стор
+vi.mock('../application/ritual-store')
 
-const mockRitual: Ritual = {
-  id: 'test-2025',
-  title: 'Тестовый ритуал гармонии',
-  motivation: 'Ты в гармонии с миром',
-  task: 'Сделай глубокий вдох',
-  affirmation: 'Я спокоен и уверен',
-  imagePrompt: 'test'
+const mockRitual = {
+  id: '1',
+  title: 'Утренний свет',
+  motivation: 'Ты лучше всех',
+  task: 'Вдохни',
+  affirmation: 'Я могу',
+  imagePrompt: 'sun'
 }
 
-describe('AppShell (Prisma Ritual AI)', () => {
+describe('AppShell (Ritual AI)', () => {
+  const fetchMock = vi.fn()
+
   beforeEach(() => {
-    vi.mocked(loadTodayRitual).mockReset()
+    vi.clearAllMocks()
   })
 
-  it('рендерит ритуал после загрузки', async () => {
-    vi.mocked(loadTodayRitual).mockResolvedValue(mockRitual)
-
-    await act(async () => {
-      render(<AppShell />)
+  it('показывает загрузку', () => {
+    // @ts-expect-error mock
+    vi.mocked(useRitualStore).mockReturnValue({
+      loading: true,
+      ritualItem: null,
+      error: null,
+      fetchRitual: fetchMock
     })
 
-    // Suspense fallback теперь гарантированно рендерится
-    expect(screen.getByText(/Загрузка ритуала/i)).toBeInTheDocument()
-
-    await waitFor(() => {
-      expect(screen.getByText(mockRitual.title)).toBeInTheDocument()
-      expect(screen.getByText(mockRitual.motivation)).toBeInTheDocument()
-      expect(screen.getByText(mockRitual.task)).toBeInTheDocument()
-    })
+    render(<AppShell />)
+    expect(screen.getByText(/Загрузка.../i)).toBeInTheDocument()
   })
 
-  it('показывает ошибку при падении загрузки', async () => {
-    vi.mocked(loadTodayRitual).mockRejectedValue(new Error('Network error'))
-
-    await act(async () => {
-      render(<AppShell />)
+  it('рендерит ритуал', () => {
+    // @ts-expect-error mock
+    vi.mocked(useRitualStore).mockReturnValue({
+      loading: false,
+      ritualItem: mockRitual,
+      error: null,
+      fetchRitual: fetchMock
     })
 
-    await waitFor(() => {
-      expect(screen.getByText(/Не удалось загрузить ритуал/i)).toBeInTheDocument()
+    render(<AppShell />)
+    expect(screen.getByText('Утренний свет')).toBeInTheDocument()
+  })
+
+  it('показывает ошибку', () => {
+    // @ts-expect-error mock
+    vi.mocked(useRitualStore).mockReturnValue({
+      loading: false,
+      ritualItem: null,
+      error: 'Karma error',
+      fetchRitual: fetchMock
     })
+
+    render(<AppShell />)
+    expect(screen.getByText(/Karma error/i)).toBeInTheDocument()
   })
 })

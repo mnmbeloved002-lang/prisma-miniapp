@@ -1,29 +1,27 @@
-import React, { Suspense } from "react";
-
+import React, { useEffect } from "react";
 import { Header } from './Header'
 import { ErrorBanner } from './ErrorBanner'
-import { RitualCard } from '../modules/ritual/RitualCard'
+import { RitualCard } from './RitualCard'
 import { useRitualStore } from '../application/ritual-store'
 
 export default function AppShell() {
-  const { ritual, error, loading } = useRitualStore()
+  const { ritualItem, error, loading, fetchRitual } = useRitualStore()
 
-  if (error) {
-    return <ErrorBanner message={error} onRetry={() => useRitualStore.getState().fetchRitual()} />
-  }
+  useEffect(() => {
+    fetchRitual()
+  }, [])
+
+  if (error) return <ErrorBanner message={error} onRetry={fetchRitual} />
+  if (loading) return <div className="text-center text-3xl p-10">Загрузка...</div>
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white">
       <Header title="Prisma Ritual AI" />
-
       <main className="container mx-auto px-4 py-12">
-        <Suspense fallback={<div className="text-center text-4xl animate-pulse">Загрузка ритуала...</div>}>
-          {loading ? <div className="text-center text-3xl">Загрузка...</div> : ritual && <RitualCard ritual={ritual} />}
-        </Suspense>
+        {ritualItem && <RitualCard item={ritualItem} />}
       </main>
-
       <footer className="text-center py-8 text-sm opacity-70">
-        © 2025 Prisma Ritual AI — твой ежедневный ритуал души
+        © 2025 Prisma Ritual AI
       </footer>
     </div>
   )

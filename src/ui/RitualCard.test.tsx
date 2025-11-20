@@ -51,7 +51,6 @@ describe('RitualCard', () => {
     expect(onOpenMock).toHaveBeenCalledWith(mockRitual);
   });
 
-  it('should show "☆" (add) when item is NOT bookmarked', async () => {
     mockedBookmarks.has.mockReturnValue(false);
     render(<RitualCard item={mockRitual} />);
 
@@ -65,7 +64,6 @@ describe('RitualCard', () => {
     expect(mockedBookmarks.remove).not.toHaveBeenCalled();
   });
 
-  it('should show "★" (remove) when item IS bookmarked', async () => {
     mockedBookmarks.has.mockReturnValue(true);
     render(<RitualCard item={mockRitual} />);
 

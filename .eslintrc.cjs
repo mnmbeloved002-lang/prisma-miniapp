@@ -31,3 +31,11 @@ module.exports = {
     'import/order': 'error',
   },
 }
+
+// Все warnings → errors (ломаем сборку)
+module.exports.rules = {
+  ...module.exports.rules,
+  'no-warning-comments': 'error',
+  '@typescript-eslint/no-explicit-any': 'error',
+  'import/order': 'error',
+}

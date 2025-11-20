@@ -1,27 +1,25 @@
 import { create } from 'zustand'
 
 export type AppStoreState = {
-  searchQuery: string
-  showBookmarksOnly: boolean
-  setSearchQuery: (value: string) => void
-  toggleShowBookmarksOnly: () => void
-  reset: () => void
+  zodiacSign: string | null          // Весы, Овен и т.д.
+  mood: string | null                // "мотивированный", "спокойный" и т.д.
+  streak: number                     // Счетчик дней подряд
+  setZodiacSign: (sign: string) => void
+  setMood: (mood: string) => void
+  incrementStreak: () => void
+  resetStreak: () => void
 }
 
-const initialState: Pick<AppStoreState, 'searchQuery' | 'showBookmarksOnly'> = {
-  searchQuery: '',
-  showBookmarksOnly: false,
+const initialState = {
+  zodiacSign: null,
+  mood: null,
+  streak: 0,
 }
 
 export const useAppStore = create<AppStoreState>((set) => ({
   ...initialState,
-
-  setSearchQuery: (value: string) => set({ searchQuery: value }),
-
-  toggleShowBookmarksOnly: () =>
-    set((state) => ({
-      showBookmarksOnly: !state.showBookmarksOnly,
-    })),
-
-  reset: () => set(initialState),
+  setZodiacSign: (sign) => set({ zodiacSign: sign }),
+  setMood: (mood) => set({ mood }),
+  incrementStreak: () => set((state) => ({ streak: state.streak + 1 })),
+  resetStreak: () => set({ streak: 0 }),
 }))

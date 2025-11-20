@@ -18,7 +18,7 @@
     "preview": "vite preview --strictPort --port 4173 --host",
     "serve:dist": "node scripts/serve-dist.js",
     "format": "prettier --write .",
-    "typecheck": "tsc --noEmit --pretty --noErrorTruncation",
+    "typecheck": "tsc --noEmit --pretty "typecheck": "tsc --noEmit --pretty --noErrorTruncation""typecheck": "tsc --noEmit --pretty --noErrorTruncation" echo [32mTYPECHECK_GREEN[0m || (echo [31mTYPECHECK_RED[0m "typecheck": "tsc --noEmit --pretty --noErrorTruncation""typecheck": "tsc --noEmit --pretty --noErrorTruncation" exit 1)",
     "verify": "pnpm run lint && pnpm run typecheck && pnpm run build",
     "sanity": "pnpm run lint && pnpm run typecheck && pnpm run test:cov && pnpm run pkg:lint && pnpm run audit && pnpm run build && pnpm run size && pnpm run lhci",
     "sanity:ci": "pnpm run lint && pnpm run typecheck && pnpm run test:cov && pnpm run pkg:lint && pnpm run audit && pnpm run build && pnpm run size",

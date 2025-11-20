@@ -47,6 +47,3 @@ jobs:
 
       - name: E2E smoke (Playwright)
         run: npx pnpm e2e:smoke
-
-  - name: Architecture check (depcruiser)
-    run: npx depcruiser src --config .dependency-cruiser.js

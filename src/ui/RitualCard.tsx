@@ -6,10 +6,8 @@ import { useState, useEffect, useRef, lazy, Suspense, memo } from "react";
 import { motion } from 'framer-motion'
 
 
-import { has as bmHas, add as bmAdd, remove as bmRemove } from '../application/bookmarks'
 import type { RitualItem } from '../domain/types'
 
-import { SourceChip } from './SourceChip'
 
 
 type Props = {
@@ -79,7 +77,6 @@ export function RitualCard({ item, onOpen, priority }: Props) {
 
       <div className="p-4 flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
-          <SourceChip brand={item.source} />
           <time className="text-xs text-muted font-medium">{date}</time>
         </div>
 

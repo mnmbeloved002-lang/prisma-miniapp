@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { Header } from './Header'
-import { ErrorBanner } from './ErrorBanner'
 import { RitualCard } from './RitualCard'
 import { useRitualStore } from '../application/ritual-store'
 
@@ -11,7 +10,6 @@ export default function AppShell() {
     fetchRitual()
   }, [])
 
-  if (error) return <ErrorBanner message={error} onRetry={fetchRitual} />
   if (loading) return <div className="text-center text-3xl p-10">Загрузка...</div>
 
   return (

@@ -7,16 +7,13 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { RitualCard, RitualCardSkeleton } from './RitualCard';
-import * as bookmarks from '../application/bookmarks';
 import type { RitualItem } from '../domain/types';
 
-vi.mock('../application/bookmarks', () => ({
   has: vi.fn(),
   add: vi.fn(),
   remove: vi.fn(),
 }));
 
-const mockedBookmarks = vi.mocked(bookmarks);
 
 const mockRitual = {
   id: '1',

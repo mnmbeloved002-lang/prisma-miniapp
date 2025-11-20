@@ -1,6 +1,5 @@
 export const FEATURES = {
   readerPreview: true,
-  bookmarks: true,
   tts: true, // Web Speech API
 };
 

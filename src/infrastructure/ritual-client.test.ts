@@ -39,7 +39,6 @@ const mockCacheEntry = {
 // Это *массив*, который мы ожидаем ВНУТРИ ответа
 const freshRitual = [{ id: '2', title: 'Fresh Ritual' }] as any;
 
-describe('api-client', () => {
   beforeEach(() => {
     vi.useFakeTimers(); // Берем контроль над Date.now()
     vi.clearAllMocks();

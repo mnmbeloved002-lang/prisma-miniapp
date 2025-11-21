@@ -19,7 +19,7 @@
     "serve:dist": "node scripts/serve-dist.js",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "verify": "pnpm run lint && pnpm run typecheck && pnpm run build",
+     "verify": "pnpm run lint && pnpm run typecheck && pnpm run size && pnpm run build",
     "sanity": "pnpm run lint && pnpm run typecheck && pnpm run test:cov && pnpm run pkg:lint && pnpm run audit && pnpm run build && pnpm run size && pnpm run lhci",
     "sanity:ci": "pnpm run lint && pnpm run typecheck && pnpm run test:cov && pnpm run pkg:lint && pnpm run audit && pnpm run build && pnpm run size",
     "postinstall": "husky",

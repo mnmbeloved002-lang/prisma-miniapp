@@ -2,9 +2,9 @@ name: CI Quality Gate (L2.3)
 
 on:
   push:
-    branches: [dev]
+    branches: [dev, main]
   pull_request:
-    branches: [dev]
+    branches: [dev, main]
   workflow_dispatch: {}
 
 jobs:

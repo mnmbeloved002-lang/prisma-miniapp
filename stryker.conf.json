@@ -1,24 +1,16 @@
 {
-  "testRunner": "command",
-  "commandRunner": { 
-    "command": "npx vitest run --coverage=false" 
-  },
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "_comment": "L4 Mutation Testing: Kill the mutants",
+  "packageManager": "pnpm",
+  "reporters": ["html", "clear-text", "progress"],
+  "testRunner": "vitest",
+  "coverageAnalysis": "perTest",
   "mutate": [
-    "src/domain/*.ts",
-    "src/application/*.ts",
-    "src/infrastructure/*.ts",
-    "src/utils/share.ts",
-    "!src/**/*.test.*"
+    "src/application/**/*.ts",
+    "src/infrastructure/**/*.ts",
+    "src/ui/**/*.tsx",
+    "!src/**/*.test.ts",
+    "!src/**/*.test.tsx"
   ],
-  "checkers": ["typescript"],
-  "plugins": ["@stryker-mutator/typescript-checker"],
-  "coverageAnalysis": "off",
-  "reporters": ["html","clear-text","progress"],
-  "ignorePatterns": [
-    "dist",
-    "coverage",
-    "node_modules",
-    "vite.config.js",
-    "*.json"
-  ]
+  "thresholds": { "high": 80, "low": 60, "break": 50 }
 }

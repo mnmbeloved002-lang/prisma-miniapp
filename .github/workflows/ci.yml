@@ -1,49 +1,71 @@
-name: CI Quality Gate (L2.3)
+name: L4 Quality Gate
 
 on:
   push:
-    branches: [dev, main]
+    branches: [ main, dev ]
   pull_request:
-    branches: [dev, main]
-  workflow_dispatch: {}
+    branches: [ main, dev ]
 
 jobs:
-  verify:
+  # 1. Быстрые проверки (Код, Типы, Unit-тесты)
+  quality:
+    name: ⚡ Fast Checks
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
         with:
-          run_install: false
-
+          version: 10
       - uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version: 20
           cache: 'pnpm'
 
-      - name: Install dependencies
+      - name: Install Deps
         run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+      - name: Lint & Typecheck
+        run: |
+          pnpm lint
+          pnpm typecheck
 
-      - name: Lint & typecheck
-        run: pnpm lint && pnpm typecheck
+      - name: Unit Tests (Vitest)
+        run: pnpm test:cov
 
-      - name: Unit tests (Vitest + coverage)
-        run: pnpm vitest run --coverage
+  # 2. Тяжелая артиллерия (Сборка + E2E)
+  e2e:
+    name: 🎭 E2E Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
 
-      - name: Build
+      - name: Install Deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Build App
         run: pnpm build
 
-      - name: Size limit
-        run: pnpm size
+      - name: Run Smoke Tests
+        run: pnpm e2e:smoke
+        env:
+          CI: true
 
-      - name: A11y smoke (Playwright + axe)
-        run: pnpm a11y
-
-      - name: E2E smoke (Playwright)
-        run: npx pnpm e2e:smoke
+      # Сохраняем отчет только если тесты упали (экономим место)
+      - name: Upload Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 3

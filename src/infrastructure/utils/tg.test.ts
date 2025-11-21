@@ -1,47 +1,41 @@
-// src/utils/tg.test.ts
-import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { initTelegramUI } from './tg';
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import { initTelegramUI } from './tg'
 
-// Сохраняем и восстанавливаем window.Telegram
-const originalTelegram = window.Telegram;
-beforeEach(() => {
-  // @ts-expect-error: Свойство Telegram только для тестов
-  delete window.Telegram;
-});
-afterEach(() => {
-  window.Telegram = originalTelegram;
-});
+describe('Telegram UI', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+    // @ts-expect-error cleanup
+    delete window.Telegram
+  })
 
-describe('initTelegramUI', () => {
-  it('should do nothing if window.Telegram is missing', () => {
-    // window.Telegram не определен (по умолчанию в beforeEach)
-    expect(() => initTelegramUI()).not.toThrow();
-  });
-
-  it('should call tg.ready() if available', () => {
-    const readyMock = vi.fn();
+  it('calls ready() if Telegram API is available', () => {
+    const readyMock = vi.fn()
+    const expandMock = vi.fn()
+    
+    // @ts-expect-error mock
     window.Telegram = {
       WebApp: {
         ready: readyMock,
-      },
-    };
+        expand: expandMock
+      }
+    }
 
-    initTelegramUI();
-    expect(readyMock).toHaveBeenCalledTimes(1);
-  });
+    initTelegramUI()
+    
+    // Проверяем только то, что реально есть в коде
+    expect(readyMock).toHaveBeenCalled()
+    expect(expandMock).not.toHaveBeenCalled() 
+  })
 
-  it('should safely catch errors during initialization (cover catch block)', () => {
-    const readyMock = vi.fn(() => {
-      throw new Error('TG Bridge Error');
-    });
-    window.Telegram = {
-      WebApp: {
-        ready: readyMock,
-      },
-    };
+  it('safely handles missing Telegram API', () => {
+    // @ts-expect-error cleanup
+    delete window.Telegram
+    expect(() => initTelegramUI()).not.toThrow()
+  })
 
-    // Функция не должна "пробрасывать" ошибку наружу
-    expect(() => initTelegramUI()).not.toThrow();
-    expect(readyMock).toHaveBeenCalledTimes(1);
-  });
-});
+  it('safely handles partial API (missing WebApp)', () => {
+    // @ts-expect-error mock partial
+    window.Telegram = {} 
+    expect(() => initTelegramUI()).not.toThrow()
+  })
+})

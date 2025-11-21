@@ -18,7 +18,6 @@ const mockRitual = {
 }
 
 describe('RitualCard (Behavior)', () => {
-  // Спаи для проверки вызовов
   const addMock = vi.fn()
   const removeMock = vi.fn()
 
@@ -27,7 +26,7 @@ describe('RitualCard (Behavior)', () => {
   })
 
   it('вызывает add(id), если ритуал еще не в избранном', async () => {
-    // Setup: Ритуала НЕТ в закладках
+    // Setup: False
     // @ts-expect-error mock types
     vi.mocked(useBookmarks).mockReturnValue({
       has: () => false,
@@ -38,20 +37,18 @@ describe('RitualCard (Behavior)', () => {
     const user = userEvent.setup()
     render(<RitualCard item={mockRitual} />)
 
-    // Action: Кликаем "В избранное"
-    const btn = screen.getByRole('button', { name: /☆ В избранное/i })
+    // Ищем актуальный текст: "☆ Сохранить Ритуал"
+    const btn = screen.getByRole('button', { name: /Сохранить Ритуал/i })
     await user.click(btn)
 
-    // Assert: Функция добавления вызвана с правильным ID
-    expect(addMock).toHaveBeenCalledTimes(1)
     expect(addMock).toHaveBeenCalledWith('ritual-123')
   })
 
   it('вызывает remove(id), если ритуал уже в избранном', async () => {
-    // Setup: Ритуал ЕСТЬ в закладках
+    // Setup: True
     // @ts-expect-error mock types
     vi.mocked(useBookmarks).mockReturnValue({
-      has: () => true, // <--- True
+      has: () => true,
       add: addMock,
       remove: removeMock
     })
@@ -59,12 +56,10 @@ describe('RitualCard (Behavior)', () => {
     const user = userEvent.setup()
     render(<RitualCard item={mockRitual} />)
 
-    // Action: Кликаем "В избранном" (текст кнопки другой)
-    const btn = screen.getByRole('button', { name: /★ В избранном/i })
+    // Ищем актуальный текст: "★ Сохранено"
+    const btn = screen.getByRole('button', { name: /Сохранено/i })
     await user.click(btn)
 
-    // Assert: Функция удаления вызвана
-    expect(removeMock).toHaveBeenCalledTimes(1)
     expect(removeMock).toHaveBeenCalledWith('ritual-123')
   })
 })

@@ -1,12 +1,11 @@
-import React from "react";
 import { useEffect } from 'react';
 
+import { initTelegramUI } from './infrastructure/utils/tg';
 import AppShell from './ui/AppShell';
-import { initTelegramUI } from './utils/tg';
 
 export default function App() {
   useEffect(() => {
-// безопасно и неблокирующе
+    // безопасно и неблокирующе
     initTelegramUI();
   }, []);
 

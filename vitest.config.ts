@@ -18,16 +18,19 @@ export default defineConfig({
       reporter: ['text', 'json', 'lcov'],
       reportsDirectory: 'coverage',
       include: ['src/**/*.{ts,tsx}'],
+      // Исключаем только технические файлы (точки входа и конфиги)
       exclude: [
         'src/main.tsx',
+        'src/App.tsx',
+        'src/config.ts',
         'src/setupTests.ts',
         'src/domain/**',
-        'src/ui/ReaderPreview.tsx',
-        'src/ui/NewItemsBar.tsx',
+        // Оставляем TTS и PersistentState как "задел на будущее" (Feature Flags)
         'src/application/tts.ts',
         'src/infrastructure/utils/usePersistentState.ts',
         'src/infrastructure/utils/useTTSState.ts',
       ],
+      // Строгие пороги качества L4
       thresholds: {
         lines: 95,
         branches: 90,

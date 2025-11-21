@@ -11,42 +11,42 @@ export function RitualCard({ item }: Props) {
   const { has, add, remove } = useBookmarks()
   const isBookmarked = has(item.id)
 
-  const toggleBookmark = () => {
-    if (isBookmarked) {
-      remove(item.id)
-    } else {
-      add(item.id)
-    }
-  }
+  const toggle = () => isBookmarked ? remove(item.id) : add(item.id)
 
   return (
-    <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 max-w-2xl mx-auto text-center shadow-2xl border border-white/10">
-      <h1 className="text-4xl font-bold mb-6">{item.title}</h1>
-      
-      <div className="mb-8 p-6 bg-white/5 rounded-2xl">
-        <p className="text-2xl font-light italic leading-relaxed opacity-90">
-          "{item.motivation}"
-        </p>
+    <article className="w-full max-w-lg bg-white/10 backdrop-blur-md border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500"></div>
+
+      <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-purple-200 mb-6 text-center">
+        {item.title}
+      </h2>
+
+      <div className="bg-black/20 rounded-2xl p-6 mb-8 italic text-lg text-center leading-relaxed text-purple-100">
+        "{item.motivation}"
       </div>
 
       <div className="space-y-6">
-        <div>
-          <h3 className="text-sm uppercase tracking-widest opacity-50 mb-2">Твоя задача</h3>
+        <section className="flex flex-col items-center">
+          <h3 className="text-xs uppercase tracking-widest text-white/50 mb-2">Твоя Задача</h3>
           <p className="text-xl font-medium">{item.task}</p>
-        </div>
+        </section>
 
-        <div>
-          <h3 className="text-sm uppercase tracking-widest opacity-50 mb-2">Аффирмация</h3>
-          <p className="text-xl font-medium text-purple-200">{item.affirmation}</p>
-        </div>
+        <section className="flex flex-col items-center">
+          <h3 className="text-xs uppercase tracking-widest text-white/50 mb-2">Аффирмация</h3>
+          <p className="text-xl font-medium text-pink-200">{item.affirmation}</p>
+        </section>
       </div>
 
       <button 
-        onClick={toggleBookmark}
-        className="mt-10 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 transition text-sm font-semibold tracking-wide"
+        onClick={toggle}
+        className={`mt-10 w-full py-4 rounded-xl font-bold tracking-wide transition-all duration-300 ${
+          isBookmarked 
+            ? 'bg-purple-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.5)]' 
+            : 'bg-white/5 hover:bg-white/10 text-white/80'
+        }`}
       >
-        {isBookmarked ? '★ В избранном' : '☆ В избранное'}
+        {isBookmarked ? '★ Сохранено' : '☆ Сохранить Ритуал'}
       </button>
-    </div>
+    </article>
   )
 }

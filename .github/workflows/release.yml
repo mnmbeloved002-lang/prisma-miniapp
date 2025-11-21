@@ -1,0 +1,21 @@
+name: 🚀 L3 Production Release
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Сначала прогоняем стандартый набор (переиспользуем логику)
+  verify:
+    uses: ./.github/workflows/ci.yml
+
+  # Добавляем глубокую безопасность
+  security-deep:
+    name: 🕵️ Semgrep Security
+    runs-on: ubuntu-latest
+    needs: verify
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - run: semgrep scan --config=auto --error

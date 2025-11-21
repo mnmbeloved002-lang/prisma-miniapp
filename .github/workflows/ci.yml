@@ -1,4 +1,4 @@
-name: L4 Quality Gate
+name: 🛡️ L1 Fast Gate (Dev/Main)
 
 on:
   push:
@@ -6,66 +6,53 @@ on:
   pull_request:
     branches: [ main, dev ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  # 1. Быстрые проверки (Код, Типы, Unit-тесты)
   quality:
     name: ⚡ Fast Checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      # L4 Standard: Версия берется из package.json (packageManager)
-      - uses: pnpm/action-setup@v4
-
+      - uses: pnpm/action-setup@v4 # SSOT: версия из package.json
       - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
+        with: { node-version: 20, cache: 'pnpm' }
+      
+      - run: pnpm install --frozen-lockfile
+      
+      - name: 🛡️ Security Audit (Deps)
+        run: pnpm audit --prod --audit-level=moderate
 
-      - name: Install Deps
-        run: pnpm install --frozen-lockfile
-
-      - name: Lint & Typecheck
+      - name: 🔍 Lint & Types
         run: |
           pnpm lint
           pnpm typecheck
 
-      - name: Unit Tests (Vitest)
+      - name: 🧪 Unit Tests
         run: pnpm test:cov
 
-  # 2. Тяжелая артиллерия (Сборка + E2E)
   e2e:
-    name: 🎭 E2E Smoke
+    name: 🎭 Smoke E2E
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      
-      # L4 Standard: SSOT соблюден
       - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
-
-      - name: Install Deps
-        run: pnpm install --frozen-lockfile
-
-      - name: Install Browsers
-        run: npx playwright install chromium --with-deps
-
-      - name: Build App
-        run: pnpm build
-
-      - name: Run Smoke Tests
+        with: { node-version: 20, cache: 'pnpm' }
+      
+      - run: pnpm install --frozen-lockfile
+      - run: npx playwright install chromium --with-deps
+      - run: pnpm build
+      
+      - name: 🚀 Run Smoke Tests
         run: pnpm e2e:smoke
-        env:
-          CI: true
+        env: { CI: 'true' }
 
-      - name: Upload Report
+      - uses: actions/upload-artifact@v4
         if: failure()
-        uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/

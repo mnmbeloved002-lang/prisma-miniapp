@@ -1,0 +1,46 @@
+name: 🌙 L2 Nightly Heavy Ops
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  mutation:
+    name: 🧬 Stryker (Mutants)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      
+      - name: Kill Mutants
+        run: pnpm mutation
+        continue-on-error: true # Отчет важнее блокировки ночью
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report
+          path: reports/mutation/html/
+
+  load-test:
+    name: 🏋️ K6 Load
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      
+      - name: Start Server
+        run: pnpm preview --port 4173 & 
+      - run: npx wait-on http://127.0.0.1:4173
+
+      - uses: grafana/setup-k6-action@v1
+      - run: k6 run tests/perf/k6-smoke.js

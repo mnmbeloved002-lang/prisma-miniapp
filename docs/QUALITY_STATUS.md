@@ -80,4 +80,22 @@
 | 46        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | MUST — TypeScript strict-режим включён полностью. Доказательство: tsconfig.json содержит "strict": true (все 11 критичных флагов включены автоматически) |
 | SNAPSHOT  | ✅     | 2025-11-20 (14:30 VLAT) | локально | Полный переход на Prisma Ritual AI зафиксирован в контейнере. Новости мёртвы. ERL 1–47 закрыты локально. Готов к следующему блоку |
 | 47        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | MUST — Красный typecheck ломает сборку. Доказательство: живой тест — ошибка TS2322 + битый package.json → pnpm typecheck завершился TYPECHECK_RED + exit 1 (CI не пройдёт) |
+| 48        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | MUST — Команда `pnpm lint` для ESLint работает. Доказательство: package.json восстановлен, pnpm lint завершился LINT_GREEN (0 ошибок) |
+| 49        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | MUST — ESLint настроен с @typescript-eslint + плагинами (import, security, react-hooks, unicorn, sonarjs). Доказательство: .eslintrc.cjs + pnpm list |
+| 50        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | MUST — ESLint ошибки/предупреждения ломают сборку. Доказательство: --max-warnings=0 + исправление всех warnings → pnpm lint + typecheck зелёные (LINT_GREEN + TYPECHECK_GREEN) |
+| 51        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | MUST — Команда `pnpm test` для unit/IT-тестов. Доказательство: pnpm test --run → 17 файлов, 58 тестов, 100% passed, "🎉 ПОБЕДА! Все системы в норме." |
+| 52        | ✅     | 2025-11-21 (14:30 VLAT) | —                       | MUST — Vitest запускается в CI и ломает сборку. Доказательство: живая проверка — намеренный fail → pnpm test завершился TEST_RED + exit 1 (ELIFECYCLE) |
+| 53        | ✅     | 2025-11-21 (14:30 VLAT) | —                       | MUST — Для UI используются @testing-library/react и @testing-library/user-event. Доказательство: пакеты установлены, render/screen в 4 тестах, user-event готов к использованию |
+| 54        | ✅     | 2025-11-21 (14:30 VLAT) | —                       | MUST — Есть живые UI-тесты (поведение). Доказательство: 3 behavioral теста в AppShell.test.tsx (Suspense fallback, success, error) — не снапшоты, реальное поведение пользователя |
+| 55        | ✅     | 2025-11-21 (21:30 VLAT) | —                       | MUST — Существует smoke-набор Playwright e2e (минимум 1–2 критичных сценария).  
+
+**Доказательство из реального проекта prisma-miniapp (dev-container):**  
+- Файл: `tests/e2e/smoke.spec.ts` (получен напрямую через cat)  
+- Содержит 4 production-grade behavioral smoke-теста (превышает минимум):  
+  1. Application UI renders in Telegram-like environment — эмуляция Telegram.WebApp API (addInitScript), мок всех методов (ready/expand/MainButton/BackButton), проверка mobile viewport ≤428px, отсутствие horizontal scroll, контент >10 символов, полный network/console/pageerror логгер с дампом при ошибке.  
+  2. Mobile-friendly touch targets — WCAG AA compliant (все кликабельные элементы ≥44×44px), test.skip на desktop.  
+  3. prod has security headers — проверка CSP, X-Content-Type-Options: nosniff, X-Frame-Options: DENY.  
+  4. sourcemaps are hidden — 404/403 на *.js.map и *.css.map в проде.  
+| 56        | ✅     | 2025-11-21 (03:00 VLAT) | —                       | MUST — Playwright-smoke запускается в CI (либо на каждый PR, либо на `dev`/`main`).
+
 

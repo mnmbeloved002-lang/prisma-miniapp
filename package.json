@@ -19,7 +19,7 @@
     "serve:dist": "node scripts/serve-dist.js",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-     "verify": "pnpm run lint && pnpm run typecheck && pnpm run size && pnpm run build",
+    "verify": "pnpm run lint && pnpm run typecheck && pnpm run size && pnpm run build",
     "sanity": "pnpm run lint && pnpm run typecheck && pnpm run test:cov && pnpm run pkg:lint && pnpm run audit && pnpm run build && pnpm run size && pnpm run lhci",
     "sanity:ci": "pnpm run lint && pnpm run typecheck && pnpm run test:cov && pnpm run pkg:lint && pnpm run audit && pnpm run build && pnpm run size",
     "postinstall": "husky",
@@ -36,8 +36,9 @@
     "cov:gaps": "node scripts/coverage-gaps.mjs",
     "cov:full": "pnpm vitest run --coverage && node scripts/coverage-gaps.mjs -c",
     "test:ci": "vitest run -c vitest.ci.config.ts --coverage --reporter=dot",
-    "sec:osv": "npx -y osv-scanner --lockfile=pnpm-lock.yaml --recursive --fail-on=high",
-    "sec:semgrep": "npx -y @semgrep/cli@1 semgrep ci --config p/ci",
+    "sec:osv": "osv-scanner scan --lockfile=pnpm-lock.yaml --format=table",
+    "sec:osv:sarif": "osv-scanner scan --lockfile=pnpm-lock.yaml --format=sarif --output=osv-results.sarif",
+    "sec:osv:ci": "osv-scanner scan --lockfile=pnpm-lock.yaml || (echo '🚨 Vulnerabilities found!' && exit 1)",
     "sec:all": "pnpm sec:osv && pnpm sec:semgrep",
     "e2e:vis": "playwright test -c playwright.visual.config.ts",
     "e2e:smoke": "playwright test -c playwright.smoke.config.ts",
@@ -87,6 +88,7 @@
     "eslint-plugin-security": "^3.0.1",
     "eslint-plugin-sonarjs": "^3.0.5",
     "eslint-plugin-unicorn": "^62.0.0",
+    "gitleaks": "^1.0.0",
     "globals": "^16.4.0",
     "husky": "^9.0.10",
     "jsdom": "^27.0.1",
@@ -111,6 +113,9 @@
     ],
     "*.{json,md,yml,yaml}": [
       "prettier --write"
+    ],
+    "*": [
+      "gitleaks protect --staged --verbose || exit 1"
     ]
   },
   "npmpackagejsonlint": {
@@ -131,7 +136,7 @@
     "overrides": {
       "esbuild": "^0.25.25.0",
       "undici": "^5.29.0",
-      "path-to-regexp": "0.1.7",
+      "path-to-regexp": "^0.1.12",
       "tar": "^7.5.2",
       "tmp": "^0.2.4"
     }

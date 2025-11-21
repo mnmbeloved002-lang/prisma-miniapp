@@ -1,18 +1,28 @@
-import React from "react";
-
-import { useState, useEffect, useRef, lazy, Suspense, memo } from "react";
-
-import { render, screen, fireEvent } from '@testing-library/react';
-import { HelloButton } from './HelloButton';
+import React from 'react'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { describe, it, expect, vi } from 'vitest'
+import { HelloButton } from './HelloButton'
 
 describe('HelloButton', () => {
-  it('increments counter on click', () => {
-    render(<HelloButton />);
-    const btn = screen.getByRole('button', { name: /click me/i });
-    const clicks = screen.getByTestId('clicks');
-    expect(clicks.textContent).toMatch(/0/);
-    fireEvent.click(btn);
-    fireEvent.click(btn);
-    expect(clicks.textContent).toMatch(/2/);
-  });
-});
+  it('renders correctly', () => {
+    render(<HelloButton />)
+    expect(screen.getByRole('button', { name: /hello/i })).toBeInTheDocument()
+  })
+
+  it('handles click using user-event', async () => {
+    // 1. Настраиваем юзера
+    const user = userEvent.setup()
+    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    
+    render(<HelloButton />)
+    
+    // 2. Имитируем реальный клик (асинхронно!)
+    const btn = screen.getByRole('button', { name: /hello/i })
+    await user.click(btn)
+    
+    // 3. Проверка
+    expect(consoleSpy).toHaveBeenCalledWith('Hello')
+    consoleSpy.mockRestore()
+  })
+})

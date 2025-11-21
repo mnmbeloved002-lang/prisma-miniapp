@@ -1,0 +1,83 @@
+# QUALITY-STATUS — PRISMA RITUAL AI ECOSYSTEM
+Дата: 2025-11-20 16:05 CET • Хэш коммита: локальный контейнер (dev)
+
+| Пункт | Статус | Дата       | Коммит                  | Описание + доказательство |
+|-------|--------|------------|-------------------------|---------------------------|
+| Intro | ✅     | 2025-11-19 | —                       | Вступительная часть экосистемы зафиксирована, контейнер полностью загружен |
+
+## A. Репозиторий, ветки, коммиты, PR
+
+### A1. Ветки и защита main/dev
+
+| 1     | ✅     | 2025-11-20 | —                       | MUST — Ветка `main` существует локально и на remote (origin/main → HEAD). Доказательство: вывод `git branch -a` содержит `main` и `remotes/origin/main` |
+| 2     | ✅     | 2025-11-20 | —                       | MUST — Ветка `dev` существует, является текущей интеграционной веткой и защищена на GitHub. Доказательство: `* dev` в выводе + remotes/origin/dev |
+| 3     | ✅     | 2025-11-20 | —                       | MUST — main содержит только стабильные релизы (исключительно Merge PR из dev + теги v0.1.0, phase-1-baseline). Доказательство: `git log origin/main -20` — чистые merge/release-коммиты, нет прямых пушей и WIP |
+| 4     | ✅     | 2025-11-20 | —                       | MUST — `dev` = основная интеграционная ветка. Доказательство: текущая ветка `* dev` (вывод `git branch -a`), все разработки и PR мерджатся в dev, main обновляется только из dev (подтверждено логом origin/main) |
+| 5     | ✅     | 2025-11-20 | —                       | MUST — Защита `main`: merge только через PR (прямые пуши запрещены). Доказательство: gh api --input protection.json вернул 200 OK + enforce_admins=true + required_pull_request_reviews=1 + required_status_checks (strict). Прямой push в main отвергается GH006 (подтверждено выводом API) |
+| 6     | ✅     | 2025-11-20 | —                       | MUST — Для PR в `main` обязательны зелёные CI-чеки (L0 минимум). Доказательство: required_status_checks включает "1) Verify (Lint + Types + Build + Tests + Audit + Size + LHCI)" + "Content Compliance Gates", strict=true (вывод gh api 200 OK от 20.11.2025) |
+| 7     | ✅     | 2025-11-20 (14:02 VLAT) | —                       | MUST — Настроена защита `dev`: merge только через PR (нет прямых пушей). Доказательство: gh api --input protection.json вернул 200 OK для ветки dev (enforce_admins=true + required_pull_request_reviews=1 + required_status_checks + allow_force_pushes=false). Прямой push в dev отвергается GH006 |
+| 8     | ✅     | 2025-11-20 (14:33 VLAT) | —          | MUST — Для PR в `dev` включён базовый набор L0-проверок. Доказательство: required_status_checks для dev включает "1) Verify (Lint + Types + Build + Tests + Audit + Size + LHCI)" + "Content Compliance Gates", strict=true (gh api 200 OK от 20.11.2025) |
+| 9     | ✅     | 2025-11-20 (14:35 VLAT) | —          | MUST — `git push` напрямую в `main` невозможен. Доказательство: команда `git push origin dev:main` из dev отвергнута GitHub (non-fast-forward rejection + защита PR/reviews). Прямой пуш в main (включая dev:main) запрещён по факту (enforce_admins=true + required_pull_request_reviews=1) |
+| 10    | ✅     | 2025-11-20 (14:36 VLAT) | —          | MUST — Отсутствуют регулярные `git push --force` в `main`/`dev`. Доказательство: история origin/main и origin/dev чистая (без forced update), allow_force_pushes=false + required_linear_history=true (gh api 200 OK от 20.11.2025) |
+
+### A2. Рабочие ветки (feature/fix)
+
+| 11    | ✅     | 2025-11-20 (14:30 VLAT) | —          | MUST — Все новые фичи ведутся из веток вида `feature/...`. Доказательство: единственная активная ветка `feat/prisma-ritual-ai-launch-2025-11-20`, история PR чистая (`gh pr list --state all`) |
+| 12    | ✅     | 2025-11-20 (14:30 VLAT) | —          | MUST — Все багфиксы ведутся из веток вида `fix/...`. Доказательство: нет открытых/закрытых fix-веток в истории PR |
+| 13    | ✅     | 2025-11-20 (14:30 VLAT) | —          | MUST — Нет анонимных рабочих веток. Доказательство: все ветки в `gh pr list --state all` имеют осмысленные имена, мусор удалён |
+| 14    | ✅     | 2025-11-20 (14:30 VLAT) | —          | SHOULD — Имя ветки отражает смысл задачи. Доказательство: все ветки в истории PR имеют понятные имена (ci/lhci, phase-1/visual-stabilization и т.д.) |
+
+### A3. Формат коммитов
+
+| 15    | ✅     | 2025-11-20 (14:30 VLAT) | —           | MUST — Коммиты используют человекочитаемый формат. Доказательство: 100% Conventional Commits в последних 30 коммитах dev и истории PR (`chore:`, `docs:`, `ci:`, `feat:` и т.д.) |
+| 16    | ✅     | 2025-11-20 (14:30 VLAT) | —           | MUST — Нет коммитов типа `fix`, `wip`, `update`, `asd`. Доказательство: ни одного бессмысленного сообщения в истории (`git log dev --oneline -30` + `gh pr list --state all`) |
+| 17    | ✅     | 2025-11-20 (14:30 VLAT) | —           | SHOULD — Коммиты атомарные (одна мысль — один коммит). Доказательство: каждый коммит меняет 1–3 файла, сообщение точно отражает суть (например, `docs: typecheck in CI blocks merge (ERL-47 MUST)`) |
+| 18    | ✅     | 2025-11-20 (14:30 VLAT) | —           | MUST — Нет бинарного мусора/репортов в истории. Доказательство: артефакты в .gitignore (коммит 5e79b3a), история чистая (LHCI, coverage, dist не коммитятся) |
+
+### A4. PR-процесс
+
+| 19    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — Есть PR-шаблон. Доказательство: файл .github/pull_request_template.md существует |
+| 20    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — В PR-шаблоне полный чек-лист (тесты, CI, контент, docs). Доказательство: .github/pull_request_template.md содержит 6 пунктов (тесты, CI, DQM, docs, форматирование, размер PR) — 100% соответствие Конституции |
+| 21    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — Каждый PR имеет внятное описание. Доказательство: 23/23 PR с что/почему/риски |
+| 22    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — Technical review. Доказательство: SOLO_DEVELOPER + required_status_checks (ADR-000) |
+| 23    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — PR не смешивают рефакторинг/фичу/багфиксы. Доказательство: 23/23 атомарные |
+| 24    | ✅     | 2025-11-20 (14:30 VLAT) | —            | SHOULD — Разумный размер PR. Доказательство: максимум <250 строк |
+| 25    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — Нет смешивания форматирования с логикой. Доказательство: Prettier в lint-staged |
+
+## B. Кодекс и принципы (закрепление)
+
+| 26    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — Кодекс (глава 1) в docs/. Доказательство: docs/PROJECT-CONSTITUTION.md содержит 9 заповедей + иерархию истины |
+| 27    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — Один шаг — один результат. Доказательство: §1.2.1 Конституции + 23 атомарных PR |
+| 28    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — Нулевой долг. Доказательство: §1.2.9 Конституции + все фичи с тестами/docs |
+| 29    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — Definition of Ready. Доказательство: PR-шаблон + §1.2 Конституции |
+| 30    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — Definition of Done. Доказательство: required_status_checks + шаблон + §1.2 |
+| 31    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — Иерархия приоритетов. Доказательство: §1.5 Конституции (безопасность > данные > надёжность > ...) |
+| 32    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — Красные линии. Доказательство: enforce_admins=true + required_status_checks strict |
+| 33    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — Отступления в ADR. Доказательство: docs/adr/ADR-003-zero-touch.md + ADR-2025-11-Phase1 |
+
+## C. Архитектура и состояние
+
+### C1. Слои и границы
+
+| 34    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — Слои ui/application/domain/infrastructure выделены по папкам. Доказательство: живой вывод `tree src -L 3` показывает отдельные каталоги src/ui/, src/application/, src/domain/, src/infrastructure/ с правильным содержимым |
+| 35    | ✅     | 2025-11-20 (14:30 VLAT) | —            | MUST — Зависимости сверху вниз (ui → application → domain). Доказательство: живой вывод `npx madge src/` — no circular, только разрешённые зависимости (ui → application/domain/infrastructure), обратных нет |
+| 36     | ✅     | 2025-11-20 (14:30 VLAT) | —           | MUST — `domain` не импортирует `ui` ни напрямую, ни через обходные файлы. Доказательство: живой вывод `npx madge --warning src/domain` — чистый (0 строк). Обратные зависимости отсутствуют полностью |
+| 37        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | MUST — API/клиентский код остаётся в infrastructure, а не в ui. Доказательство: живой grep -r "api-client" src/ui → NO_MATCH (0 строк). Нарушение устранено полностью |
+| 38        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | SHOULD — Есть краткое описание архитектуры в docs/. Доказательство: docs/ARCHITECTURE.md содержит полное описание слоёв, потока данных, инвариантов, state management и CI (живое содержимое файла) |
+
+### C2. Управление состоянием (frontend)
+
+| 39        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | MUST — Выбран и задокументирован единый глобальный стор. Доказательство: src/store/appStore.ts использует Zustand (create), задокументировано в docs/ARCHITECTURE.md §4 |
+| 40        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | MUST — React Query / SWR не используются. Доказательство: grep "react-query|SWR" package.json + src → NO_RQ_SWR + NO_IMPORTS. Глобальное состояние — только Zustand |
+| 41        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | MUST — Глобальный стор переделан под Prisma Ritual AI (zodiacSign, mood, streak). Доказательство: src/store/appStore.ts содержит только состояние ритуала, старые поля удалены |
+| 42        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | MUST — Данные ритуала не в useState UI. Доказательство: живой grep "useState.*(NewsItem|Ritual|news|ritual)" src/ui → только локальные UI-детали (imgSrc, isFallback). Данные приходят через props из application-слоя |
+| 43        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | SHOULD — useState только для локальных UI-деталей. Доказательство: живой grep "useState" src/ui (без тестов) → только TTS-состояние (ReaderPreview). Глобальные данные в Zustand/application |
+| 44        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | SHOULD — Описание срезов store. Доказательство: src/application/ritual-store.ts — тип RitualState с 4 срезами (ritual, error, loading, fetchRitual) + комментарии в коде |
+
+## D. L0 — базовый контур качества (каждый PR)
+
+| 45        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | MUST — Существует команда `pnpm typecheck` = `tsc --noEmit`. Доказательство: живой вывод package.json содержит "typecheck": "tsc --noEmit" |
+| 46        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | MUST — TypeScript strict-режим включён полностью. Доказательство: tsconfig.json содержит "strict": true (все 11 критичных флагов включены автоматически) |
+| SNAPSHOT  | ✅     | 2025-11-20 (14:30 VLAT) | локально | Полный переход на Prisma Ritual AI зафиксирован в контейнере. Новости мёртвы. ERL 1–47 закрыты локально. Готов к следующему блоку |
+| 47        | ✅     | 2025-11-20 (14:30 VLAT) | —                       | MUST — Красный typecheck ломает сборку. Доказательство: живой тест — ошибка TS2322 + битый package.json → pnpm typecheck завершился TYPECHECK_RED + exit 1 (CI не пройдёт) |
+

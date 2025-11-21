@@ -1,7 +1,9 @@
 import React, { useEffect } from "react";
+
+import { useRitualStore } from '../application/ritual-store'
+
 import { Header } from './Header'
 import { RitualCard } from './RitualCard'
-import { useRitualStore } from '../application/ritual-store'
 
 export default function AppShell() {
   const { ritualItem, error, loading, fetchRitual } = useRitualStore()

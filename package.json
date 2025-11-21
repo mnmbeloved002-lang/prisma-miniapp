@@ -8,10 +8,10 @@
   "type": "module",
   "packageManager": "pnpm@10.20.0",
   "scripts": {
-    "lint": "eslint src api --max-warnings=0"
+    "lint": "eslint src api --max-warnings=0",
     "size": "size-limit",
     "mutation": "stryker run",
-    "a11y": "playwright test -c playwright.a11y.config.ts",
+    "a11y": "playwright test -c playwright.a11y.config.ts --reporter=html",
     "vr": "playwright test tests/e2e/smoke.spec.ts -g \"screenshot\" || true",
     "dev": "vite",
     "build": "node ./scripts/branch-guard.mjs && tsc && vite build",
@@ -131,7 +131,7 @@
     "overrides": {
       "esbuild": "^0.25.25.0",
       "undici": "^5.29.0",
-      "path-to-regexp": "^6.3.0",
+      "path-to-regexp": "0.1.7",
       "tar": "^7.5.2",
       "tmp": "^0.2.4"
     }

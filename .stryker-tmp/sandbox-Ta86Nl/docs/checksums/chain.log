@@ -1,4 +1,0 @@
-# content integrity chain — SHA-256 of public/news.json
-# fields (tab-separated):
-# ts_utc | branch | commit | file_sha256 | actor | source | note
-# GENESIS — entries will appear after first content merge in phase 2.

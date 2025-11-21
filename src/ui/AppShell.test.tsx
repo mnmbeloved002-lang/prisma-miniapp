@@ -1,22 +1,24 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import { vi, describe, it, expect, beforeEach } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import AppShell from './AppShell'
 import { useRitualStore } from '../application/ritual-store'
 
-// Мокаем сам стор
+// Мокаем стор полностью
 vi.mock('../application/ritual-store')
 
 const mockRitual = {
-  id: '1',
-  title: 'Утренний свет',
-  motivation: 'Ты лучше всех',
-  task: 'Вдохни',
-  affirmation: 'Я могу',
-  imagePrompt: 'sun'
+  id: 'test-1',
+  title: 'Тестовый Ритуал',
+  motivation: 'Ты справишься',
+  task: 'Выпей воды',
+  affirmation: 'Я есть сила',
+  imagePrompt: 'test',
+  publishedAt: '2025-01-01'
 }
 
-describe('AppShell (Ritual AI)', () => {
+describe('AppShell Integration', () => {
   const fetchMock = vi.fn()
 
   beforeEach(() => {
@@ -26,12 +28,8 @@ describe('AppShell (Ritual AI)', () => {
   it('показывает загрузку', () => {
     // @ts-expect-error mock
     vi.mocked(useRitualStore).mockReturnValue({
-      loading: true,
-      ritualItem: null,
-      error: null,
-      fetchRitual: fetchMock
+      loading: true, ritualItem: null, error: null, fetchRitual: fetchMock
     })
-
     render(<AppShell />)
     expect(screen.getByText(/Загрузка.../i)).toBeInTheDocument()
   })
@@ -39,26 +37,25 @@ describe('AppShell (Ritual AI)', () => {
   it('рендерит ритуал', () => {
     // @ts-expect-error mock
     vi.mocked(useRitualStore).mockReturnValue({
-      loading: false,
-      ritualItem: mockRitual,
-      error: null,
-      fetchRitual: fetchMock
+      loading: false, ritualItem: mockRitual, error: null, fetchRitual: fetchMock
     })
-
     render(<AppShell />)
-    expect(screen.getByText('Утренний свет')).toBeInTheDocument()
+    expect(screen.getByText('Тестовый Ритуал')).toBeInTheDocument()
+    expect(screen.getByText('"Ты справишься"')).toBeInTheDocument()
   })
 
-  it('показывает ошибку', () => {
+  it('показывает ошибку и кнопку повтора', async () => {
+    const user = userEvent.setup()
     // @ts-expect-error mock
     vi.mocked(useRitualStore).mockReturnValue({
-      loading: false,
-      ritualItem: null,
-      error: 'Karma error',
-      fetchRitual: fetchMock
+      loading: false, ritualItem: null, error: 'Сбой связи', fetchRitual: fetchMock
     })
-
+    
     render(<AppShell />)
-    expect(screen.getByText(/Karma error/i)).toBeInTheDocument()
+    expect(screen.getByText('Сбой связи')).toBeInTheDocument()
+    
+    const retryBtn = screen.getByRole('button', { name: /Попробовать снова/i })
+    await user.click(retryBtn)
+    expect(fetchMock).toHaveBeenCalled()
   })
 })

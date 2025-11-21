@@ -1,76 +1,31 @@
-import { CACHE_TTL_MS } from '../config';
-import type { RitualItem } from '../domain/types';
+import { RitualSchema, type Ritual } from '../domain/ritual-schema';
 
-import { storage } from './storage';
+// Тип ответа от сервера (обертка)
+type RitualResponse = { ritual: unknown };
 
-// 1. Определяем тип *реального* ответа от API
-type RitualResponse = {
-  ritual: RitualItem[];
-  [key: string]: unknown; // Позволяем иметь другие поля (timestamp, etc.)
-};
+export async function getRitualCached(): Promise<Ritual> {
+  // Имитация лага сети для реалистичности UI
+  await new Promise(resolve => setTimeout(resolve, 400));
 
-type CacheEntry = { ts: number; etag?: string; data: RitualItem[] };
-const KEY = 'ritual-cache-v1';
-
-export async function getRitualCached(): Promise<RitualItem[]> {
-  const cached = storage.get<CacheEntry>(KEY);
-  const headers: Record<string, string> = {};
-  if (cached?.etag) headers['If-None-Match'] = cached.etag;
-
-  const freshAllowed = !cached || (Date.now() - cached.ts) > CACHE_TTL_MS;
-  if (!freshAllowed && cached?.data) return cached.data;
-
-  try {
-    const res = await fetch('/ritual.json', { headers });
-    if (res.status === 304 && cached?.data) return cached.data;
-    const etag = res.headers.get('ETag') ?? undefined;
-
-    // --- ИСПРАВЛЕНИЕ ЗДЕСЬ ---
-    // Получаем ВЕСЬ объект, как он есть
-    const responseJson = (await res.json()) as RitualResponse;
-    // Извлекаем из него массив новостей
-    const data = responseJson.ritual;
-    // --- КОНЕЦ ИСПРАВЛЕНИЯ ---
-
-    // Дополнительная защита, чтобы сделать систему "ещё лучше"
-    if (!Array.isArray(data)) {
-      throw new Error('Invalid API response: "ritual" field is not an array.');
+  try {
+    // 1. Запрос к статическому файлу
+    const res = await fetch('/rituals.json');
+    
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
     }
 
-    storage.set(KEY, { ts: Date.now(), etag, data });
-    return data;
-  } catch (e) {
-    console.error('Failed to fetch ritual', e);
-    if (cached?.data) return cached.data; // оффлайн фолбэк
-    throw new Error('Network failed and no cache available');
-  }
-}
+    // 2. Парсинг JSON
+    const json = (await res.json()) as RitualResponse;
 
-// Принудительно тянем свежак (мимо TTL), аккуратно обновляя кэш
-export async function getRitualFresh(): Promise<RitualItem[]> {
-  const cached = storage.get<CacheEntry>(KEY);
-  try {
-    const headers: Record<string, string> = {};
-    if (cached?.etag) headers['If-None-Match'] = cached.etag;
-    const res = await fetch('/ritual.json', { headers });
-    if (res.status === 304 && cached?.data) return cached.data;
-    const etag = res.headers.get('ETag') ?? undefined;
-
-    // --- ИСПРАВЛЕНИЕ ЗДЕСЬ (аналогично) ---
-    const responseJson = (await res.json()) as RitualResponse;
-    const data = responseJson.ritual;
-    // --- КОНЕЦ ИСПРАВЛЕНИЯ ---
-
-    // Дополнительная защита
-    if (!Array.isArray(data)) {
-      console.error('Invalid fresh API response: "ritual" field is not an array.');
-      return cached?.data ?? []; // Безопасно отдаем кэш
-    }
-
-    storage.set(KEY, { ts: Date.now(), etag, data });
-    return data;
-  } catch (e) {
-    console.error('Failed to fetch fresh ritual', e);
-    return cached?.data ?? [];
-  }
+    // 3. 🛡️ ZOD VALIDATION (L4 Security Gate)
+    // Проверяем именно вложенный объект ritual
+    const validData = RitualSchema.parse(json.ritual);
+    
+    return validData;
+  } catch (error) {
+    console.error('Data Fetch Error:', error);
+    // В продакшене здесь может быть фолбэк на кэш
+    throw new Error('Не удалось загрузить ритуал. Проверьте связь с космосом.');
+  }
 }

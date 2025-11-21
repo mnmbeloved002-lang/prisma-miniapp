@@ -1,14 +1,12 @@
-import React from "react";
+import React from 'react'
 
-// src/components/HelloButton.tsx
-import { useState } from 'react';
-
-export function HelloButton() {
-  const [count, setCount] = useState(0);
+export const HelloButton = () => {
   return (
-    <div>
-      <button onClick={() => setCount((c) => c + 1)}>Click me</button>
-      <p data-testid="clicks">Clicks: {count}</p>
-    </div>
-  );
+    <button 
+      onClick={() => console.log('Hello')}
+      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+    >
+      Hello
+    </button>
+  )
 }

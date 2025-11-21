@@ -1,11 +1,10 @@
 import React from "react";
-
 import { useState, useEffect, useRef, lazy, Suspense, memo } from "react";
 
 
 
 
-import { shareLink } from '../utils/share' // Убираем buildItemShareUrl
+import { shareLink } from '../infrastructure/utils/share' // Убираем buildItemShareUrl
 
 interface Props {
   html: string

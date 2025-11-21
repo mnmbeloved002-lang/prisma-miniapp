@@ -1,6 +1,7 @@
 import React from 'react'
+
 import { useBookmarks } from '../application/bookmarks'
-import type { Ritual } from '../domain/ritual'
+import type { Ritual } from '../domain/ritual-schema'
 
 interface Props {
   item: Ritual

@@ -13,9 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      # FIX: Убрали хардкод версии
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -39,9 +40,10 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      
+      # FIX: Убрали хардкод версии
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -61,7 +63,6 @@ jobs:
         env:
           CI: true
 
-      # Сохраняем отчет только если тесты упали (экономим место)
       - name: Upload Report
         if: failure()
         uses: actions/upload-artifact@v4

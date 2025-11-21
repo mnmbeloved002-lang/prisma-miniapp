@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# L4 Security Gate: Delegate security and linting to lint-staged
+echo "🛡️ Running pre-commit checks..."
+ 
+# FIX: Запускаем lint-staged, который теперь содержит gitleaks check
+npx lint-staged || exit 1
+ 

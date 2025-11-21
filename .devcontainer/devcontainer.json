@@ -1,12 +1,17 @@
 {
   "name": "Prisma MiniApp Dev (L2 Stable - Recovery)",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bullseye",
-  
-  // УДАЛЕНЫ ВСЕ features (pnpm, chrome), вызывающие ошибку аутентификации.
-  "features": {}, 
 
-  // Установка pnpm и Chromium перенесена в надежный postCreateCommand (apt).
-  "postCreateCommand": "npm install -g pnpm && sudo apt-get update && sudo apt-get install -y chromium-browser", 
+  // УДАЛЕНЫ ВСЕ features (pnpm, chrome), вызывающие ошибку аутентификации.
+  "features": {},
+
+  // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+  // ОБНОВЛЁННЫЙ postCreateCommand:
+  // 1. pnpm (глобально)
+  // 2. Chromium (для LHCI/Playwright)
+  // 3. OSV-Scanner (latest бинарник) — теперь ставится автоматически при КАЖДОМ открытии/ребилде
+  "postCreateCommand": "npm install -g pnpm && sudo apt-get update && sudo apt-get install -y chromium-browser && curl -L https://github.com/google/osv-scanner/releases/latest/download/osv-scanner_linux_amd64 -o /usr/local/bin/osv-scanner && chmod +x /usr/local/bin/osv-scanner",
+  // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
 
   "customizations": {
     "vscode": {

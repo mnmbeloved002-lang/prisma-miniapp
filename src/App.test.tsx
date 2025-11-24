@@ -1,25 +1,34 @@
-import React from 'react'
-import { render, screen, waitFor } from '@testing-library/react'
-import { vi, describe, it, expect } from 'vitest'
-import AppShell from './ui/AppShell'
-import { useRitualStore } from './application/ritual-store'
+// biome-ignore assist/source/organizeImports: keep React import first for JSX runtime
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+void React;
+import { useRitualStore } from './application/ritual-store';
+import AppShell from './ui/AppShell';
 
-vi.mock('./application/ritual-store')
+vi.mock('./application/ritual-store');
 
+// biome-ignore lint/security/noSecrets: test suite label, not a secret
 describe('App (Integration)', () => {
   it('рендерит заголовок Prisma Ritual AI', async () => {
     // @ts-expect-error mock
     vi.mocked(useRitualStore).mockReturnValue({
       loading: false,
-      ritualItem: { id: '1', title: 'Test', motivation: 'M', task: 'T', affirmation: 'A' }, 
+      ritualItem: {
+        id: '1',
+        title: 'Test',
+        motivation: 'M',
+        task: 'T',
+        affirmation: 'A',
+      },
       error: null,
-      fetchRitual: vi.fn()
-    })
+      fetchRitual: vi.fn(),
+    });
 
-    render(<AppShell />)
-    
+    render(<AppShell />);
+
     await waitFor(() => {
-      expect(screen.getByText('Prisma Ritual AI')).toBeInTheDocument()
-    })
-  })
-})
+      expect(screen.getByText('Prisma Ritual AI')).toBeInTheDocument();
+    });
+  });
+});

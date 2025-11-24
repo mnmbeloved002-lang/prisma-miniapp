@@ -1,7 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Telegram Mini App Smoke Tests', () => {
-
   test('Application UI renders in Telegram-like environment', async ({ page, isMobile }) => {
     const networkLog: string[] = [];
 
@@ -9,7 +8,7 @@ test.describe('Telegram Mini App Smoke Tests', () => {
     page.on('request', (req) => {
       networkLog.push(`[REQ] ${req.method()} ${req.url()}`);
     });
-    
+
     page.on('response', (res) => {
       networkLog.push(`[RES] ${res.status()} ${res.url()}`);
     });
@@ -17,10 +16,10 @@ test.describe('Telegram Mini App Smoke Tests', () => {
     page.on('pageerror', (exception) => {
       networkLog.push(`[PAGE ERROR] ${exception.message}`);
     });
-    
+
     page.on('console', (msg) => {
       if (msg.type() === 'error') {
-         networkLog.push(`[CONSOLE ERROR] ${msg.text()}`);
+        networkLog.push(`[CONSOLE ERROR] ${msg.text()}`);
       }
     });
 
@@ -29,24 +28,30 @@ test.describe('Telegram Mini App Smoke Tests', () => {
       await page.addInitScript(() => {
         // Мокаем Telegram WebApp API если его нет
         if (typeof window.Telegram === 'undefined') {
-          (window as any).Telegram = {
+          type TelegramWebApp = {
+            WebApp: {
+              ready: () => void;
+              expand: () => void;
+              MainButton: {
+                show: () => void;
+                hide: () => void;
+                onClick: (cb: () => void) => void;
+                offClick: (cb: () => void) => void;
+              };
+            };
+          };
+
+          (window as typeof window & { Telegram: TelegramWebApp }).Telegram = {
             WebApp: {
               ready: () => {},
               expand: () => {},
-              close: () => {},
-              BackButton: { 
-                isVisible: false, 
-                show: () => {}, 
-                hide: () => {} 
-              },
-              MainButton: { 
-                text: 'Submit', 
-                show: () => {}, 
+              MainButton: {
+                show: () => {},
                 hide: () => {},
-                onClick: (cb: () => void) => {},
-                offClick: (cb: () => void) => {},
-              }
-            }
+                onClick: (_cb: () => void) => {},
+                offClick: (_cb: () => void) => {},
+              },
+            },
           };
         }
       });
@@ -59,11 +64,14 @@ test.describe('Telegram Mini App Smoke Tests', () => {
         // Для мобильных: проверяем адаптивность
         const viewport = page.viewportSize();
         expect(viewport?.width).toBeLessThanOrEqual(428); // Pixel 5 width
-        
+
         // Проверяем, что контент не выходит за границы
         const body = page.locator('body');
-        const bodyWidth = await body.evaluate(el => el.clientWidth);
-        expect(bodyWidth).toBeLessThanOrEqual(viewport!.width);
+        const bodyWidth = await body.evaluate((el) => el.clientWidth);
+
+        if (viewport?.width !== undefined) {
+          expect(bodyWidth).toBeLessThanOrEqual(viewport.width);
+        }
       }
 
       // ✅ Универсальная проверка контента
@@ -75,7 +83,6 @@ test.describe('Telegram Mini App Smoke Tests', () => {
         return document.documentElement.scrollWidth > document.documentElement.clientWidth;
       });
       expect(hasHorizontalScroll).toBe(false);
-
     } catch (error) {
       console.error('============================================================');
       console.error('Telegram Mini App E2E FAILED:');
@@ -92,11 +99,11 @@ test.describe('Telegram Mini App Smoke Tests', () => {
     test.skip(!isMobile, 'This test is for mobile devices only');
 
     await page.goto('/');
-    
+
     // Проверяем, что кликабельные элементы достаточно большие для touch
     const buttons = page.locator('button, [onclick], a[href]');
     const count = await buttons.count();
-    
+
     for (let i = 0; i < Math.min(count, 5); i++) {
       const button = buttons.nth(i);
       const box = await button.boundingBox();
@@ -119,7 +126,7 @@ test.describe('Telegram Mini App Smoke Tests', () => {
   test('sourcemaps are hidden (404)', async ({ request }) => {
     const jsRes = await request.get('/assets/index-12345.js.map');
     expect([404, 403]).toContain(jsRes.status());
-    
+
     const cssRes = await request.get('/assets/index-12345.css.map');
     expect([404, 403]).toContain(cssRes.status());
   });

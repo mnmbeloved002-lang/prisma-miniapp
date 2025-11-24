@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, type Locator, type Page, test } from '@playwright/test';
 
 // Убираем анимации/мигания, чтобы скриншоты были детерминированными
 async function harden(page: Page) {
@@ -46,7 +46,7 @@ async function makeEmptyState(page: Page) {
   for (const locator of searchCandidates) {
     try {
       if (await locator.isVisible()) {
-        await locator.fill('qwertyuiopasdf1234-no-results-expected');
+        await locator.fill('no-results-expected-query-for-visual-tests');
         return;
       }
     } catch {
@@ -57,7 +57,7 @@ async function makeEmptyState(page: Page) {
 
 // Форсируем ошибку загрузки news.json
 async function forceError(page: Page) {
-  await page.route('**/news.json', async route => {
+  await page.route('**/news.json', async (route) => {
     await route.fulfill({
       status: 500,
       contentType: 'application/json',

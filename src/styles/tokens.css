@@ -1,5 +1,5 @@
 /* src/styles/tokens.css */
-:root{
+:root {
   /* цвета — мягкая тёмная тема */
   --bg: #0e1116;
   --surface: #151922;
@@ -13,9 +13,13 @@
   /* радиусы/тени */
   --radius-xl: 16px;
   --radius-lg: 12px;
-  --shadow-cinema: 0 6px 24px rgba(0,0,0,.24);
-  --shadow-card: 0 4px 12px rgba(0,0,0,.14);
+  --shadow-cinema: 0 6px 24px rgba(0, 0, 0, 0.24);
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.14);
 }
 
 /* моментальный фон/текст (FCP) */
-html,body{background:var(--bg);color:var(--fg);}
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
+}

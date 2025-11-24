@@ -1,13 +1,28 @@
-// src/utils/tg.ts
-// Никаких сайд-эффектов на уровне модуля — только функция!
+// src/infrastructure/utils/tg.ts
+// Безопасная инициализация Telegram WebApp без сайд-эффектов на уровне модуля.
 
-// Переименован в 'TgWebAppMinimal' для ясности
 type TgWebAppMinimal = {
-  ready?: () => void;
-  expand?: () => void;
-  disableVerticalSwipes?: () => void;
-  MainButton?: { setText?: (s: string) => void };
+  ready?(): void;
+  expand?(): void;
+  disableVerticalSwipes?(): void;
+  MainButton?: {
+    setText?(label: string): void;
+  };
 };
+
+interface TelegramWebAppGlobal extends Window {
+  Telegram?: {
+    WebApp?: TgWebAppMinimal;
+  };
+}
+
+function getTelegramWindow(): TelegramWebAppGlobal | undefined {
+  // SSR-safe: в Node 'window' может быть не определён
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+  return window as unknown as TelegramWebAppGlobal;
+}
 
 /**
  * Безопасная и необязательная инициализация Telegram WebApp.
@@ -15,22 +30,20 @@ type TgWebAppMinimal = {
  */
 export function initTelegramUI(): void {
   try {
-    // 1. Используем 'any' для безопасного доступа к глобальному window.Telegram,
-    // но оборачиваем в eslint-disable для устранения конфликта с жестким правилом.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const Telegram = (window as any).Telegram; 
-    
-    if (!Telegram) return;
+    const tgWindow = getTelegramWindow();
+    const webApp = tgWindow?.Telegram?.WebApp;
 
-    // 2. Затем, приводим WebApp к нашему минимальному, проверенному типу.
-    const tg = Telegram.WebApp as TgWebAppMinimal; 
-    
-    if (!tg) return;
+    if (!webApp) {
+      return;
+    }
 
     // Минимальные безопасные вызовы
-    tg.ready?.(); 
-    // Всё остальное — осознанно позже, по месту
+    webApp.ready?.();
+    // Остальные методы можно дергать по месту при необходимости:
+    // webApp.expand?.();
+    // webApp.disableVerticalSwipes?.();
+    // webApp.MainButton?.setText?.('...');
   } catch {
-    // ничего — мост НЕ должен ломать первый рендер UI
+    // Мост НЕ должен ломать первый рендер UI
   }
 }

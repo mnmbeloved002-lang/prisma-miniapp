@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test'
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -21,7 +21,7 @@ export default defineConfig({
   projects: [
     {
       name: 'Desktop Chrome',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
         baseURL: 'http://127.0.0.1:4173',
         trace: 'retain-on-failure',
@@ -30,7 +30,7 @@ export default defineConfig({
     },
     {
       name: 'Mobile Chrome',
-      use: { 
+      use: {
         ...devices['Pixel 5'],
         baseURL: 'http://127.0.0.1:4173',
         trace: 'retain-on-failure',
@@ -38,4 +38,4 @@ export default defineConfig({
       },
     },
   ],
-})
+});

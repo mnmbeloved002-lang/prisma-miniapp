@@ -1,25 +1,40 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { reportError } from './reportError';
 
-describe('reportError', () => {
-  const origFetch = global.fetch;
-
-  beforeEach(() => {
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
-  });
+describe('reportError (basic happy-path)', () => {
+  const originalFetch = global.fetch;
 
   afterEach(() => {
-    global.fetch = origFetch as any;
+    global.fetch = originalFetch as typeof fetch;
     vi.restoreAllMocks();
   });
 
-  it('sends minimal payload', async () => {
-    await reportError(new Error('Boom'), { context: 'unit-test' });
-    expect(global.fetch).toHaveBeenCalledTimes(1);
-    const [url, init] = (global.fetch as any).mock.calls[0];
-    expect(url).toMatch(/\/api\/report-error$/);
-    expect(init.method).toBe('POST');
-    const body = JSON.parse(init.body);
-    expect(body.message).toMatch(/Boom/);
-    expect(body.meta.context).toBe('unit-test');
+  it('sends serialized error to /api/report-error with POST', async () => {
+    const mockFetch = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>().mockResolvedValue(
+      new Response(null, {
+        status: 200,
+      }),
+    );
+
+    global.fetch = mockFetch as typeof fetch;
+
+    const error = new Error('Boom');
+    await expect(reportError(error, { context: 'unit-test' })).resolves.toBeUndefined();
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    const [url, init] = mockFetch.mock.calls[0] ?? [];
+    expect(String(url)).toMatch(/\/api\/report-error$/);
+
+    const requestInit = init as RequestInit | undefined;
+    expect(requestInit).toBeDefined();
+    expect(requestInit?.method).toBe('POST');
+    expect(typeof requestInit?.body).toBe('string');
+
+    if (typeof requestInit?.body === 'string') {
+      const body = JSON.parse(requestInit.body);
+      expect(body.message).toBe('Boom');
+      expect(body.meta).toEqual({ context: 'unit-test' });
+    }
   });
 });

@@ -1,33 +1,54 @@
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { openLink } from './nav';
 
-describe('openLink', () => {
-  const originalTelegram = window.Telegram;
-  const originalOpen = window.open;
-  const originalLocation = window.location;
+type TelegramLike = {
+  WebApp?: {
+    openLink?: (url: string, options?: { try_instant_view?: boolean }) => void;
+  };
+};
 
+type WindowWithTelegram = Window & {
+  Telegram?: TelegramLike;
+};
+
+const windowWithTelegram = window as WindowWithTelegram;
+
+const originalTelegram = windowWithTelegram.Telegram;
+const originalOpen = window.open;
+const originalLocation = window.location;
+
+describe('openLink', () => {
   beforeEach(() => {
-    // Сбрасываем все моки
-    vi.clearAllMocks();
-    delete (window as any).Telegram;
-    delete (window as any).open;
-    delete (window as any).location;
+    vi.restoreAllMocks();
+
+    delete windowWithTelegram.Telegram;
+    window.open = originalOpen;
+
+    Object.defineProperty(window, 'location', {
+      value: {
+        ...originalLocation,
+        assign: vi.fn<(url: string) => void>(),
+      },
+      writable: true,
+    });
   });
 
   afterEach(() => {
-    // Восстанавливаем оригинальные значения
-    window.Telegram = originalTelegram;
+    windowWithTelegram.Telegram = originalTelegram;
     window.open = originalOpen;
-    window.location = originalLocation as any;
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+    });
   });
 
   it('should use Telegram WebApp openLink when available', () => {
-    const mockOpenLink = vi.fn();
-    window.Telegram = {
+    const mockOpenLink = vi.fn<(url: string, options?: { try_instant_view?: boolean }) => void>();
+
+    windowWithTelegram.Telegram = {
       WebApp: {
         openLink: mockOpenLink,
       },
-    } as any;
+    };
 
     openLink('https://example.com');
 
@@ -35,7 +56,11 @@ describe('openLink', () => {
   });
 
   it('should use window.open when Telegram is not available', () => {
-    const mockOpen = vi.fn().mockReturnValue({});
+    const mockOpen = vi
+      .fn<(url: string, target?: string, features?: string) => Window | null>()
+      .mockReturnValue({} as Window);
+
+    windowWithTelegram.Telegram = undefined;
     window.open = mockOpen;
 
     openLink('https://example.com');
@@ -43,48 +68,55 @@ describe('openLink', () => {
     expect(mockOpen).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener,noreferrer');
   });
 
-  it('should fallback to location.assign when window.open fails', () => {
-    const mockOpen = vi.fn().mockReturnValue(null); // window.open returns null (blocked)
-    const mockAssign = vi.fn();
-    
+  it('should fallback to location.assign when window.open returns null', () => {
+    const mockOpen = vi
+      .fn<(url: string, target?: string, features?: string) => Window | null>()
+      .mockReturnValue(null);
+
+    windowWithTelegram.Telegram = undefined;
     window.open = mockOpen;
-    window.location = { assign: mockAssign } as any;
+
+    const locationWithSpy = window.location as Location & {
+      assign: (url: string) => void;
+    };
 
     openLink('https://example.com');
 
     expect(mockOpen).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener,noreferrer');
-    expect(mockAssign).toHaveBeenCalledWith('https://example.com');
+    expect(locationWithSpy.assign).toHaveBeenCalledWith('https://example.com');
   });
 
   it('should handle errors gracefully when Telegram openLink fails', () => {
-    const mockOpenLink = vi.fn().mockImplementation(() => {
-      throw new Error('Telegram API error');
-    });
-    
-    const mockOpen = vi.fn().mockReturnValue({});
-    window.Telegram = {
+    const mockOpenLink = vi
+      .fn<(url: string, options?: { try_instant_view?: boolean }) => void>()
+      .mockImplementation(() => {
+        throw new Error('Telegram API error');
+      });
+
+    const mockOpen = vi
+      .fn<(url: string, target?: string, features?: string) => Window | null>()
+      .mockReturnValue({} as Window);
+
+    windowWithTelegram.Telegram = {
       WebApp: {
         openLink: mockOpenLink,
       },
-    } as any;
+    };
     window.open = mockOpen;
 
-    // Не должно выбрасывать ошибку
     expect(() => openLink('https://example.com')).not.toThrow();
-
-    // Должно переключиться на window.open
     expect(mockOpen).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener,noreferrer');
   });
 
   it('should work in non-browser environment (SSR)', () => {
-    // Эмулируем серверное окружение (нет window)
-    const originalWindow = global.window;
-    delete (global as any).window;
+    const savedWindow = (globalThis as { window?: Window }).window;
+    // biome-ignore lint/suspicious/noExplicitAny: testing SSR fallback without window
+    delete (globalThis as any).window;
 
-    // Не должно выбрасывать ошибку
     expect(() => openLink('https://example.com')).not.toThrow();
 
-    // Восстанавливаем window
-    global.window = originalWindow;
+    if (savedWindow) {
+      (globalThis as { window?: Window }).window = savedWindow;
+    }
   });
 });

@@ -1,5 +1,15 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { normalizeShareUrl, buildItemShareUrl, shareLink } from './share';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { buildItemShareUrl, normalizeShareUrl, shareLink } from './share';
+
+type WindowWithTelegram = Window & {
+  Telegram?: {
+    WebApp?: {
+      shareURL?: (url: string) => void;
+    };
+  };
+};
+
+const windowWithTelegram = window as WindowWithTelegram;
 
 // Простые моки
 const mockWindowLocation = (href: string) => {
@@ -9,6 +19,7 @@ const mockWindowLocation = (href: string) => {
   });
 };
 
+// biome-ignore lint/security/noSecrets: test suite name, not a secret
 describe('normalizeShareUrl', () => {
   beforeEach(() => {
     mockWindowLocation('https://app.example.com/current/path');
@@ -16,16 +27,15 @@ describe('normalizeShareUrl', () => {
 
   it('uses canonical when provided', () => {
     const url = normalizeShareUrl(
-      'https://site.tld/a?utm_source=x#hash', 
-      'https://example.com/canonical?utm_medium=y#h'
+      'https://site.tld/a?utm_source=x#hash',
+      'https://example.com/canonical?utm_medium=y#h',
     );
     expect(url).toBe('https://example.com/canonical');
   });
 
   it('drops tgWebAppData and hash', () => {
-    const url = normalizeShareUrl(
-      'https://s.tld/p?q=1&utm_source=xxx&tgWebAppData=zzz#frag'
-    );
+    // biome-ignore lint/security/noSecrets: test URL with tracking params, not a secret
+    const url = normalizeShareUrl('https://s.tld/p?q=1&utm_source=xxx&tgWebAppData=zzz#frag');
     expect(url).toBe('https://s.tld/p?q=1');
   });
 
@@ -41,12 +51,14 @@ describe('normalizeShareUrl', () => {
 
   it('removes all junk parameters', () => {
     const url = normalizeShareUrl(
-      'https://example.com/?tgWebAppData=123&utm_source=test&fbclid=456#hash'
+      // biome-ignore lint/security/noSecrets: test URL with tracking params, not a secret
+      'https://example.com/?tgWebAppData=123&utm_source=test&fbclid=456#hash',
     );
     expect(url).toBe('https://example.com/');
   });
 });
 
+// biome-ignore lint/security/noSecrets: test suite name, not a secret
 describe('buildItemShareUrl', () => {
   beforeEach(() => {
     mockWindowLocation('https://app.example.com/current');
@@ -55,14 +67,14 @@ describe('buildItemShareUrl', () => {
   it('uses canonicalUrl when provided', () => {
     const result = buildItemShareUrl({
       canonicalUrl: 'https://ritual.com/article',
-      fallbackHref: 'https://app.com/fallback'
+      fallbackHref: 'https://app.com/fallback',
     });
     expect(result).toBe('https://ritual.com/article');
   });
 
   it('uses fallbackHref when no canonicalUrl', () => {
     const result = buildItemShareUrl({
-      fallbackHref: 'https://app.com/fallback'
+      fallbackHref: 'https://app.com/fallback',
     });
     expect(result).toBe('https://app.com/fallback');
   });
@@ -92,13 +104,13 @@ describe('shareLink', () => {
       value: originalLocation,
       writable: true,
     });
-    delete (window as any).Telegram;
+    delete windowWithTelegram.Telegram;
     vi.restoreAllMocks();
   });
 
   it('uses Telegram WebApp when available', async () => {
     const mockShareURL = vi.fn();
-    (window as any).Telegram = {
+    windowWithTelegram.Telegram = {
       WebApp: {
         shareURL: mockShareURL,
       },
@@ -124,18 +136,18 @@ describe('shareLink', () => {
 
     expect(mockShare).toHaveBeenCalledWith({
       url: 'https://example.com/',
-      title: 'Test Title'
+      title: 'Test Title',
     });
     expect(result).toBe(true);
   });
 
   it('uses clipboard when other methods fail', async () => {
     // Telegram не доступен
-    delete (window as any).Telegram;
+    delete windowWithTelegram.Telegram;
 
     const mockShare = vi.fn().mockRejectedValue(new Error('Share failed'));
     const mockWriteText = vi.fn().mockResolvedValue(undefined);
-    
+
     Object.defineProperty(window, 'navigator', {
       value: {
         ...window.navigator,
@@ -154,8 +166,8 @@ describe('shareLink', () => {
   });
 
   it('shows alert as final fallback', async () => {
-    delete (window as any).Telegram;
-    
+    delete windowWithTelegram.Telegram;
+
     Object.defineProperty(window, 'navigator', {
       value: {
         ...window.navigator,
@@ -177,6 +189,7 @@ describe('shareLink', () => {
 });
 
 // Простые тесты для pathname validation
+// biome-ignore lint/security/noSecrets: test suite name, not a secret
 describe('normalizeShareUrl pathname validation', () => {
   beforeEach(() => {
     mockWindowLocation('https://app.example.com/current');

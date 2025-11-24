@@ -6,12 +6,7 @@ export default defineConfig({
     globals: true,
     css: true,
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
-    exclude: [
-      'node_modules/**',
-      'dist/**',
-      'tests/**',
-      '**/playwright.*.ts',
-    ],
+    exclude: ['node_modules/**', 'dist/**', 'tests/**', '**/playwright.*.ts'],
     setupFiles: ['./src/setupTests.ts'],
     coverage: {
       provider: 'v8',

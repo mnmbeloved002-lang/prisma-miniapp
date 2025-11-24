@@ -1,28 +1,53 @@
-import { describe, it, expect, afterEach } from 'vitest'
-import * as share from './share'
+// src/infrastructure/utils/share.helpers.test.ts
+import { afterEach, describe, expect, it } from 'vitest';
+import * as shareModule from './share';
 
-const save = { window: (globalThis as any).window }
+type ShareInternals = {
+  __hrefOrExample: () => string;
+  __hrefOrEmpty: () => string;
+};
 
-describe('share helpers (SSR-safe)', () => {
-  afterEach(() => { (globalThis as any).window = save.window })
+// Берём внутренние хелперы через строго типизированный каст
+const { __hrefOrExample, __hrefOrEmpty } = shareModule as unknown as ShareInternals;
 
-  it('__hrefOrExample(): with window', () => {
-    (globalThis as any).window = { location: { href: 'https://app.example.com/current' } }
-    expect((share as any).__hrefOrExample()).toBe('https://app.example.com/current')
-  })
+type TestGlobal = typeof globalThis & {
+  window?: Window & {
+    location?: Location;
+  };
+};
 
-  it('__hrefOrExample(): without window', () => {
-    ;(globalThis as any).window = undefined
-    expect((share as any).__hrefOrExample()).toBe('https://example.com')
-  })
+const testGlobal = globalThis as TestGlobal;
+const originalWindow = testGlobal.window;
 
-  it('__hrefOrEmpty(): with window', () => {
-    (globalThis as any).window = { location: { href: 'https://app.example.com/current' } }
-    expect((share as any).__hrefOrEmpty()).toBe('https://app.example.com/current')
-  })
+describe('share internal helpers (SSR-safe)', () => {
+  afterEach(() => {
+    // Восстанавливаем исходное window после каждого теста
+    testGlobal.window = originalWindow;
+  });
 
-  it('__hrefOrEmpty(): without window', () => {
-    ;(globalThis as any).window = undefined
-    expect((share as any).__hrefOrEmpty()).toBe('')
-  })
-})
+  it('returns current href when window is available', () => {
+    // Эмулируем нормальное браузерное окно с конкретным href
+    testGlobal.window = {
+      ...(window as Window),
+      location: {
+        ...window.location,
+        href: 'https://app.example.com/current',
+      } as Location,
+    };
+
+    expect(__hrefOrExample()).toBe('https://app.example.com/current');
+    expect(__hrefOrEmpty()).toBe('https://app.example.com/current');
+  });
+
+  it('falls back to example URL when window is missing', () => {
+    testGlobal.window = undefined;
+
+    expect(__hrefOrExample()).toBe('https://example.com');
+  });
+
+  it('returns empty string when window is missing for hrefOrEmpty', () => {
+    testGlobal.window = undefined;
+
+    expect(__hrefOrEmpty()).toBe('');
+  });
+});

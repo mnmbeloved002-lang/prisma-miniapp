@@ -23,7 +23,11 @@ export default [
   // базовые правила
   {
     files: ['**/*.{ts,tsx,js,jsx}'],
-    languageOptions: { parser: tsparser, ecmaVersion: 2023, sourceType: 'module' },
+    languageOptions: {
+      parser: tsparser,
+      ecmaVersion: 2023,
+      sourceType: 'module',
+    },
     plugins: {
       '@typescript-eslint': tseslint,
       unicorn,

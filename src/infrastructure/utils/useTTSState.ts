@@ -7,16 +7,21 @@ export function useTTSState() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const canTTS = supported();
 
-  const start = useCallback(async (title: string, html: string) => {
-    if (!canTTS) return;
-    setIsSpeaking(true);
-    try {
-      await speakFromHtml(title, html);
-    } finally {
-      // даже если ошибка/прерывание — вернуть кнопку в исходное состояние
-      setIsSpeaking(false);
-    }
-  }, [canTTS]);
+  const start = useCallback(
+    async (title: string, html: string) => {
+      if (!canTTS) {
+        return;
+      }
+      setIsSpeaking(true);
+      try {
+        await speakFromHtml(title, html);
+      } finally {
+        // даже если ошибка/прерывание — вернуть кнопку в исходное состояние
+        setIsSpeaking(false);
+      }
+    },
+    [canTTS],
+  );
 
   const halt = useCallback(() => {
     stop();

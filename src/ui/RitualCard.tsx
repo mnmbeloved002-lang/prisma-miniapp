@@ -1,17 +1,15 @@
-import React from 'react'
-
-import { useBookmarks } from '../application/bookmarks'
-import type { Ritual } from '../domain/ritual-schema'
+import { useBookmarks } from '../application/bookmarks';
+import type { Ritual } from '../domain/ritual-schema';
 
 interface Props {
-  item: Ritual
+  item: Ritual;
 }
 
 export function RitualCard({ item }: Props) {
-  const { has, add, remove } = useBookmarks()
-  const isBookmarked = has(item.id)
+  const { has, add, remove } = useBookmarks();
+  const isBookmarked = has(item.id);
 
-  const toggle = () => isBookmarked ? remove(item.id) : add(item.id)
+  const toggle = () => (isBookmarked ? remove(item.id) : add(item.id));
 
   return (
     <article className="w-full max-w-lg bg-white/10 backdrop-blur-md border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
@@ -37,16 +35,17 @@ export function RitualCard({ item }: Props) {
         </section>
       </div>
 
-      <button 
+      <button
+        type="button"
         onClick={toggle}
         className={`mt-10 w-full py-4 rounded-xl font-bold tracking-wide transition-all duration-300 ${
-          isBookmarked 
-            ? 'bg-purple-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.5)]' 
+          isBookmarked
+            ? 'bg-purple-600 text-white shadow-[0_0_20px_rgba(147,51,234,0.5)]'
             : 'bg-white/5 hover:bg-white/10 text-white/80'
         }`}
       >
         {isBookmarked ? '★ Сохранено' : '☆ Сохранить Ритуал'}
       </button>
     </article>
-  )
+  );
 }

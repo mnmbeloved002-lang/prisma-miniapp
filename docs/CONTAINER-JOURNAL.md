@@ -94,3 +94,59 @@ TBD
 4. Фикс / TODO
 TBD
 
+
+---
+
+## 2025-11-24 — Dev Container Toolchain Snapshot
+
+**Context**
+
+- Branch: `dev`
+- Container: `mcr.microsoft.com/devcontainers/typescript-node:1-22-bullseye`
+- Node: установлено в контейнере базовым образом
+
+**Commands used**
+
+```bash
+pnpm -v
+chromium --version || chromium-browser --version
+osv-scanner --version
+node -v
+pnpm biome --version
+pnpm vitest --version
+pnpm exec playwright --version
+pnpm tsc --version
+git --version
+Resolved versions
+
+Tool / Binary	Version / Output	Notes
+node	v22.16.0	Runtime для всего проекта
+pnpm	10.20.0	Пакетный менеджер
+biome	2.3.7	Lint + форматтер
+vitest	4.0.4	Unit / интеграционные тесты
+playwright	1.56.1	E2E + a11y + визуальные тесты
+tsc	5.9.3	TypeScript компилятор
+git	2.49.0	VCS
+chromium	120.0.6099.224 (Debian 11.8/11.11)	Браузер для Playwright
+osv-scanner	2.3.0 (osv-scalibr 0.4.0)	SCA / security scan
+
+Devcontainer config (reference)
+
+Источник: .devcontainer/devcontainer.json:
+
+Image: mcr.microsoft.com/devcontainers/typescript-node:1-22-bullseye
+
+Post-create steps:
+
+npm install -g pnpm
+
+apt-get install -y chromium
+
+установка osv-scanner
+
+pnpm exec playwright install chromium
+
+Guarantee
+
+Этот снапшот фиксирует фактическое состояние инструментов, на котором успешно прошёл pnpm validate:all (lint, typecheck, test:ci, e2e, a11y, size).
+

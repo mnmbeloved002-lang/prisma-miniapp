@@ -4,20 +4,33 @@
 
   "features": {},
 
-  "postCreateCommand": "npm install -g pnpm && sudo apt-get update && sudo apt-get install -y chromium && sudo curl -L https://github.com/google/osv-scanner/releases/latest/download/osv-scanner_linux_amd64 -o /usr/local/bin/osv-scanner && sudo chmod +x /usr/local/bin/osv-scanner && pnpm exec playwright install chromium",
+  "postCreateCommand": "npm install -g pnpm && pnpm install && sudo apt-get update && sudo apt-get install -y chromium && sudo curl -L https://github.com/google/osv-scanner/releases/latest/download/osv-scanner_linux_amd64 -o /usr/local/bin/osv-scanner && sudo chmod +x /usr/local/bin/osv-scanner && pnpm exec playwright install chromium",
 
   "customizations": {
     "vscode": {
-      "extensions": [
-        "esbenp.prettier-vscode",
-        "dbaeumer.vscode-eslint",
-        "EditorConfig.EditorConfig"
-      ],
+      "extensions": ["biomejs.biome", "EditorConfig.EditorConfig"],
       "settings": {
+        "files.eol": "\n",
         "editor.formatOnSave": true,
-        "files.eol": "\n"
+        "editor.defaultFormatter": "biomejs.biome",
+        "[typescript]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[javascript]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[javascriptreact]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[json]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        }
       }
     }
   },
+
   "remoteUser": "node"
 }

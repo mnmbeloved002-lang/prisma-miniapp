@@ -1,35 +1,74 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.3.7/schema.json",
   "files": {
-    "includes": [
-      "**",
-      "!**/dist",
-      "!**/node_modules",
-      "!**/coverage",
-      "!**/scripts",
-      "!**/api",
-      "!**/sbom.json"
-    ]
+    "ignoreUnknown": false
   },
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
       "recommended": true,
       "style": {
         "useBlockStatements": "error",
-        "noNonNullAssertion": "error"
+        "noNonNullAssertion": "error",
+        "useConst": "error",
+        "noDefaultExport": "warn"
+      },
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noArrayIndexKey": "error"
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "error",
+        "noUnusedVariables": "error",
+        "noUnusedImports": "error"
       },
       "security": {
         "noSecrets": "error",
         "noDangerouslySetInnerHtml": "error"
       },
       "complexity": {
-        "noExcessiveCognitiveComplexity": "error",
-        "noUselessFragments": "error"
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": {
+            "maxAllowedComplexity": 15
+          }
+        },
+        "noUselessFragments": "error",
+        "useSimpleNumberKeys": "error"
       }
     }
   },
+  "overrides": [
+    {
+      "includes": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "vite.config.ts",
+        "**/*.spec.ts",
+        "vitest.config.ts"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          },
+          "style": {
+            "noDefaultExport": "off"
+          },
+          "security": {
+            "noSecrets": "off"
+          }
+        }
+      }
+    }
+  ],
   "formatter": {
     "enabled": true,
     "lineWidth": 100,

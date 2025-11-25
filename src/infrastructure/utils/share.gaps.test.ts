@@ -1,89 +1,89 @@
-// src/infrastructure/utils/share.gaps.test.ts
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildItemShareUrl, normalizeShareUrl, shareLink } from './share';
+import { describe, expect, it, vi } from 'vitest';
+import { normalizeShareUrl, shareLink } from './share';
 
-// Навигатор с доп. методами, без any
-type NavigatorWithShare = Navigator & {
-  share?: (data: { title?: string; text?: string; url?: string }) => Promise<void>;
-  clipboard?: {
-    writeText: (text: string) => Promise<void>;
-  };
-};
-
-// Глобал с тем, что нам нужно для тестов
-type TestGlobal = typeof globalThis & {
-  navigator?: NavigatorWithShare;
-  open?: (url?: string, target?: string, features?: string) => Window | null;
-  URL?: typeof URL;
-};
-
-const testGlobal = globalThis as TestGlobal;
-
-const Saved = {
-  navigator: testGlobal.navigator,
-  open: testGlobal.open,
-  URL: testGlobal.URL,
-};
-
-describe('share utils extra coverage', () => {
-  beforeEach(() => {
-    const baseNavigator: NavigatorWithShare = {
-      ...(testGlobal.navigator ?? ({} as NavigatorWithShare)),
-      userAgent: 'Vitest UA',
-      clipboard: {
-        writeText: async () => {},
+describe('share utils – coverage gaps', () => {
+  it('normalizeShareUrl: outer try/catch returns empty string on unexpected error', () => {
+    // canonicalUrl с "злой" реализацией trim -> выбрасываем ошибку ДО внутреннего try/catch
+    const evilCanonical: any = {
+      trim() {
+        throw new Error('boom');
       },
     };
 
-    testGlobal.navigator = baseNavigator;
-    testGlobal.open = () => window;
-    testGlobal.URL = URL;
+    const result = normalizeShareUrl('https://example.com', evilCanonical);
+
+    expect(result).toBe('');
   });
 
-  afterEach(() => {
-    testGlobal.navigator = Saved.navigator;
-    testGlobal.open = Saved.open;
-    testGlobal.URL = Saved.URL;
-    vi.restoreAllMocks();
+  it('normalizeShareUrl: returns empty string when pathname contains encoded colon', () => {
+    // base = "/weird%3Apath" -> первый new URL(base) падает -> второй успешен, но pathname содержит %3A
+    const result = normalizeShareUrl('/weird%3Apath');
+
+    expect(result).toBe('');
   });
 
-  // biome-ignore lint/security/noSecrets: test name, not a secret
-  it('normalizeShareUrl base-branch does not throw', () => {
-    expect(() => {
-      const url = normalizeShareUrl('/path', 'https://example.com');
-      expect(typeof url).toBe('string');
-    }).not.toThrow();
+  it('normalizeShareUrl: returns empty string when pathname contains encoded dot', () => {
+    // проверяем ветку с "%2E"
+    const result = normalizeShareUrl('/file%2Ejson');
+
+    expect(result).toBe('');
   });
 
-  // biome-ignore lint/security/noSecrets: test name, not a secret
-  it('buildItemShareUrl minimal object returns string', () => {
-    const result = buildItemShareUrl({});
-    expect(typeof result).toBe('string');
-    expect(result.length).toBeGreaterThan(0);
+  it('normalizeShareUrl: returns empty string when decoded pathname has invalid characters', () => {
+    // путь с кириллицей -> decodeURIComponent(pathname) содержит неразрешённые символы
+    const result = normalizeShareUrl('/%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82');
+
+    expect(result).toBe('');
   });
 
-  it('shareLink works when navigator.share is missing but clipboard exists', async () => {
-    const clipboardSpy = vi.fn<[string], Promise<void>>().mockResolvedValue(undefined);
+  it('getCanonicalFromDocument: errors from querySelector are swallowed (via shareLink)', async () => {
+    const querySpy = vi.spyOn(document, 'querySelector').mockImplementation(() => {
+      throw new Error('boom');
+    });
 
-    const nav: NavigatorWithShare = {
-      ...(testGlobal.navigator ?? ({} as NavigatorWithShare)),
-      clipboard: {
-        writeText: clipboardSpy,
-      },
-    };
+    // Отключаем все реальные каналы шаринга, чтобы гарантированно попасть в alert-фолбэк
+    (window as any).Telegram = undefined;
+    (navigator as any).share = undefined;
+    (navigator as any).clipboard = undefined;
 
-    testGlobal.navigator = nav;
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
 
-    await expect(
-      (async () => {
-        await shareLink({
-          title: 'T',
-          text: 'X',
-          url: 'https://example.com/item',
-        });
-      })(),
-    ).resolves.toBeUndefined();
+    const result = await shareLink(window.location.href, 'Test canonical fail');
 
-    expect(clipboardSpy).toHaveBeenCalled();
+    // shareLink должен тихо отработать через alert, не упав
+    expect(result).toBe(false);
+    expect(alertSpy).toHaveBeenCalled();
+
+    querySpy.mockRestore();
+    alertSpy.mockRestore();
+  });
+
+  it('getCleanFallbackUrl: errors from URL constructor are swallowed (via shareLink)', async () => {
+    const OriginalURL = URL;
+
+    // Заглушка URL, которая всегда падает при new URL(...)
+    class URLStub {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      constructor(..._args: any[]) {
+        throw new Error('boom');
+      }
+    }
+
+    (globalThis as any).URL = URLStub as any;
+
+    // Отключаем все каналы шаринга, опять же идём в alert-фолбэк
+    (window as any).Telegram = undefined;
+    (navigator as any).share = undefined;
+    (navigator as any).clipboard = undefined;
+
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+
+    const result = await shareLink('https://example.com/привет', 'Test URL fail');
+
+    expect(result).toBe(false);
+    expect(alertSpy).toHaveBeenCalled();
+
+    alertSpy.mockRestore();
+    (globalThis as any).URL = OriginalURL;
   });
 });

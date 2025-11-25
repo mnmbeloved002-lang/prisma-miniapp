@@ -1,11 +1,9 @@
-// src/utils/useTTSState.ts
 import { useCallback, useEffect, useState } from 'react';
-
-import { speakFromHtml, stop, supported } from '../application/tts';
+import { isSupported, speakFromHtml, stop } from '../tts';
 
 export function useTTSState() {
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const canTTS = supported();
+  const canTTS = isSupported();
 
   const start = useCallback(
     async (title: string, html: string) => {

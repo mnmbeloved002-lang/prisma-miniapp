@@ -94,3 +94,5 @@ docs/uat/final-phase3-report.md
 # local gitleaks binary
 /gitleaks
 /gitleaks.tar.gz
+.stryker-tmp/
+reports/

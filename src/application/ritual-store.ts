@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 import type { Ritual } from '../domain/ritual-schema';
-import { getRitualCached } from '../infrastructure/ritual-client';
+import { getRitualCached } from './api/ritual-client';
 
 interface RitualState {
   ritualItem: Ritual | null;

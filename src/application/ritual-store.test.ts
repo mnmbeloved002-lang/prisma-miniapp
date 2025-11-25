@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import * as client from '../infrastructure/ritual-client';
+import * as client from './api/ritual-client';
 import { useRitualStore } from './ritual-store';
 
 // Мокаем клиент
-vi.mock('../infrastructure/ritual-client');
+vi.mock('./api/ritual-client');
 
 const mockRitual = {
   id: '1',

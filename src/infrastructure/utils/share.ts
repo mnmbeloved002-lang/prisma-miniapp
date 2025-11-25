@@ -8,18 +8,6 @@ type MaybeShareNavigator = Navigator & {
   share?: (data: WebShareData) => Promise<void>;
 };
 
-interface TelegramWebApp {
-  shareURL?: (url: string) => void;
-  openTelegramLink?: (url: string) => void;
-  showPopup?: (params: { title?: string; message: string; buttons?: unknown[] }) => void;
-}
-
-declare global {
-  interface Window {
-    Telegram?: { WebApp?: TelegramWebApp };
-  }
-}
-
 // Мусорные параметры для удаления
 const JUNK_PARAMS = [
   // biome-ignore lint/security/noSecrets: query parameter name, not a secret
@@ -57,13 +45,14 @@ function stripParams(u: URL): URL {
 }
 
 // --- coverage helpers (SSR-safe) ---
-// Эти строки сознательно скрываем из подсчёта (оборонительные ветки).
 
 /** internal: SSR-safe helper, доступен тестам */
 export function __hrefOrExample(): string {
   try {
-    return typeof window !== 'undefined' && (window as unknown).location
-      ? (window as unknown).location.href
+    // biome-ignore lint/suspicious/noExplicitAny: safe access to window in SSR check
+    return typeof window !== 'undefined' && (window as any).location
+      ? // biome-ignore lint/suspicious/noExplicitAny: safe access
+        (window as any).location.href
       : 'https://example.com';
   } catch {
     return 'https://example.com';
@@ -73,8 +62,10 @@ export function __hrefOrExample(): string {
 /** internal: SSR-safe helper, доступен тестам */
 export function __hrefOrEmpty(): string {
   try {
-    return typeof window !== 'undefined' && (window as unknown).location
-      ? (window as unknown).location.href
+    // biome-ignore lint/suspicious/noExplicitAny: safe access to window in SSR check
+    return typeof window !== 'undefined' && (window as any).location
+      ? // biome-ignore lint/suspicious/noExplicitAny: safe access
+        (window as any).location.href
       : '';
   } catch {
     return '';
@@ -85,16 +76,11 @@ export function normalizeShareUrl(raw: string, canonicalUrl?: string): string {
   try {
     const base = canonicalUrl?.trim() ? canonicalUrl : raw;
 
-    // Пробуем создать URL без base для абсолютных URL
     try {
       const url = new URL(base);
       return stripParams(url).toString();
     } catch {
-      // Если не получилось, пробуем с base
       const url = new URL(base, __hrefOrExample());
-
-      // Проверяем, не создали ли мы мусорный URL
-      // Если путь содержит закодированные невалидные символы, считаем это ошибкой
       const pathname = url.pathname;
       if (
         pathname.includes('%3A') ||
@@ -103,11 +89,9 @@ export function normalizeShareUrl(raw: string, canonicalUrl?: string): string {
       ) {
         return '';
       }
-
       return stripParams(url).toString();
     }
   } catch {
-    // Если все попытки провалились, возвращаем пустую строку
     return '';
   }
 }
@@ -118,19 +102,17 @@ export function buildItemShareUrl(opts: { canonicalUrl?: string; fallbackHref?: 
 }
 
 /**
- * Универсальный шаринг ссылки (сохраняем существующий API)
+ * Универсальный шаринг ссылки
  */
 export async function shareLink(url?: string, title?: string): Promise<boolean> {
-  // Используем новую логику нормализации
   const shareUrl = buildItemShareUrl({
     canonicalUrl: getCanonicalFromDocument(),
     fallbackHref: url || window.location.href,
   });
 
-  // Если получили пустую строку, используем чистый origin + pathname
   const finalShareUrl = shareUrl || getCleanFallbackUrl();
 
-  const tg = window?.Telegram?.WebApp;
+  const tg = window.Telegram?.WebApp;
   const nav = navigator as MaybeShareNavigator;
 
   // 1) Telegram WebApp
@@ -170,6 +152,8 @@ export async function shareLink(url?: string, title?: string): Promise<boolean> 
 
   // 4) Фолбэк
   try {
+    // Здесь удален лишний комментарий про noConsoleLog, так как alert != console.log
+
     alert(`Скопируй ссылку:\n${finalShareUrl}`);
   } catch {
     /* ignore */
@@ -177,10 +161,9 @@ export async function shareLink(url?: string, title?: string): Promise<boolean> 
   return false;
 }
 
-// Вспомогательная функция для извлечения canonical из документа
 function getCanonicalFromDocument(): string | undefined {
   try {
-    // biome-ignore lint/security/noSecrets: CSS selector, not a secret
+    // biome-ignore lint/security/noSecrets: CSS selector
     const link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     return link?.href || undefined;
   } catch {
@@ -188,7 +171,6 @@ function getCanonicalFromDocument(): string | undefined {
   }
 }
 
-// Фолбэк на случай полностью невалидного URL
 function getCleanFallbackUrl(): string {
   try {
     const url = new URL(window.location.href);

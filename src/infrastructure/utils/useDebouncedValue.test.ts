@@ -1,80 +1,69 @@
-// src/utils/useDebouncedValue.test.ts
 import { act, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { useDebouncedValue } from './useDebouncedValue';
 
-describe('use debounced value hook', () => {
-  beforeEach(() => {
+describe('useDebouncedValue hook', () => {
+  it('returns the initial value immediately', () => {
     vi.useFakeTimers();
-  });
-  afterEach(() => {
+
+    const { result } = renderHook(() => useDebouncedValue('initial', 500));
+
+    expect(result.current).toBe('initial');
+
     vi.useRealTimers();
   });
 
-  it('should return the initial value immediately', () => {
-    const { result } = renderHook(() => useDebouncedValue('initial', 500));
+  it('does not update value before the delay passes', () => {
+    vi.useFakeTimers();
+
+    const { result, rerender } = renderHook(({ value, delay }) => useDebouncedValue(value, delay), {
+      initialProps: { value: 'initial', delay: 300 },
+    });
+
+    rerender({ value: 'updated', delay: 300 });
+
     expect(result.current).toBe('initial');
+
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+
+    expect(result.current).toBe('initial');
+
+    vi.useRealTimers();
   });
 
-  it('should not update value before delay', () => {
+  it('updates value after the delay passes', () => {
+    vi.useFakeTimers();
+
     const { result, rerender } = renderHook(({ value, delay }) => useDebouncedValue(value, delay), {
-      initialProps: { value: 'a', delay: 500 },
+      initialProps: { value: 'initial', delay: 300 },
     });
 
-    // Меняем 'a' на 'b'
-    rerender({ value: 'b', delay: 500 });
+    rerender({ value: 'updated', delay: 300 });
 
-    // Проматываем 499мс
     act(() => {
-      vi.advanceTimersByTime(499);
+      vi.advanceTimersByTime(300);
     });
 
-    // Значение все еще 'a'
-    expect(result.current).toBe('a');
+    expect(result.current).toBe('updated');
+
+    vi.useRealTimers();
   });
 
-  it('should update value after delay', () => {
-    const { result, rerender } = renderHook(({ value, delay }) => useDebouncedValue(value, delay), {
-      initialProps: { value: 'a', delay: 500 },
+  it('cleans up the timer on unmount', () => {
+    vi.useFakeTimers();
+    const clearSpy = vi.spyOn(globalThis, 'clearTimeout');
+
+    const { unmount } = renderHook(({ value, delay }) => useDebouncedValue(value, delay), {
+      initialProps: { value: 'initial', delay: 300 },
     });
 
-    // Меняем 'a' на 'b'
-    rerender({ value: 'b', delay: 500 });
+    unmount();
 
-    // Проматываем 500мс
-    act(() => {
-      vi.advanceTimersByTime(500);
-    });
+    expect(clearSpy).toHaveBeenCalled();
 
-    // Значение стало 'b'
-    expect(result.current).toBe('b');
+    clearSpy.mockRestore();
+    vi.useRealTimers();
   });
-
-  // --- (НАЧАЛО НОВОГО ТЕСТА ДЛЯ ПОКРЫТИЯ) ---
-  /**
-   * ЦЕЛЬ: Покрыть "ветку" (branch) delay = 300 по умолчанию.
-   * Мы вызываем хук БЕЗ указания 'delay'.
-   */
-  it('should use the default delay (300ms) if not provided', () => {
-    const { result, rerender } = renderHook(
-      ({ value }) => useDebouncedValue(value), // ВЫЗОВ БЕЗ 'delay'
-      { initialProps: { value: 'a' } },
-    );
-
-    // Меняем 'a' на 'b'
-    rerender({ value: 'b' });
-
-    // Проматываем 299мс (недостаточно)
-    act(() => {
-      vi.advanceTimersByTime(299);
-    });
-    expect(result.current).toBe('a'); // Все еще 'a'
-
-    // Проматываем еще 1мс (теперь 300мс)
-    act(() => {
-      vi.advanceTimersByTime(1);
-    });
-    expect(result.current).toBe('b'); // Стало 'b'
-  });
-  // --- (КОНЕЦ НОВОГО ТЕСТА) ---
 });

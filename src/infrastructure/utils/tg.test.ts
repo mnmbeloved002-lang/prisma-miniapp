@@ -38,4 +38,34 @@ describe('Telegram UI', () => {
     window.Telegram = {};
     expect(() => initTelegramUI()).not.toThrow();
   });
+
+  it('swallows errors thrown by Telegram API', () => {
+    const errorReady = vi.fn(() => {
+      throw new Error('Telegram internal error');
+    });
+
+    // @ts-expect-error mock
+    window.Telegram = {
+      WebApp: {
+        ready: errorReady,
+      },
+    };
+
+    // Ошибка из ready() не должна пробрасываться наружу
+    expect(() => initTelegramUI()).not.toThrow();
+    expect(errorReady).toHaveBeenCalled();
+  });
+
+  it('safely handles missing window (SSR)', () => {
+    // Сохраняем оригинальный window
+    const originalWindow = global.window;
+    // Удаляем window для имитации SSR
+    // @ts-expect-error mock SSR
+    delete global.window;
+
+    expect(() => initTelegramUI()).not.toThrow();
+
+    // Восстанавливаем window
+    global.window = originalWindow;
+  });
 });

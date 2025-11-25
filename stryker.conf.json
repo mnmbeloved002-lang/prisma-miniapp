@@ -1,16 +1,34 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
-  "_comment": "L4 Mutation Testing: Kill the mutants",
+  "_comment": "L4 Mutation Testing: Terminator Mode (Strict, UI included, Optimized)",
   "packageManager": "pnpm",
-  "reporters": ["html", "clear-text", "progress"],
   "testRunner": "vitest",
+  "plugins": ["@stryker-mutator/vitest-runner", "@stryker-mutator/typescript-checker"],
+  "checkers": ["typescript"],
+  "typescriptChecker": {},
+  "vitest": {
+    "configFile": "vitest.ci.config.ts"
+  },
+  "reporters": ["html", "clear-text", "progress"],
   "coverageAnalysis": "perTest",
+  "ignoreStatic": true,
+  "mutator": {
+    "excludedMutations": ["ConsoleLogging"]
+  },
   "mutate": [
     "src/application/**/*.ts",
+    "src/application/**/*.tsx",
     "src/infrastructure/**/*.ts",
+    "src/infrastructure/**/*.tsx",
     "src/ui/**/*.tsx",
     "!src/**/*.test.ts",
-    "!src/**/*.test.tsx"
+    "!src/**/*.test.tsx",
+    "!src/**/*.d.ts",
+    "!src/vite-env.d.ts"
   ],
-  "thresholds": { "high": 80, "low": 60, "break": 50 }
+  "thresholds": {
+    "high": 97,
+    "low": 79,
+    "break": 70
+  }
 }

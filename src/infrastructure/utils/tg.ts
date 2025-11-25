@@ -1,27 +1,26 @@
-// src/infrastructure/utils/tg.ts
-// Безопасная инициализация Telegram WebApp без сайд-эффектов на уровне модуля.
-
-type TgWebAppMinimal = {
-  ready?(): void;
-  expand?(): void;
-  disableVerticalSwipes?(): void;
+// Определяем интерфейс, объединяя методы, нужные и здесь, и в share.ts
+export interface TgWebAppMinimal {
+  ready?: () => void;
+  expand?: () => void;
+  close?: () => void;
+  disableVerticalSwipes?: () => void;
   MainButton?: {
     setText?(label: string): void;
   };
-};
-
-interface TelegramWebAppGlobal extends Window {
-  Telegram?: {
-    WebApp?: TgWebAppMinimal;
-  };
+  // Методы, которые используются в share.ts (чтобы не было конфликтов типов)
+  shareURL?: (url: string) => void;
+  openTelegramLink?: (url: string) => void;
+  showPopup?: (params: { title?: string; message: string; buttons?: unknown[] }) => void;
 }
 
-function getTelegramWindow(): TelegramWebAppGlobal | undefined {
-  // SSR-safe: в Node 'window' может быть не определён
-  if (typeof window === 'undefined') {
-    return undefined;
+// РАСШИРЯЕМ глобальный Window.
+// TypeScript автоматически объединит это определение с тем, что в share.ts
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: TgWebAppMinimal;
+    };
   }
-  return window as unknown as TelegramWebAppGlobal;
 }
 
 /**
@@ -30,8 +29,13 @@ function getTelegramWindow(): TelegramWebAppGlobal | undefined {
  */
 export function initTelegramUI(): void {
   try {
-    const tgWindow = getTelegramWindow();
-    const webApp = tgWindow?.Telegram?.WebApp;
+    // SSR-safe проверка: если окна нет, выходим
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    // Теперь TS знает, что у window есть Telegram, кастовать (as unknown) не нужно!
+    const webApp = window.Telegram?.WebApp;
 
     if (!webApp) {
       return;
@@ -39,10 +43,9 @@ export function initTelegramUI(): void {
 
     // Минимальные безопасные вызовы
     webApp.ready?.();
+
     // Остальные методы можно дергать по месту при необходимости:
     // webApp.expand?.();
-    // webApp.disableVerticalSwipes?.();
-    // webApp.MainButton?.setText?.('...');
   } catch {
     // Мост НЕ должен ломать первый рендер UI
   }

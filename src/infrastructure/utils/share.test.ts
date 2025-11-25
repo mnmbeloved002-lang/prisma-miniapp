@@ -19,7 +19,6 @@ const mockWindowLocation = (href: string) => {
   });
 };
 
-// biome-ignore lint/security/noSecrets: test suite name, not a secret
 describe('normalizeShareUrl', () => {
   beforeEach(() => {
     mockWindowLocation('https://app.example.com/current/path');
@@ -34,7 +33,6 @@ describe('normalizeShareUrl', () => {
   });
 
   it('drops tgWebAppData and hash', () => {
-    // biome-ignore lint/security/noSecrets: test URL with tracking params, not a secret
     const url = normalizeShareUrl('https://s.tld/p?q=1&utm_source=xxx&tgWebAppData=zzz#frag');
     expect(url).toBe('https://s.tld/p?q=1');
   });
@@ -51,14 +49,12 @@ describe('normalizeShareUrl', () => {
 
   it('removes all junk parameters', () => {
     const url = normalizeShareUrl(
-      // biome-ignore lint/security/noSecrets: test URL with tracking params, not a secret
       'https://example.com/?tgWebAppData=123&utm_source=test&fbclid=456#hash',
     );
     expect(url).toBe('https://example.com/');
   });
 });
 
-// biome-ignore lint/security/noSecrets: test suite name, not a secret
 describe('buildItemShareUrl', () => {
   beforeEach(() => {
     mockWindowLocation('https://app.example.com/current');
@@ -188,9 +184,7 @@ describe('shareLink', () => {
   });
 });
 
-// Простые тесты для pathname validation
-// biome-ignore lint/security/noSecrets: test suite name, not a secret
-describe('normalizeShareUrl pathname validation', () => {
+describe('path validation tests', () => {
   beforeEach(() => {
     mockWindowLocation('https://app.example.com/current');
   });
@@ -204,5 +198,73 @@ describe('normalizeShareUrl pathname validation', () => {
   it('returns valid URL for allowed characters', () => {
     const url = normalizeShareUrl('/valid-path_with~special+chars@123');
     expect(url).toBe('https://app.example.com/valid-path_with~special+chars@123');
+  });
+});
+
+describe('shareLink canonical & fallback behaviour', () => {
+  beforeEach(() => {
+    // Чистим head между тестами
+    document.head.innerHTML = '';
+    mockWindowLocation('https://app.example.com/article?utm_source=test#hash');
+  });
+
+  it('prefers canonical link from document when sharing', async () => {
+    // Убираем Telegram, Web Share, оставляем только clipboard
+    delete windowWithTelegram.Telegram;
+
+    const mockWriteText = vi.fn().mockResolvedValue(undefined);
+
+    Object.defineProperty(window, 'navigator', {
+      value: {
+        ...window.navigator,
+        share: undefined,
+        clipboard: {
+          writeText: mockWriteText,
+        },
+      },
+      writable: true,
+    });
+
+    // Добавляем canonical с трекингом и хешем — должны быть очищены
+    const link = document.createElement('link');
+    link.rel = 'canonical';
+
+    link.href = 'https://canonical.example/ritual-of-day?utm_source=telegram#frag';
+    document.head.appendChild(link);
+
+    const result = await shareLink('https://fallback.example/ignored');
+
+    expect(mockWriteText).toHaveBeenCalledWith('https://canonical.example/ritual-of-day');
+    expect(result).toBe(true);
+
+    document.head.removeChild(link);
+  });
+
+  it('falls back to clean origin+pathname when normalized URL is empty', async () => {
+    delete windowWithTelegram.Telegram;
+
+    const mockWriteText = vi.fn().mockResolvedValue(undefined);
+
+    // invalid URL, normalizeShareUrl вернёт ''
+    const badUrl = ':::::.not a url:::::';
+
+    mockWindowLocation('https://app.example.com/special/path?utm_source=test#hash');
+
+    Object.defineProperty(window, 'navigator', {
+      value: {
+        ...window.navigator,
+        share: undefined,
+        clipboard: {
+          writeText: mockWriteText,
+        },
+      },
+      writable: true,
+    });
+
+    const result = await shareLink(badUrl);
+
+    // getCleanFallbackUrl должен вернуть origin + pathname без query/hash
+    expect(mockWriteText).toHaveBeenCalledWith('https://app.example.com/special/path');
+    expect(result).toBe(true);
   });
 });

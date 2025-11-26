@@ -71,7 +71,8 @@
     "quality:full": "pnpm check:unit && pnpm check:e2e && pnpm check:security && pnpm check:architecture && pnpm check:mutation && pnpm size",
     "ci:fast": "pnpm check:unit",
     "ci:full": "pnpm quality:full",
-    "deps:outdated": "pnpm outdated"
+    "deps:outdated": "pnpm outdated",
+    "sec:semgrep": "semgrep scan --config .semgrep.yml --error"
   },
   "dependencies": {
     "react": "^19.1.1",

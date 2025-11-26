@@ -5,6 +5,7 @@ type WindowWithTelegram = Window & {
   Telegram?: {
     WebApp?: {
       shareURL?: (url: string) => void;
+      showPopup?: (params: unknown) => void;
     };
   };
 };
@@ -138,8 +139,15 @@ describe('shareLink', () => {
   });
 
   it('uses clipboard when other methods fail', async () => {
-    // Telegram не доступен
-    delete windowWithTelegram.Telegram;
+    // UEC FIX: Имитируем Telegram WebApp, но БЕЗ shareURL, чтобы сработал фоллбэк на clipboard.
+    // При этом showPopup должен быть доступен, чтобы мы проверили его вызов.
+    const mockShowPopup = vi.fn();
+    windowWithTelegram.Telegram = {
+      WebApp: {
+        // shareURL не определяем
+        showPopup: mockShowPopup,
+      },
+    };
 
     const mockShare = vi.fn().mockRejectedValue(new Error('Share failed'));
     const mockWriteText = vi.fn().mockResolvedValue(undefined);
@@ -158,6 +166,12 @@ describe('shareLink', () => {
     const result = await shareLink('https://example.com');
 
     expect(mockWriteText).toHaveBeenCalledWith('https://example.com/');
+    // UEC FIX: Проверяем аргументы showPopup для убийства мутантов строк
+    expect(mockShowPopup).toHaveBeenCalledWith({
+      title: 'Скопировано',
+      message: 'Ссылка скопирована в буфер обмена.',
+      buttons: [{ type: 'ok' }],
+    });
     expect(result).toBe(true);
   });
 

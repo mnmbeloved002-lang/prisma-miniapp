@@ -46,10 +46,9 @@ const createMockLocalStorage = (available = true) => {
 
 // Перехватываем "window.localStorage" и подменяем его нашим моком
 const mockStorage = createMockLocalStorage();
-// biome-ignore lint/security/noSecrets: 'localStorage' — имя Web API, а не секрет
+
 vi.stubGlobal('localStorage', mockStorage);
 
-// biome-ignore lint/security/noSecrets: описание тестового сьюта, не секрет
 describe('Infrastructure: storage', () => {
   // Сбрасываем хранилище перед каждым тестом
   beforeEach(() => {
@@ -82,10 +81,7 @@ describe('Infrastructure: storage', () => {
     expect(retrieved).toBeNull();
   });
 
-  // --- Тесты на сбои (Edge Cases) ---
-
   it('should return null if JSON.parse fails', () => {
-    // Напрямую кладем "битый" JSON в мок
     mockStorage.setItem('badJSON', '{invalid_json:');
 
     const retrieved = storage.get('badJSON');
@@ -93,35 +89,27 @@ describe('Infrastructure: storage', () => {
   });
 
   it('should return null if localStorage.getItem fails', () => {
-    // Перезагружаем мок в "недоступный" режим
-    // biome-ignore lint/security/noSecrets: 'localStorage' — имя Web API, используется в тесте
     vi.stubGlobal('localStorage', createMockLocalStorage(false));
 
     const retrieved = storage.get('anyKey');
     expect(retrieved).toBeNull();
 
-    // Возвращаем мок в обычный режим
-    // biome-ignore lint/security/noSecrets: 'localStorage' — имя Web API, используется в тесте
     vi.stubGlobal('localStorage', mockStorage);
   });
 
   it('should not throw if localStorage.setItem fails (Quota)', () => {
-    // `setItem` бросит ошибку, если ключ 'FAIL_SET'
-    // Функция `storage.set` должна поймать эту ошибку и не падать.
     expect(() => {
       storage.set('FAIL_SET', { id: 1 });
     }).not.toThrow();
   });
 
   it('should not throw if localStorage.removeItem fails', () => {
-    // biome-ignore lint/security/noSecrets: 'localStorage' — имя Web API, используется в тесте
     vi.stubGlobal('localStorage', createMockLocalStorage(false));
 
     expect(() => {
       storage.del('anyKey');
     }).not.toThrow();
 
-    // biome-ignore lint/security/noSecrets: 'localStorage' — имя Web API, используется в тесте
     vi.stubGlobal('localStorage', mockStorage);
   });
 });

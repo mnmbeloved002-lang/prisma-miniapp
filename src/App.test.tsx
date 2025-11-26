@@ -8,10 +8,8 @@ import AppShell from './ui/AppShell';
 
 vi.mock('./application/ritual-store');
 
-// biome-ignore lint/security/noSecrets: test suite label, not a secret
 describe('App (Integration)', () => {
   it('рендерит заголовок Prisma Ritual AI', async () => {
-    // @ts-expect-error mock
     vi.mocked(useRitualStore).mockReturnValue({
       loading: false,
       ritualItem: {

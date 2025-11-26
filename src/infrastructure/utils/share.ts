@@ -37,9 +37,8 @@ function stripParams(u: URL): URL {
   for (const p of JUNK_PARAMS) {
     u.searchParams.delete(p);
   }
-  if ([...u.searchParams.keys()].length === 0) {
-    u.search = '';
-  }
+  // [UEC REFACTOR]: Удален избыточный блок ручной очистки u.search.
+  // URL API автоматически обрабатывает пустые searchParams корректно.
   u.hash = '';
   return u;
 }

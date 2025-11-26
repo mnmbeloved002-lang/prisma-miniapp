@@ -50,6 +50,52 @@ describe('useTTSState mutation', () => {
     expect(result.current.isSpeaking).toBe(false);
   });
 
+  // [UEC ADDITION]: Тест проверяет состояние ВО ВРЕМЯ выполнения, убивая мутанта setIsSpeaking(true -> false)
+  it('sets isSpeaking to true while speaking', async () => {
+    isSupportedMock.mockReturnValue(true);
+    let finishSpeak: () => void;
+    const speakPromise = new Promise<void>((resolve) => {
+      finishSpeak = resolve;
+    });
+    speakFromHtmlMock.mockReturnValue(speakPromise);
+
+    const { useTTSState } = await import('./useTTSState');
+    const { result } = renderHook(() => useTTSState());
+
+    expect(result.current.isSpeaking).toBe(false);
+
+    let promise: Promise<void>;
+    await act(async () => {
+      promise = result.current.start('Title', 'Text');
+    });
+
+    // В этот момент промис еще висит, состояние должно быть true
+    expect(result.current.isSpeaking).toBe(true);
+
+    await act(async () => {
+      finishSpeak();
+      await promise;
+    });
+
+    expect(result.current.isSpeaking).toBe(false);
+  });
+
+  // [UEC ADDITION]: Убивает мутанта, удаляющего if (!canTTS) return
+  it('start does not update state or call speak if canTTS is false', async () => {
+    isSupportedMock.mockReturnValue(false);
+    const { useTTSState } = await import('./useTTSState');
+    const { result } = renderHook(() => useTTSState());
+
+    // Пытаемся запустить
+    await act(async () => {
+      await result.current.start('Title', 'Text');
+    });
+
+    // Если бы проверка !canTTS была удалена, состояние переключилось бы (или упало)
+    expect(result.current.isSpeaking).toBe(false);
+    expect(speakFromHtmlMock).not.toHaveBeenCalled();
+  });
+
   it('halt and unmount call stop to ensure playback is halted', async () => {
     isSupportedMock.mockReturnValue(true);
 

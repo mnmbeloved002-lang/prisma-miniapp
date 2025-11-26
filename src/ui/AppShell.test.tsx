@@ -49,7 +49,7 @@ describe('AppShell Integration', () => {
     });
     render(<AppShell />);
     expect(screen.getByText('Тестовый Ритуал')).toBeInTheDocument();
-    // biome-ignore lint/security/noSecrets: тестовая мотивационная строка, не секрет
+
     expect(screen.getByText('"Ты справишься"')).toBeInTheDocument();
   });
 
@@ -66,8 +66,13 @@ describe('AppShell Integration', () => {
     render(<AppShell />);
     expect(screen.getByText('Сбой связи')).toBeInTheDocument();
 
+    // [UEC FIX]: Сброс мока перед кликом важен для обнаружения лишних/отсутствующих вызовов
+    fetchMock.mockClear();
+
     const retryBtn = screen.getByRole('button', { name: /Попробовать снова/i });
     await user.click(retryBtn);
-    expect(fetchMock).toHaveBeenCalled();
+
+    // Если onClick={() => undefined}, этот тест упадет
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

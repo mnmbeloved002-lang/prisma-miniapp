@@ -97,10 +97,16 @@ describe('application TTS integration (mutation)', () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const tts = await import('./tts');
-    await tts.stop();
-    await tts.speakFromHtml('Title', '<p>Body</p>');
 
-    expect(errorSpy).toHaveBeenCalled();
+    // Проверяем ошибку при cancel
+    await tts.stop();
+    // UEC FIX: Проверяем точный текст ошибки, чтобы убить мутанта (замена текста на пустую строку)
+    expect(errorSpy).toHaveBeenCalledWith('TTS error during cancel:', expect.any(Error));
+    errorSpy.mockClear();
+
+    // Проверяем ошибку при speak
+    await tts.speakFromHtml('Title', '<p>Body</p>');
+    expect(errorSpy).toHaveBeenCalledWith('TTS error during speak:', expect.any(Error));
 
     errorSpy.mockRestore();
   });

@@ -110,7 +110,7 @@ describe('openLink', () => {
 
   it('should work in non-browser environment (SSR)', () => {
     const savedWindow = (globalThis as { window?: Window }).window;
-    // biome-ignore lint/suspicious/noExplicitAny: testing SSR fallback without window
+
     delete (globalThis as any).window;
 
     expect(() => openLink('https://example.com')).not.toThrow();

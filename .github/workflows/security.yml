@@ -1,0 +1,40 @@
+name: 'Security: OSV + Semgrep'
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  schedule:
+    - cron: '0 0 * * 1' # Weekly on Monday
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  osv-scanner:
+    name: "🔒 OSV Scanner (Dependencies)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run OSV Scanner
+        uses: google/osv-scanner-action@v1
+        with:
+          scan-args: |-
+            --lockfile=pnpm-lock.yaml
+
+  semgrep:
+    name: "🔒 Semgrep (Code Security)"
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Semgrep
+        run: semgrep scan --config .semgrep.yml --error
+        env:
+          SEMGREP_RULES: .semgrep.yml

@@ -1,7 +1,0 @@
-
-> prisma-ritual-ai@0.0.0 preview /workspaces/prisma-miniapp
-> vite preview --strictPort --port 4173 --host
-
-  ➜  Local:   http://localhost:4173/
-  ➜  Network: http://172.17.0.2:4173/
-  ➜  press h + enter to show help

@@ -119,3 +119,45 @@ describe('useTTSState mutation', () => {
     expect(stopMock.mock.calls.length).toBeGreaterThan(callsAfterHalt);
   });
 });
+
+it('re-evaluates canTTS when isSupported changes (kills [canTTS] -> [] mutation)', async () => {
+  // Сначала TTS не поддерживается
+  isSupportedMock.mockReturnValue(false);
+
+  const { useTTSState } = await import('./useTTSState');
+  const { result, rerender } = renderHook(() => useTTSState());
+
+  expect(result.current.canTTS).toBe(false);
+
+  // Меняем mock - теперь TTS поддерживается
+  isSupportedMock.mockReturnValue(true);
+
+  // Re-render хука
+  rerender();
+
+  // Критично: canTTS должен обновиться на true
+  // Если dependency array пустой ([]), это не сработает
+  expect(result.current.canTTS).toBe(true);
+});
+
+it('cleanup effect calls stop on unmount regardless of dependencies (kills dependency mutation)', async () => {
+  isSupportedMock.mockReturnValue(true);
+  speakFromHtmlMock.mockResolvedValue(undefined);
+
+  const { useTTSState } = await import('./useTTSState');
+  const { result, unmount } = renderHook(() => useTTSState());
+
+  // Запускаем TTS
+  await act(async () => {
+    await result.current.start('Title', 'Text');
+  });
+
+  const stopCallsBefore = stopMock.mock.calls.length;
+
+  // Размонтируем компонент
+  unmount();
+
+  // Критично: stop должен быть вызван cleanup-функцией
+  // Мутация dependency array ["Stryker"] не должна ломать это поведение
+  expect(stopMock.mock.calls.length).toBeGreaterThan(stopCallsBefore);
+});

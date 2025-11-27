@@ -281,4 +281,15 @@ describe('shareLink canonical & fallback behaviour', () => {
     expect(mockWriteText).toHaveBeenCalledWith('https://app.example.com/special/path');
     expect(result).toBe(true);
   });
+
+  it('normalizeShareUrl trims canonical URL with whitespace (kills .trim() mutation)', () => {
+    const canonicalWithSpaces = '  https://example.com/article  ';
+    const raw = 'https://fallback.com/page';
+
+    // Pass canonical as SECOND argument
+    const result = normalizeShareUrl(raw, canonicalWithSpaces);
+
+    // Should use trimmed canonical, not raw
+    expect(result).toBe('https://example.com/article');
+  });
 });

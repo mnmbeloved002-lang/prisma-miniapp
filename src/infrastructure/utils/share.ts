@@ -73,7 +73,7 @@ export function __hrefOrEmpty(): string {
 
 export function normalizeShareUrl(raw: string, canonicalUrl?: string): string {
   try {
-    const base = canonicalUrl?.trim() ? canonicalUrl : raw;
+    const base = canonicalUrl?.trim() || raw;
 
     try {
       const url = new URL(base);

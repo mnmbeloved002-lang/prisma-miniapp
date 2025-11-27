@@ -170,6 +170,9 @@ importers:
       rimraf:
         specifier: ^6.0.1
         version: 6.1.2
+      rollup-plugin-visualizer:
+        specifier: ^6.0.5
+        version: 6.0.5(rollup@2.79.2)
       semantic-release:
         specifier: ^25.0.1
         version: 25.0.1(typescript@5.9.3)
@@ -5504,6 +5507,19 @@ packages:
     hasBin: true
     peerDependencies:
       rolldown: 1.x
+      rollup: 2.x || 3.x || 4.x
+    peerDependenciesMeta:
+      rolldown:
+        optional: true
+      rollup:
+        optional: true
+
+  rollup-plugin-visualizer@6.0.5:
+    resolution: {integrity: sha512-9+HlNgKCVbJDs8tVtjQ43US12eqaiHyyiLMdBwQ7vSZPiHMysGNo2E88TAp1si5wx8NAoYriI2A5kuKfIakmJg==}
+    engines: {node: '>=18'}
+    hasBin: true
+    peerDependencies:
+      rolldown: 1.x || ^1.0.0-beta
       rollup: 2.x || 3.x || 4.x
     peerDependenciesMeta:
       rolldown:
@@ -12541,6 +12557,15 @@ snapshots:
   robots-parser@3.0.1: {}
 
   rollup-plugin-visualizer@5.14.0(rollup@2.79.2):
+    dependencies:
+      open: 8.4.2
+      picomatch: 4.0.3
+      source-map: 0.7.6
+      yargs: 17.7.2
+    optionalDependencies:
+      rollup: 2.79.2
+
+  rollup-plugin-visualizer@6.0.5(rollup@2.79.2):
     dependencies:
       open: 8.4.2
       picomatch: 4.0.3

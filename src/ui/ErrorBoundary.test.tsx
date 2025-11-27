@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/react';
 import { render, screen } from '@testing-library/react';
+import React from 'react';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ErrorBoundary } from './ErrorBoundary';
 
@@ -13,7 +14,7 @@ const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
   if (shouldThrow) {
     throw new Error('Test error from component');
   }
-  return <div>No error</div>;
+  return React.createElement('div', null, 'No error'); // ← Явное использование React
 };
 
 describe('ErrorBoundary', () => {

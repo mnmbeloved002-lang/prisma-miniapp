@@ -20,11 +20,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Install OSV Scanner
+        run: |
+          curl -L https://github.com/google/osv-scanner/releases/latest/download/osv-scanner_linux_amd64 -o osv-scanner
+          chmod +x osv-scanner
+          sudo mv osv-scanner /usr/local/bin/
+      
       - name: Run OSV Scanner
-        uses: google/osv-scanner-action@v1
-        with:
-          scan-args: |-
-            --lockfile=pnpm-lock.yaml
+        run: osv-scanner scan --lockfile=pnpm-lock.yaml
 
   semgrep:
     name: "🔒 Semgrep (Code Security)"

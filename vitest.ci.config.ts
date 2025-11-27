@@ -6,6 +6,14 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
+    // Исключаем Playwright тесты - они запускаются отдельно
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/tests/**', // ← Playwright E2E тесты
+      '**/*.e2e.spec.ts',
+      '**/*.a11y.spec.ts',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -17,7 +25,6 @@ export default defineConfig({
         '**/vite-env.d.ts',
         '**/main.tsx',
       ],
-      // Реалистичные пороги для L5 (93%+ это отлично!)
       thresholds: {
         lines: 90,
         functions: 90,

@@ -1,6 +1,12 @@
+import * as Sentry from '@sentry/react';
 import { render, screen } from '@testing-library/react';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ErrorBoundary } from './ErrorBoundary';
+
+// Mock Sentry
+vi.mock('@sentry/react', () => ({
+  captureException: vi.fn(),
+}));
 
 // Компонент который выбрасывает ошибку
 const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
@@ -11,11 +17,12 @@ const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
 };
 
 describe('ErrorBoundary', () => {
-  // Подавляем console.error в тестах
   const originalError = console.error;
+
   beforeAll(() => {
     console.error = vi.fn();
   });
+
   afterAll(() => {
     console.error = originalError;
   });
@@ -39,6 +46,16 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText('Космический сбой')).toBeInTheDocument();
     expect(screen.getByText('Что-то пошло не так в параллельной вселенной')).toBeInTheDocument();
     expect(screen.getByText('Test error from component')).toBeInTheDocument();
+  });
+
+  it('calls Sentry.captureException when error occurs', () => {
+    render(
+      <ErrorBoundary>
+        <ThrowError shouldThrow={true} />
+      </ErrorBoundary>,
+    );
+
+    expect(Sentry.captureException).toHaveBeenCalled();
   });
 
   it('shows reload button', () => {

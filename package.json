@@ -75,6 +75,7 @@
     "sec:semgrep": "semgrep scan --config .semgrep.yml --error"
   },
   "dependencies": {
+    "@sentry/react": "^10.27.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "zod": "^4.1.12",

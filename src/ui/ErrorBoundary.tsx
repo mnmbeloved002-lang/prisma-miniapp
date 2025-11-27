@@ -1,5 +1,5 @@
+import * as Sentry from '@sentry/react';
 import { Component, type ReactNode } from 'react';
-import { reportError } from '../infrastructure/utils/reportError';
 
 interface Props {
   children: ReactNode;
@@ -22,11 +22,13 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: { componentStack: string }) {
-    // Логируем ошибку в систему мониторинга
-    reportError(error, {
-      // biome-ignore lint/security/noSecrets: ErrorBoundary is a component name, not a secret
-      context: 'ErrorBoundary',
-      componentStack: errorInfo.componentStack,
+    // Логируем в Sentry (если инициализирован)
+    Sentry.captureException(error, {
+      contexts: {
+        react: {
+          componentStack: errorInfo.componentStack,
+        },
+      },
     });
   }
 

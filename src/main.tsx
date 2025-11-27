@@ -1,11 +1,11 @@
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
-import { reportError } from './infrastructure/utils/reportError';
+import { initSentry } from './infrastructure/sentry';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 
-// Логирование для Observability
-reportError('App started successfully');
+// Инициализируем Sentry ПЕРВЫМ (до любых ошибок)
+initSentry();
 
 const container = document.getElementById('root');
 if (!container) {

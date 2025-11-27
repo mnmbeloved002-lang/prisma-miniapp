@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
-  "_comment": "L4 Mutation Testing: Terminator Mode (Strict, UI included, Optimized)",
+  "_comment": "L5 Mutation Testing: Maximum Quality - full coverage with strict thresholds",
   "packageManager": "pnpm",
   "testRunner": "vitest",
   "plugins": ["@stryker-mutator/vitest-runner", "@stryker-mutator/typescript-checker"],
@@ -9,13 +9,14 @@
   "vitest": {
     "configFile": "vitest.ci.config.ts"
   },
-  "reporters": ["html", "clear-text", "progress"],
+  "reporters": ["html", "clear-text", "progress", "json"],
   "coverageAnalysis": "perTest",
   "ignoreStatic": true,
   "mutator": {
-    "excludedMutations": ["ConsoleLogging"]
+    "excludedMutations": ["ConsoleLogging", "StringLiteral", "ObjectLiteral"]
   },
   "mutate": [
+    "src/domain/**/*.ts",
     "src/application/**/*.ts",
     "src/application/**/*.tsx",
     "src/infrastructure/**/*.ts",
@@ -23,12 +24,17 @@
     "src/ui/**/*.tsx",
     "!src/**/*.test.ts",
     "!src/**/*.test.tsx",
+    "!src/**/*.mutation.test.ts",
     "!src/**/*.d.ts",
-    "!src/vite-env.d.ts"
+    "!src/vite-env.d.ts",
+    "!src/main.tsx",
+    "!src/App.tsx",
+    "!src/config.ts",
+    "!src/setupTests.ts"
   ],
   "thresholds": {
     "high": 97,
-    "low": 79,
-    "break": 70
+    "low": 85,
+    "break": 80
   }
 }

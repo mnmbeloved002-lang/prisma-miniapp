@@ -1,3 +1,4 @@
 {
-  "*.{ts,tsx,js,jsx,json,css}": "biome check --write"
+  "*.{ts,tsx,js,jsx,json,css}": ["biome check --write"],
+  "*": ["gitleaks protect --staged --verbose || exit 1"]
 }

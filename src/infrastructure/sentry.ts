@@ -33,6 +33,7 @@ export function initSentry() {
       // Browser tracing для performance
       Sentry.browserTracingIntegration({
         // Трейсим навигацию
+        // @ts-expect-error tracePropagationTargets поддерживается рантаймом Sentry, но отсутствует в типах BrowserTracingOptions
         tracePropagationTargets: ['localhost', /^\//],
       }),
 

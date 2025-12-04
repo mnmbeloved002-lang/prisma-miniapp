@@ -1,42 +1,41 @@
 import { useEffect } from 'react';
-
 import { useRitualStore } from '../application/ritual-store';
-
 import { Header } from './Header';
 import { RitualCard } from './RitualCard';
 
-export default function AppShell() {
-  const { ritualItem, error, loading, fetchRitual } = useRitualStore();
+export function AppShell(): JSX.Element {
+  const { ritualItem, loading, error, fetchRitual } = useRitualStore();
 
   useEffect(() => {
-    fetchRitual();
+    // При первом монтировании сразу тянем данные ритуала
+    void fetchRitual();
   }, [fetchRitual]);
 
-  // Простой вывод ошибки без лишних компонентов
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-white p-10 text-center flex flex-col items-center justify-center">
-        <h2 className="text-2xl text-red-400 mb-4">Ошибка</h2>
-        <p className="mb-6">{error}</p>
-        <button
-          type="button"
-          onClick={() => fetchRitual()}
-          className="px-6 py-2 bg-white/10 rounded-full hover:bg-white/20"
-        >
-          Попробовать снова
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white">
-      <Header title="Prisma Ritual AI" />
-      <main className="container mx-auto px-4 py-12">
-        {loading && <div className="text-center text-3xl animate-pulse">Загрузка...</div>}
-        {!loading && ritualItem && <RitualCard item={ritualItem} />}
+    <div className="app-shell">
+      <Header />
+      <main>
+        {loading && <p aria-busy="true">Загрузка...</p>}
+
+        {error && (
+          <div role="alert">
+            <p>Ошибка: {error}</p>
+            <button
+              type="button"
+              onClick={() => {
+                void fetchRitual();
+              }}
+            >
+              Попробовать снова
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && ritualItem && <RitualCard ritual={ritualItem} />}
       </main>
-      <footer className="text-center py-8 text-sm opacity-70">© 2025 Prisma Ritual AI</footer>
     </div>
   );
 }
+
+// biome-ignore lint/style/noDefaultExport: оставляем default-экспорт для совместимости с существующими импортами и тестами
+export default AppShell;

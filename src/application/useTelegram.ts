@@ -3,7 +3,12 @@
  */
 
 import { useEffect, useState } from 'react';
-import { getTelegramTheme, getTelegramUser, initTelegram, type TelegramUser } from './telegram';
+import {
+  getTelegramTheme,
+  getTelegramUser,
+  initTelegram,
+  type TelegramUser,
+} from '../infrastructure/telegram';
 
 /**
  * Хук для инициализации Telegram SDK

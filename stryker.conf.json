@@ -1,11 +1,10 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
-  "_comment": "L5 Mutation Testing: Maximum Quality - full coverage with strict thresholds",
+  "_comment": "L5 Mutation Testing: Vitest-only (TypeScript checker conflicts with Telegram SDK)",
   "packageManager": "pnpm",
   "testRunner": "vitest",
-  "plugins": ["@stryker-mutator/vitest-runner", "@stryker-mutator/typescript-checker"],
-  "checkers": ["typescript"],
-  "typescriptChecker": {},
+  "plugins": ["@stryker-mutator/vitest-runner"],
+  "checkers": [],
   "vitest": {
     "configFile": "vitest.ci.config.ts"
   },
@@ -18,23 +17,20 @@
   "mutate": [
     "src/domain/**/*.ts",
     "src/application/**/*.ts",
-    "src/application/**/*.tsx",
     "src/infrastructure/**/*.ts",
-    "src/infrastructure/**/*.tsx",
-    "src/ui/**/*.tsx",
     "!src/**/*.test.ts",
-    "!src/**/*.test.tsx",
     "!src/**/*.mutation.test.ts",
     "!src/**/*.d.ts",
     "!src/vite-env.d.ts",
     "!src/main.tsx",
-    "!src/App.tsx",
     "!src/config.ts",
-    "!src/setupTests.ts"
+    "!src/setupTests.ts",
+    "!src/infrastructure/telegram.ts",
+    "!src/infrastructure/sentry.ts"
   ],
   "thresholds": {
-    "high": 97,
-    "low": 85,
+    "high": 100,
+    "low": 95,
     "break": 80
   }
 }

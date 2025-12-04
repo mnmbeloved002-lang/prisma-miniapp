@@ -1,32 +1,46 @@
 // biome-ignore assist/source/organizeImports: keep React import first for JSX runtime
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 void React;
-import { useRitualStore } from './application/ritual-store';
-import AppShell from './ui/AppShell';
+import App from './App';
+import * as useTelegramModule from './infrastructure/useTelegram';
 
-vi.mock('./application/ritual-store');
+// Мокаем Telegram хуки
+vi.mock('./infrastructure/useTelegram');
+
+// Мокаем ritual store
+vi.mock('./application/ritual-store', () => ({
+  useRitualStore: vi.fn(() => ({
+    loading: false,
+    ritualItem: null,
+    error: null,
+    fetchRitual: vi.fn(),
+  })),
+}));
 
 describe('App (Integration)', () => {
-  it('рендерит заголовок Prisma Ritual AI', async () => {
-    vi.mocked(useRitualStore).mockReturnValue({
-      loading: false,
-      ritualItem: {
-        id: '1',
-        title: 'Test',
-        motivation: 'M',
-        task: 'T',
-        affirmation: 'A',
-      },
-      error: null,
-      fetchRitual: vi.fn(),
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Default: инициализирован, не в Telegram
+    vi.mocked(useTelegramModule.useTelegramInit).mockReturnValue({
+      isInitialized: true,
+      isInTelegram: false,
+    });
+  });
+
+  it('рендерит AppShell когда не в Telegram', () => {
+    render(<App />);
+    expect(screen.getByText('Prisma Ritual AI')).toBeInTheDocument();
+  });
+
+  it('показывает загрузку при инициализации', () => {
+    vi.mocked(useTelegramModule.useTelegramInit).mockReturnValue({
+      isInitialized: false,
+      isInTelegram: false,
     });
 
-    render(<AppShell />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Prisma Ritual AI')).toBeInTheDocument();
-    });
+    render(<App />);
+    expect(screen.getByText('Загрузка...')).toBeInTheDocument();
   });
 });

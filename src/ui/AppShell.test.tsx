@@ -35,6 +35,7 @@ describe('AppShell Integration', () => {
       error: null,
       fetchRitual: fetchMock,
     });
+
     render(<AppShell />);
     expect(screen.getByText(/Загрузка.../i)).toBeInTheDocument();
   });
@@ -47,9 +48,9 @@ describe('AppShell Integration', () => {
       error: null,
       fetchRitual: fetchMock,
     });
+
     render(<AppShell />);
     expect(screen.getByText('Тестовый Ритуал')).toBeInTheDocument();
-
     expect(screen.getByText('"Ты справишься"')).toBeInTheDocument();
   });
 
@@ -64,15 +65,14 @@ describe('AppShell Integration', () => {
     });
 
     render(<AppShell />);
-    expect(screen.getByText('Сбой связи')).toBeInTheDocument();
 
-    // [UEC FIX]: Сброс мока перед кликом важен для обнаружения лишних/отсутствующих вызовов
+    // Исправлено: ищем текст с префиксом "Ошибка: "
+    expect(screen.getByText(/Ошибка:.*Сбой связи/)).toBeInTheDocument();
+
     fetchMock.mockClear();
-
     const retryBtn = screen.getByRole('button', { name: /Попробовать снова/i });
     await user.click(retryBtn);
 
-    // Если onClick={() => undefined}, этот тест упадет
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

@@ -31,7 +31,7 @@ export function AppShell(): JSX.Element {
           </div>
         )}
 
-        {!loading && !error && ritualItem && <RitualCard ritual={ritualItem} />}
+        {!loading && !error && ritualItem && <RitualCard item={ritualItem} />}
       </main>
     </div>
   );

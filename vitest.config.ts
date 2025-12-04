@@ -21,8 +21,8 @@ export default defineConfig({
         'src/setupTests.ts',
         '**/*.test.{ts,tsx}',
         '**/*.spec.{ts,tsx}',
-        'src/infrastructure/sentry.ts', // Заглушен в dev
-        'src/infrastructure/telegram.ts', // Telegram SDK не работает вне Telegram
+        'src/infrastructure/sentry.ts',
+        'src/infrastructure/telegram.ts',
         'tests/**',
       ],
       thresholds: {

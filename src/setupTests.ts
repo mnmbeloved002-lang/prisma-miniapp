@@ -1,5 +1,4 @@
 // src/setupTests.ts
-
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
@@ -13,6 +12,7 @@ afterEach(() => {
 // Глобальный мок localStorage для всех тестов
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
+
   return {
     getItem: vi.fn((key: string) => store[key] || null),
     setItem: vi.fn((key: string, value: string) => {

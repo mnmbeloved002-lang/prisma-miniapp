@@ -4,10 +4,14 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 void React;
 import App from './App';
-import * as useTelegramModule from './infrastructure/useTelegram';
+import * as useTelegramModule from './application/useTelegram';
 
 // Мокаем Telegram хуки
-vi.mock('./infrastructure/useTelegram');
+vi.mock('./application/useTelegram', () => ({
+  useTelegramInit: vi.fn(),
+  useTelegramUser: vi.fn(),
+  useTelegramTheme: vi.fn(),
+}));
 
 // Мокаем ritual store
 vi.mock('./application/ritual-store', () => ({
@@ -25,7 +29,7 @@ describe('App (Integration)', () => {
   });
 
   it('рендерит AppShell когда не в Telegram', () => {
-    vi.mocked(useTelegramModule.useTelegramInit).mockReturnValue({
+    (useTelegramModule.useTelegramInit as ReturnType<typeof vi.fn>).mockReturnValue({
       isInitialized: true,
       isInTelegram: false,
     });
@@ -35,7 +39,7 @@ describe('App (Integration)', () => {
   });
 
   it('показывает загрузку при инициализации', () => {
-    vi.mocked(useTelegramModule.useTelegramInit).mockReturnValue({
+    (useTelegramModule.useTelegramInit as ReturnType<typeof vi.fn>).mockReturnValue({
       isInitialized: false,
       isInTelegram: false,
     });
@@ -45,15 +49,15 @@ describe('App (Integration)', () => {
   });
 
   it('рендерит TelegramWelcome когда в Telegram', () => {
-    vi.mocked(useTelegramModule.useTelegramInit).mockReturnValue({
+    (useTelegramModule.useTelegramInit as ReturnType<typeof vi.fn>).mockReturnValue({
       isInitialized: true,
       isInTelegram: true,
     });
-    vi.mocked(useTelegramModule.useTelegramUser).mockReturnValue({
+    (useTelegramModule.useTelegramUser as ReturnType<typeof vi.fn>).mockReturnValue({
       id: 123,
       firstName: 'Test',
     });
-    vi.mocked(useTelegramModule.useTelegramTheme).mockReturnValue(null);
+    (useTelegramModule.useTelegramTheme as ReturnType<typeof vi.fn>).mockReturnValue(null);
 
     render(<App />);
     expect(screen.getByText(/Привет, Test!/)).toBeInTheDocument();

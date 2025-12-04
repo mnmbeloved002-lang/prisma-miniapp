@@ -1,4 +1,4 @@
-export function Header({ title = 'Prisma Ritual AI' }: { title?: string }) {
+export function Header({ title = 'Mini App' }: { title?: string }) {
   return (
     <header className="sticky top-0 z-20 backdrop-blur-lg bg-bg/80 border-b border-white/10">
       <div className="container mx-auto px-4 py-4 text-center">

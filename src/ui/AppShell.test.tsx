@@ -1,78 +1,30 @@
-// biome-ignore assist/source/organizeImports: keep React import first for JSX runtime
-import React from 'react';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-void React;
-import { useRitualStore } from '../application/ritual-store';
-import AppShell from './AppShell';
+import { describe, expect, it } from 'vitest';
+import { AppShell } from './AppShell';
 
-// Мокаем стор полностью
-vi.mock('../application/ritual-store');
+describe('AppShell', () => {
+  it('рендерит Header и children', () => {
+    render(
+      <AppShell title="Test App">
+        <div>Test Content</div>
+      </AppShell>,
+    );
 
-const mockRitual = {
-  id: 'test-1',
-  title: 'Тестовый Ритуал',
-  motivation: 'Ты справишься',
-  task: 'Выпей воды',
-  affirmation: 'Я есть сила',
-  imagePrompt: 'test',
-  publishedAt: '2025-01-01',
-};
-
-describe('AppShell Integration', () => {
-  const fetchMock = vi.fn();
-
-  beforeEach(() => {
-    vi.clearAllMocks();
+    expect(screen.getByText('Test App')).toBeInTheDocument();
+    expect(screen.getByText('Test Content')).toBeInTheDocument();
   });
 
-  it('показывает загрузку', () => {
-    // @ts-expect-error mock
-    vi.mocked(useRitualStore).mockReturnValue({
-      loading: true,
-      ritualItem: null,
-      error: null,
-      fetchRitual: fetchMock,
-    });
-
-    render(<AppShell />);
-    expect(screen.getByText(/Загрузка.../i)).toBeInTheDocument();
+  it('использует дефолтный title', () => {
+    render(
+      <AppShell>
+        <div>Content</div>
+      </AppShell>,
+    );
+    expect(screen.getByText('Mini App')).toBeInTheDocument();
   });
 
-  it('рендерит ритуал', () => {
-    // @ts-expect-error mock
-    vi.mocked(useRitualStore).mockReturnValue({
-      loading: false,
-      ritualItem: mockRitual,
-      error: null,
-      fetchRitual: fetchMock,
-    });
-
-    render(<AppShell />);
-    expect(screen.getByText('Тестовый Ритуал')).toBeInTheDocument();
-    expect(screen.getByText('"Ты справишься"')).toBeInTheDocument();
-  });
-
-  it('показывает ошибку и кнопку повтора', async () => {
-    const user = userEvent.setup();
-    // @ts-expect-error mock
-    vi.mocked(useRitualStore).mockReturnValue({
-      loading: false,
-      ritualItem: null,
-      error: 'Сбой связи',
-      fetchRitual: fetchMock,
-    });
-
-    render(<AppShell />);
-
-    // Исправлено: ищем текст с префиксом "Ошибка: "
-    expect(screen.getByText(/Ошибка:.*Сбой связи/)).toBeInTheDocument();
-
-    fetchMock.mockClear();
-    const retryBtn = screen.getByRole('button', { name: /Попробовать снова/i });
-    await user.click(retryBtn);
-
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+  it('рендерит без children', () => {
+    const { container } = render(<AppShell />);
+    expect(container.querySelector('main')).toBeInTheDocument();
   });
 });

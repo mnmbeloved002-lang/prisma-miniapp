@@ -1,12 +1,16 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
 import importPlugin from 'eslint-plugin-import';
 import security from 'eslint-plugin-security';
 import sonarjs from 'eslint-plugin-sonarjs';
+import storybook from 'eslint-plugin-storybook';
 import unicorn from 'eslint-plugin-unicorn';
 
 export default [
   // глобальные игноры (вместо .eslintignore)
+  // biome-ignore lint/style/noDefaultExport: ESLint requires default export
   {
     ignores: [
       'dist',
@@ -18,9 +22,7 @@ export default [
       '.next',
       'out',
     ],
-  },
-
-  // базовые правила
+  }, // базовые правила
   {
     files: ['**/*.{ts,tsx,js,jsx}'],
     languageOptions: {
@@ -45,9 +47,7 @@ export default [
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       'import/order': ['warn', { 'newlines-between': 'always', alphabetize: { order: 'asc' } }],
     },
-  },
-
-  // тише в тестах
+  }, // тише в тестах
   {
     files: ['**/*.test.{ts,tsx}', 'tests/**/*.{ts,tsx}'],
     rules: {
@@ -55,4 +55,5 @@ export default [
       'import/order': 'off',
     },
   },
+  ...storybook.configs['flat/recommended'],
 ];

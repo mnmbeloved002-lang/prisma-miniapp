@@ -1,38 +1,16 @@
-import { useEffect } from 'react';
-import { useRitualStore } from '../application/ritual-store';
+import type { ReactNode } from 'react';
 import { Header } from './Header';
-import { RitualCard } from './RitualCard';
 
-export function AppShell(): JSX.Element {
-  const { ritualItem, loading, error, fetchRitual } = useRitualStore();
+interface AppShellProps {
+  children?: ReactNode;
+  title?: string;
+}
 
-  useEffect(() => {
-    // При первом монтировании сразу тянем данные ритуала
-    void fetchRitual();
-  }, [fetchRitual]);
-
+export function AppShell({ children, title }: AppShellProps): JSX.Element {
   return (
     <div className="app-shell">
-      <Header />
-      <main>
-        {loading && <p aria-busy="true">Загрузка...</p>}
-
-        {error && (
-          <div role="alert">
-            <p>Ошибка: {error}</p>
-            <button
-              type="button"
-              onClick={() => {
-                void fetchRitual();
-              }}
-            >
-              Попробовать снова
-            </button>
-          </div>
-        )}
-
-        {!loading && !error && ritualItem && <RitualCard item={ritualItem} />}
-      </main>
+      <Header title={title} />
+      <main>{children}</main>
     </div>
   );
 }

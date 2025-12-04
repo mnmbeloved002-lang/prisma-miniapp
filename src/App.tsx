@@ -1,5 +1,6 @@
 import { useTelegramInit } from './application/useTelegram';
 import { AppShell } from './ui/AppShell';
+import { RitualView } from './ui/RitualView';
 import { TelegramWelcome } from './ui/TelegramWelcome';
 
 export function App(): JSX.Element {
@@ -19,8 +20,12 @@ export function App(): JSX.Element {
     return <TelegramWelcome />;
   }
 
-  // Если не в Telegram - показываем старый AppShell (для обратной совместимости)
-  return <AppShell />;
+  // Если не в Telegram - показываем AppShell с RitualView
+  return (
+    <AppShell title="Prisma Ritual AI">
+      <RitualView />
+    </AppShell>
+  );
 }
 
 // biome-ignore lint/style/noDefaultExport: главный React-рут-компонент оставляем default-экспортом для совместимости с Vite/Vercel и существующими тестами

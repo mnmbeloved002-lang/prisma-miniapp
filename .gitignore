@@ -96,3 +96,6 @@ docs/uat/final-phase3-report.md
 /gitleaks.tar.gz
 .stryker-tmp/
 reports/
+
+*storybook.log
+storybook-static

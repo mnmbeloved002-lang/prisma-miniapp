@@ -1,11 +1,11 @@
 {
-  "name": "Prisma Ritual AI",
-  "short_name": "Prisma",
+  "name": "Telegram Mini App Platform",
+  "short_name": "TMA Platform",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0b1220",
-  "theme_color": "#8b5cf6",
-  "description": "Ежедневные ритуалы для внутренней гармонии",
+  "background_color": "#0f172a",
+  "theme_color": "#3b82f6",
+  "description": "Modern L5 Platform for Telegram Mini Apps",
   "icons": [
     {
       "src": "/icon-192.svg",
@@ -19,5 +19,8 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "orientation": "portrait",
+  "categories": ["utilities", "productivity"],
+  "prefer_related_applications": false
 }

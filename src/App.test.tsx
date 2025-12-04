@@ -22,14 +22,14 @@ vi.mock('./application/ritual-store', () => ({
 describe('App (Integration)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default: инициализирован, не в Telegram
+  });
+
+  it('рендерит AppShell когда не в Telegram', () => {
     vi.mocked(useTelegramModule.useTelegramInit).mockReturnValue({
       isInitialized: true,
       isInTelegram: false,
     });
-  });
 
-  it('рендерит AppShell когда не в Telegram', () => {
     render(<App />);
     expect(screen.getByText('Prisma Ritual AI')).toBeInTheDocument();
   });
@@ -42,5 +42,20 @@ describe('App (Integration)', () => {
 
     render(<App />);
     expect(screen.getByText('Загрузка...')).toBeInTheDocument();
+  });
+
+  it('рендерит TelegramWelcome когда в Telegram', () => {
+    vi.mocked(useTelegramModule.useTelegramInit).mockReturnValue({
+      isInitialized: true,
+      isInTelegram: true,
+    });
+    vi.mocked(useTelegramModule.useTelegramUser).mockReturnValue({
+      id: 123,
+      firstName: 'Test',
+    });
+    vi.mocked(useTelegramModule.useTelegramTheme).mockReturnValue(null);
+
+    render(<App />);
+    expect(screen.getByText(/Привет, Test!/)).toBeInTheDocument();
   });
 });

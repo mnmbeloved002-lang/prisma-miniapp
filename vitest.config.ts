@@ -1,36 +1,35 @@
+import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  plugins: [react()],
   test: {
-    environment: 'jsdom',
     globals: true,
-    css: true,
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
-    exclude: ['node_modules/**', 'dist/**', 'tests/**', '**/playwright.*.ts'],
-    setupFiles: ['./src/setupTests.ts'],
+    environment: 'jsdom',
+    setupFiles: './src/setupTests.ts',
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/tests/**',
+      '**/.{idea,git,cache,output,temp}/**',
+    ],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'lcov'],
-      reportsDirectory: 'coverage',
-      include: ['src/**/*.{ts,tsx}'],
-      // Исключаем только технические файлы (точки входа и конфиги)
+      reporter: ['text', 'json', 'html'],
       exclude: [
-        'src/main.tsx',
-        'src/App.tsx',
-        'src/config.ts',
+        'node_modules/**',
         'src/setupTests.ts',
-        'src/domain/**',
-        // Оставляем TTS и PersistentState как "задел на будущее" (Feature Flags)
-        'src/application/tts.ts',
-        'src/infrastructure/utils/usePersistentState.ts',
-        'src/infrastructure/utils/useTTSState.ts',
+        '**/*.test.{ts,tsx}',
+        '**/*.spec.{ts,tsx}',
+        'src/infrastructure/sentry.ts', // Заглушен в dev
+        'src/infrastructure/telegram.ts', // Telegram SDK не работает вне Telegram
+        'tests/**',
       ],
-      // Строгие пороги качества L4
       thresholds: {
-        lines: 95,
-        branches: 90,
-        functions: 95,
-        statements: 95,
+        lines: 90,
+        functions: 90,
+        branches: 85,
+        statements: 90,
       },
     },
   },

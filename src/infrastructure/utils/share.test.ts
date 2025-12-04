@@ -293,3 +293,25 @@ describe('shareLink canonical & fallback behaviour', () => {
     expect(result).toBe('https://example.com/article');
   });
 });
+
+it('использует fallback URL когда buildItemShareUrl возвращает null', async () => {
+  const mockNavigator = {
+    share: vi.fn().mockResolvedValue(undefined),
+  };
+  Object.defineProperty(window, 'navigator', {
+    value: mockNavigator,
+    writable: true,
+    configurable: true,
+  });
+
+  // Мокаем document.querySelector для canonical
+  Object.defineProperty(document, 'querySelector', {
+    value: vi.fn(() => null),
+    writable: true,
+    configurable: true,
+  });
+
+  const result = await shareLink('https://fallback.com', 'Fallback Title');
+  expect(result).toBe(true);
+  expect(mockNavigator.share).toHaveBeenCalled();
+});

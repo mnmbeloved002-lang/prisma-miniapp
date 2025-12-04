@@ -1,85 +1,123 @@
-import * as Sentry from '@sentry/react';
-import { render, screen } from '@testing-library/react';
+// biome-ignore assist/source/organizeImports: keep React import first for JSX runtime
 import React from 'react';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+void React;
 import { ErrorBoundary } from './ErrorBoundary';
 
-// Mock Sentry
-vi.mock('@sentry/react', () => ({
-  captureException: vi.fn(),
-}));
-
-// Компонент который выбрасывает ошибку
-const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
-  if (shouldThrow) {
-    throw new Error('Test error from component');
-  }
-  return React.createElement('div', null, 'No error'); // ← Явное использование React
-};
+const mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
 describe('ErrorBoundary', () => {
-  const originalError = console.error;
-
-  beforeAll(() => {
-    console.error = vi.fn();
+  beforeEach(() => {
+    mockConsoleError.mockClear();
   });
 
-  afterAll(() => {
-    console.error = originalError;
+  it('shows error UI when child throws', () => {
+    const ThrowError = () => {
+      throw new Error('Boom!');
+    };
+
+    render(
+      <ErrorBoundary>
+        <ThrowError />
+      </ErrorBoundary>,
+    );
+
+    expect(screen.getByText(/Космический сбой/i)).toBeInTheDocument();
+    expect(screen.getByText(/Boom!/i)).toBeInTheDocument();
+  });
+
+  it('shows reload button', () => {
+    const ThrowError = () => {
+      throw new Error('Test error');
+    };
+
+    render(
+      <ErrorBoundary>
+        <ThrowError />
+      </ErrorBoundary>,
+    );
+
+    expect(screen.getByRole('button', { name: /Перезагрузить приложение/i })).toBeInTheDocument();
   });
 
   it('renders children when no error', () => {
     render(
       <ErrorBoundary>
-        <div>Child content</div>
+        <div>Working!</div>
       </ErrorBoundary>,
     );
-    expect(screen.getByText('Child content')).toBeInTheDocument();
+
+    expect(screen.getByText('Working!')).toBeInTheDocument();
   });
 
-  it('renders error UI when child throws', () => {
+  it('shows generic message when error has no message', () => {
+    const ThrowNoMessage = () => {
+      throw new Error('');
+    };
+
     render(
       <ErrorBoundary>
-        <ThrowError shouldThrow={true} />
+        <ThrowNoMessage />
       </ErrorBoundary>,
     );
 
-    expect(screen.getByText('Космический сбой')).toBeInTheDocument();
-    expect(screen.getByText('Что-то пошло не так в параллельной вселенной')).toBeInTheDocument();
-    expect(screen.getByText('Test error from component')).toBeInTheDocument();
+    expect(screen.getByText(/Неизвестная ошибка/i)).toBeInTheDocument();
   });
 
-  it('calls Sentry.captureException when error occurs', () => {
+  it('logs errors to console', () => {
+    const ThrowError = () => {
+      throw new Error('Console test');
+    };
+
     render(
       <ErrorBoundary>
-        <ThrowError shouldThrow={true} />
+        <ThrowError />
       </ErrorBoundary>,
     );
 
-    expect(Sentry.captureException).toHaveBeenCalled();
+    expect(mockConsoleError).toHaveBeenCalled();
   });
 
-  it('shows reload button', () => {
+  it('перезагружает страницу при клике на кнопку', async () => {
+    const user = userEvent.setup();
+    const reloadMock = vi.fn();
+    Object.defineProperty(window, 'location', {
+      value: { reload: reloadMock },
+      writable: true,
+      configurable: true,
+    });
+
+    const ThrowError = () => {
+      throw new Error('Test reload error');
+    };
+
     render(
       <ErrorBoundary>
-        <ThrowError shouldThrow={true} />
+        <ThrowError />
       </ErrorBoundary>,
     );
 
-    const button = screen.getByRole('button', { name: /перезагрузить/i });
-    expect(button).toBeInTheDocument();
+    const reloadButton = screen.getByRole('button', { name: /Перезагрузить приложение/i });
+    await user.click(reloadButton);
+
+    expect(reloadMock).toHaveBeenCalled();
   });
+});
 
-  it('renders custom fallback when provided', () => {
-    const customFallback = <div>Custom error UI</div>;
+it('использует custom fallback если передан', () => {
+  const ThrowError = () => {
+    throw new Error('Test custom fallback');
+  };
 
-    render(
-      <ErrorBoundary fallback={customFallback}>
-        <ThrowError shouldThrow={true} />
-      </ErrorBoundary>,
-    );
+  const customFallback = <div>Кастомная ошибка!</div>;
 
-    expect(screen.getByText('Custom error UI')).toBeInTheDocument();
-    expect(screen.queryByText('Космический сбой')).not.toBeInTheDocument();
-  });
+  render(
+    <ErrorBoundary fallback={customFallback}>
+      <ThrowError />
+    </ErrorBoundary>,
+  );
+
+  expect(screen.getByText('Кастомная ошибка!')).toBeInTheDocument();
 });

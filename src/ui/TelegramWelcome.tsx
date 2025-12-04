@@ -3,7 +3,7 @@
  * Использует Telegram UI Kit и SDK
  */
 
-import { useTelegramTheme, useTelegramUser } from '../infrastructure/useTelegram';
+import { useTelegramTheme, useTelegramUser } from '../application/useTelegram';
 
 export function TelegramWelcome(): JSX.Element {
   const user = useTelegramUser();

@@ -1,4 +1,4 @@
-import { useTelegramInit } from './infrastructure/useTelegram';
+import { useTelegramInit } from './application/useTelegram';
 import { AppShell } from './ui/AppShell';
 import { TelegramWelcome } from './ui/TelegramWelcome';
 

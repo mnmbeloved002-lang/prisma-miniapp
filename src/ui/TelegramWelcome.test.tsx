@@ -3,7 +3,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 void React;
-import * as useTelegramModule from '../infrastructure/useTelegram';
+import * as useTelegramModule from '../application/useTelegram';
 import { TelegramWelcome } from './TelegramWelcome';
 
 // Мокаем Telegram хуки

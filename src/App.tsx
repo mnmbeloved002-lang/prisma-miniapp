@@ -22,7 +22,7 @@ export function App(): JSX.Element {
 
   // Если не в Telegram - показываем AppShell с RitualView
   return (
-    <AppShell title="Prisma Ritual AI">
+    <AppShell title="Telegram Mini App">
       <RitualView />
     </AppShell>
   );

@@ -6,10 +6,10 @@ export default defineConfig({
   plugins: [
     react(),
     visualizer({
-      filename: 'dist/stats.html',
+      filename: './stats.html', // Важно: путь без dist/
       open: false,
       gzipSize: true,
-    }),
+    }) as any, // <--- ДОБАВЬТЕ ЭТО (as any), и красное подчеркивание исчезнет
   ],
 
   build: {

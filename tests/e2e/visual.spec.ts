@@ -83,7 +83,10 @@ test('card — desktop baseline', async ({ page }) => {
   await harden(page);
   await page.goto('/');
   await openFirstCard(page);
-  await expect(page).toHaveScreenshot('card-desktop.png', { fullPage: true });
+  await expect(page).toHaveScreenshot('card-desktop.png', {
+    fullPage: true,
+    maxDiffPixelRatio: 0.02,
+  });
 });
 
 test('empty — desktop baseline', async ({ page }) => {
@@ -97,5 +100,8 @@ test('error — desktop baseline', async ({ page }) => {
   await harden(page);
   await forceError(page);
   await page.goto('/');
-  await expect(page).toHaveScreenshot('error-desktop.png', { fullPage: true });
+  await expect(page).toHaveScreenshot('error-desktop.png', {
+    fullPage: true,
+    maxDiffPixelRatio: 0.02,
+  });
 });

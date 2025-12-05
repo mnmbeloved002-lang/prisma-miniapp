@@ -35,7 +35,7 @@ describe('App (Integration)', () => {
     });
 
     render(<App />);
-    expect(screen.getByText('Prisma Ritual AI')).toBeInTheDocument();
+    expect(screen.getByText('Telegram Mini App')).toBeInTheDocument();
   });
 
   it('показывает загрузку при инициализации', () => {

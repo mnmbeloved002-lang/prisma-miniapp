@@ -1,32 +1,14 @@
-import { useTelegramInit } from './application/useTelegram';
+// src/App.tsx
+import React from 'react';
 import { AppShell } from './ui/AppShell';
-import { RitualView } from './ui/RitualView';
-import { TelegramWelcome } from './ui/TelegramWelcome';
+import { CityMysteryPage } from './modules/city-mystery/ui/CityMysteryPage';
 
-export function App(): JSX.Element {
-  const { isInitialized, isInTelegram } = useTelegramInit();
-
-  // Показываем загрузку пока инициализируется SDK
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Загрузка...</p>
-      </div>
-    );
-  }
-
-  // Если запущено в Telegram - показываем приветствие
-  if (isInTelegram) {
-    return <TelegramWelcome />;
-  }
-
-  // Если не в Telegram - показываем AppShell с RitualView
+export const App: React.FC = () => {
   return (
-    <AppShell title="Telegram Mini App">
-      <RitualView />
+    <AppShell>
+      <CityMysteryPage />
     </AppShell>
   );
-}
+};
 
-// biome-ignore lint/style/noDefaultExport: главный React-рут-компонент оставляем default-экспортом для совместимости с Vite/Vercel и существующими тестами
 export default App;

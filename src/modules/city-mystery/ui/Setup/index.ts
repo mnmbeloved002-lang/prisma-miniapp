@@ -1,0 +1,10 @@
+export { SetupWizard } from './SetupWizard';
+export { SelectModeStep } from './SelectModeStep';
+export { SelectRoleStep } from './SelectRoleStep';
+export { SelectMotivesStep } from './SelectMotivesStep';
+export { PlaceCitizensStep } from './PlaceCitizensStep';
+export { PlaceBuildingsStep } from './PlaceBuildingsStep';
+export { PlaceDetectiveStep } from './PlaceDetectiveStep';
+export { SelectKillerStep } from './SelectKillerStep';
+export { SelectKillerMotiveStep } from './SelectKillerMotiveStep';
+export { SetupReadyStep } from './SetupReadyStep';

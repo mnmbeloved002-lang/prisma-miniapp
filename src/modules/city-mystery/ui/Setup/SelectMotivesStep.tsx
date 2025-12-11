@@ -57,15 +57,14 @@ const MotiveChip: React.FC<MotiveChipProps> = ({
         }
       `}
     >
-      {/* Кнопка info */}
-      <button
-        type="button"
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: Игнорируем, так как это интерактивный элемент */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: Уже обрабатывается в родительском элементе */}
+      <div
         onClick={handleInfoClick}
         className="absolute top-0.5 right-0.5 w-4 h-4 flex items-center justify-center text-[8px] text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800 rounded-full transition-colors cursor-pointer z-10"
-        aria-label="Info"
       >
         i
-      </button>
+      </div>
 
       {/* Булавка выбора */}
       {isSelected && (
@@ -100,7 +99,9 @@ const MotiveInfoPopup: React.FC<MotiveInfoPopupProps> = ({ motive, onClose }) =>
   };
 
   return (
-    // biome-ignore lint/a11y/useSemanticElements: Cannot use <button> here because it contains another button (close icon)
+    // biome-ignore lint/a11y/useSemanticElements: Не используем <button> т.к. содержит другую кнопку
+    // biome-ignore lint/a11y/noStaticElementInteractions: Это интерактивный overlay
+    // biome-ignore lint/a11y/useKeyWithClickEvents: Уже есть onKeyDown
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm cursor-pointer"
       onClick={onClose}
@@ -109,13 +110,11 @@ const MotiveInfoPopup: React.FC<MotiveInfoPopupProps> = ({ motive, onClose }) =>
       tabIndex={0}
       aria-label="Close popup"
     >
-      {/* Контейнер */}
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: Key events handled by parent wrapper */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: Это контейнер контента */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: Останавливаем всплытие кликов */}
       <div
         className="relative max-w-xs w-full bg-zinc-900 border border-zinc-700 p-5 shadow-2xl cursor-default"
         onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
       >
         {/* Скрепка */}
         <div className="absolute -top-1 right-6 w-3 h-6 rounded-b-sm bg-red-600" />

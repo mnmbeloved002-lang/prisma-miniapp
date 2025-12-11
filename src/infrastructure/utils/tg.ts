@@ -4,6 +4,8 @@ export interface TgWebAppMinimal {
   expand?: () => void;
   close?: () => void;
   disableVerticalSwipes?: () => void;
+  setHeaderColor?: (color: string) => void;
+  setBackgroundColor?: (color: string) => void;
   MainButton?: {
     setText?(label: string): void;
   };

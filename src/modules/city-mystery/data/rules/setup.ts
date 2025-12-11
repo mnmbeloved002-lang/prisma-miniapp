@@ -35,14 +35,14 @@ export function createSetupState(): SetupState {
     placedCitizens: [],
     
     availableBuildings: [
-      { type: 'POLICE', placed: false, position: null },
+      { type: 'FIRE_STATION', placed: false, position: null },
+      { type: 'HOSPITAL', placed: false, position: null },
       { type: 'POLICE', placed: false, position: null },
       { type: 'DINER', placed: false, position: null },
       { type: 'DINER', placed: false, position: null },
       { type: 'HOSPITAL', placed: false, position: null },
-      { type: 'HOSPITAL', placed: false, position: null },
       { type: 'FIRE_STATION', placed: false, position: null },
-      { type: 'FIRE_STATION', placed: false, position: null },
+      { type: 'POLICE', placed: false, position: null },
     ],
     
     detectivePosition: null,
@@ -147,12 +147,24 @@ export function placeCitizen(
     return { state, error: 'Этот житель уже размещён на поле' };
   }
   
-  // Проверка: в квартале не более 3 жителей
+  // Проверка лимита в квартале (LOGIC: углы=2, остальные=1)
+  const CORNER_DISTRICTS = [0, 3, 12, 15];
+  const isCorner = CORNER_DISTRICTS.includes(districtIndex);
   const citizensInDistrict = state.placedCitizens.filter(
     p => p.districtIndex === districtIndex
   ).length;
-  if (citizensInDistrict >= 3) {
-    return { state, error: 'В квартале уже 3 жителя (максимум)' };
+  const maxAllowed = state.selectedMode === 'LOGIC'
+    ? (isCorner ? 2 : 1)
+    : 3;
+  if (citizensInDistrict >= maxAllowed) {
+    return { 
+      state, 
+      error: state.selectedMode === 'LOGIC'
+        ? isCorner 
+          ? 'В угловом квартале должно быть ровно 2 жителя'
+          : 'В обычном квартале должен быть ровно 1 житель'
+        : 'В квартале уже 3 жителя (максимум)'
+    };
   }
   
   return {

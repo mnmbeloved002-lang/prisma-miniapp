@@ -4,7 +4,7 @@ import type { Citizen } from '../../data/citizens';
 
 const CORNER_DISTRICTS = [0, 3, 12, 15];
 const MAX_IN_CORNER = 2;
-const MAX_IN_OTHER = 3;
+const MAX_IN_OTHER = 1; // LOGIC: строго 1 в неугловых
 
 export const PlaceCitizensStep: React.FC = () => {
   const { setupState, placeCitizen, removeCitizen, autoPlaceCitizens, nextPhase, prevPhase } = useSetupStore();

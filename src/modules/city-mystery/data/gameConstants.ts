@@ -21,14 +21,14 @@ export const CORNER_DISTRICTS = [0, 3, 12, 15];
 
 /** Стандартная расстановка зданий (как в правилах) */
 export const DEFAULT_BUILDINGS = [
-  { type: 'POLICE', position: 1 },    // [1,0]
-  { type: 'POLICE', position: 14 },   // [2,3]
-  { type: 'DINER', position: 4 },     // [0,1]
-  { type: 'DINER', position: 11 },    // [3,2]
-  { type: 'HOSPITAL', position: 2 },  // [2,0]
-  { type: 'HOSPITAL', position: 13 }, // [1,3]
-  { type: 'FIRE_STATION', position: 7 },  // [3,1]
-  { type: 'FIRE_STATION', position: 8 },  // [0,2]
+  { type: 'FIRE_STATION', position: 0 },  // [0,0]
+  { type: 'HOSPITAL', position: 2 },      // [0,2]
+  { type: 'POLICE', position: 5 },        // [1,1]
+  { type: 'DINER', position: 7 },         // [1,3]
+  { type: 'DINER', position: 9 },         // [2,1]
+  { type: 'HOSPITAL', position: 11 },     // [2,3]
+  { type: 'FIRE_STATION', position: 12 }, // [3,0]
+  { type: 'POLICE', position: 14 },       // [3,2]
 ] as const;
 
 // ==================== КОНСТАНТЫ МОТИВОВ ====================

@@ -12,11 +12,12 @@ import { ActionPanel } from './ActionPanel';
 import { MotiveGrid } from './MotiveGrid';
 import { GameLog } from './GameLog';
 import { GameOverScreen } from './GameOverScreen';
+import { WelcomeScreen } from './WelcomeScreen';
 
-type GameScreen = 'SETUP' | 'GAME' | 'GAME_OVER';
+type GameScreen = 'WELCOME' | 'SETUP' | 'GAME' | 'GAME_OVER';
 
 export const CityMysteryPage: React.FC = () => {
-  const [screen, setScreen] = useState<GameScreen>('SETUP');
+  const [screen, setScreen] = useState<GameScreen>('WELCOME');
   
   const { 
     gameState, 
@@ -33,6 +34,11 @@ export const CityMysteryPage: React.FC = () => {
     reset: resetSetup 
   } = useSetupStore();
   
+  // Переход от вступления к настройке
+  const handleStart = () => {
+    setScreen('SETUP');
+  };
+
   // Завершение настройки и старт игры
   const handleSetupComplete = () => {
     const gameState = finishSetup();
@@ -49,6 +55,11 @@ export const CityMysteryPage: React.FC = () => {
     setScreen('SETUP');
   };
   
+  // Экран приветствия
+  if (screen === 'WELCOME') {
+    return <WelcomeScreen onStart={handleStart} />;
+  }
+
   // Проверка окончания игры
   if (screen === 'GAME' && gameState?.isGameOver) {
     return (
@@ -68,24 +79,25 @@ export const CityMysteryPage: React.FC = () => {
   // Экран игры
   if (screen === 'GAME' && gameState) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white">
-        {/* Заголовок */}
-        <header className="p-4 border-b border-gray-700">
-          <div className="flex justify-between items-center">
+      <div className="min-h-screen bg-zinc-900 text-zinc-200 font-mono">
+        {/* Хедер игры */}
+        <header className="p-4 border-b border-zinc-800 bg-zinc-900/90 backdrop-blur sticky top-0 z-40 shadow-md">
+          <div className="flex justify-between items-center max-w-7xl mx-auto">
             <div>
-              <h1 className="text-xl font-bold">�� Городской Убийца</h1>
-              <div className="text-sm text-gray-400">
-                Раунд {gameState.round}/{gameState.maxRounds} • 
-                Фаза: {gameState.phase === 'KILLER' ? '🔪 Убийца' : 
-                       gameState.phase === 'DETECTIVE' ? '🔍 Детектив' : '🏙️ Город'}
+              <h1 className="text-xl font-black text-red-600 tracking-wider">CITY MYSTERY</h1>
+              <div className="text-xs text-zinc-500 font-bold mt-1 tracking-tight">
+                РАУНД {gameState.round}/{gameState.maxRounds} • ФАЗА: {
+                  gameState.phase === 'KILLER' ? '🔪 УБИЙЦА' : 
+                  gameState.phase === 'DETECTIVE' ? '🔍 ДЕТЕКТИВ' : '🏙️ ГОРОД'
+                }
               </div>
             </div>
             <div className="text-right">
-              <div className="text-sm">
-                Вы: {playerRole === 'KILLER' ? '🔪 Убийца' : '🔍 Детектив'}
+              <div className="text-sm font-bold text-zinc-300">
+                {playerRole === 'KILLER' ? 'ВЫ: УБИЙЦА' : 'ВЫ: ДЕТЕКТИВ'}
               </div>
-              <div className="text-xs text-gray-400">
-                Жертв: {gameState.victims.length}/5
+              <div className="text-xs text-zinc-500">
+                ЖЕРТВ: {gameState.victims.length}/5
               </div>
             </div>
           </div>
@@ -93,24 +105,28 @@ export const CityMysteryPage: React.FC = () => {
         
         {/* Ошибка */}
         {gameError && (
-          <div className="m-4 p-3 bg-red-900/50 border border-red-500 rounded-lg text-red-200 flex justify-between items-center">
+          <div className="max-w-7xl mx-auto m-4 p-3 bg-red-900/20 border border-red-900/50 rounded text-red-200 flex justify-between items-center backdrop-blur-sm animate-pulse">
             <span>{gameError}</span>
-            <button onClick={clearError} className="text-red-400 hover:text-red-300">✕</button>
+            <button onClick={clearError} className="text-red-400 hover:text-red-300 px-2">✕</button>
           </div>
         )}
         
         {/* Основной контент */}
-        <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
           {/* Игровое поле */}
-          <div className="lg:col-span-2">
-            <GameBoard />
+          <div className="lg:col-span-2 order-2 lg:order-1">
+            <div className="bg-zinc-800/30 rounded-lg p-1 border border-zinc-800 shadow-inner">
+               <GameBoard />
+            </div>
           </div>
           
           {/* Боковая панель */}
-          <div className="space-y-4">
+          <div className="space-y-6 order-1 lg:order-2">
             <ActionPanel />
             <MotiveGrid />
-            <GameLog />
+            <div className="hidden lg:block bg-zinc-950 p-4 rounded border border-zinc-800 h-64 overflow-y-auto font-mono text-xs">
+              <GameLog />
+            </div>
           </div>
         </div>
       </div>
@@ -119,8 +135,8 @@ export const CityMysteryPage: React.FC = () => {
   
   // Загрузка
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-      <div className="text-xl">Загрузка...</div>
+    <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center font-mono">
+      <div className="text-xl animate-pulse text-red-600">ЗАГРУЗКА ДЕЛА...</div>
     </div>
   );
 };

@@ -104,6 +104,7 @@ export interface DetectiveState {
   };
   collectedEvidence: string[]; // Для режима Интуиция
   availableCards: string[]; // Для режима Интуиция
+  usedActionTypes?: string[]; // Использованные типы действий в раунде
 }
 
 /** Состояние убийцы */

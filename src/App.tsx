@@ -1,14 +1,9 @@
 // src/App.tsx
-import React from 'react';
-import { AppShell } from './ui/AppShell';
+import type React from 'react';
 import { CityMysteryPage } from './modules/city-mystery/ui/CityMysteryPage';
 
 export const App: React.FC = () => {
-  return (
-    <AppShell>
-      <CityMysteryPage />
-    </AppShell>
-  );
+  return <CityMysteryPage />;
 };
 
 export default App;

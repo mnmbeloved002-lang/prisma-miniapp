@@ -1,103 +1,148 @@
-import React from 'react';
+import type React from 'react';
 import { useSetupStore } from '../../application/setupStore';
+import type { GameMode } from '../../data/gameTypes';
+
+interface ModeCardProps {
+  mode: GameMode;
+  number: string;
+  title: string;
+  description: string;
+  hint: string;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+const ModeCard: React.FC<ModeCardProps> = ({
+  number,
+  title,
+  description,
+  hint,
+  isSelected,
+  onSelect,
+}) => (
+  <button
+    type="button"
+    onClick={onSelect}
+    className={`
+      group w-full text-left transition-all duration-300 relative
+      ${isSelected ? 'scale-[1.02]' : 'hover:scale-[1.01]'}
+    `}
+  >
+    <div
+      className={`
+      relative p-5 border transition-all duration-300
+      ${
+        isSelected
+          ? 'bg-zinc-900/80 border-red-700/60 shadow-[0_0_30px_rgba(185,28,28,0.15)]'
+          : 'bg-zinc-900/40 border-zinc-800/60 hover:border-zinc-700/60 hover:bg-zinc-900/60'
+      }
+    `}
+    >
+      {/* Скрепка */}
+      <div
+        className={`
+        absolute -top-1 right-4 w-3 h-6 rounded-b-sm transition-colors
+        ${isSelected ? 'bg-red-600' : 'bg-zinc-700'}
+      `}
+      />
+
+      {/* Штамп */}
+      {isSelected && (
+        <div className="absolute top-3 right-3 px-2 py-0.5 border border-red-600/60 text-red-500 text-[9px] font-bold uppercase tracking-widest rotate-[-3deg]">
+          Выбрано
+        </div>
+      )}
+
+      <div className="flex items-start gap-4">
+        <div
+          className={`
+          w-12 h-12 flex items-center justify-center border-2 text-lg font-black
+          ${
+            isSelected
+              ? 'border-red-600/60 text-red-500 bg-red-950/30'
+              : 'border-zinc-700/60 text-zinc-500 bg-zinc-800/50'
+          }
+        `}
+        >
+          {number}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <h3
+            className={`
+            text-base sm:text-lg font-bold uppercase tracking-wider mb-1
+            ${isSelected ? 'text-red-400' : 'text-zinc-300'}
+          `}
+          >
+            {title}
+          </h3>
+          <p className="text-[11px] sm:text-xs text-zinc-500 leading-relaxed">{description}</p>
+          <p className="text-[10px] text-zinc-600 mt-2 uppercase tracking-wider">● {hint}</p>
+        </div>
+      </div>
+
+      <div
+        className={`
+        absolute bottom-0 left-0 h-0.5 transition-all duration-500
+        ${isSelected ? 'w-full bg-red-700/50' : 'w-0 bg-zinc-700'}
+      `}
+      />
+    </div>
+  </button>
+);
 
 export const SelectModeStep: React.FC = () => {
   const { setupState, selectMode, nextPhase } = useSetupStore();
-  
+
   return (
-    <div className="w-full">
-      {/* Подзаголовок (цитата) */}
-      <p className="text-zinc-500 text-sm text-center mb-6 font-serif italic">
-        "Выберите, по каким законам будет жить этот город..."
+    <div className="w-full flex flex-col h-full">
+      <p className="text-zinc-500 text-xs sm:text-sm text-center mb-8 italic leading-relaxed">
+        "Каждое дело требует своего подхода.
+        <br />
+        <span className="text-zinc-600">Выберите метод расследования..."</span>
       </p>
 
-      {/* Блок с вариантами */}
-      <div className="space-y-4 mb-8">
-        
-        {/* Кнопка ЛОГИКА */}
-        <button
-          onClick={() => selectMode('LOGIC')}
-          className={`
-            group w-full p-5 rounded-sm border transition-all duration-300 relative overflow-hidden text-left
-            ${setupState.selectedMode === 'LOGIC' 
-              ? 'border-red-600 bg-red-950/20 shadow-[0_0_15px_rgba(220,38,38,0.2)]' 
-              : 'border-zinc-800 bg-zinc-900/50 hover:border-zinc-600 hover:bg-zinc-900'}
-          `}
-        >
-          {/* Маркер выбора */}
-          {setupState.selectedMode === 'LOGIC' && (
-            <div className="absolute top-0 right-0 p-1 bg-red-600 text-white text-[10px] font-bold uppercase tracking-widest">
-              Выбрано
-            </div>
-          )}
+      <div className="space-y-4 flex-1">
+        <ModeCard
+          mode="LOGIC"
+          number="01"
+          title="Логика"
+          description="Классическое расследование. Дедукция, допросы, анализ фактов."
+          hint="Рекомендуется новичкам"
+          isSelected={setupState.selectedMode === 'LOGIC'}
+          onSelect={() => selectMode('LOGIC')}
+        />
 
-          <div className="flex items-start gap-4 relative z-10">
-            <div className={`
-              text-3xl p-3 rounded-full border 
-              ${setupState.selectedMode === 'LOGIC' ? 'border-red-600 text-red-500 bg-red-950/30' : 'border-zinc-700 text-zinc-600 bg-zinc-800'}
-            `}>
-              🧠
-            </div>
-            <div>
-              <div className={`font-black text-lg uppercase tracking-wider ${setupState.selectedMode === 'LOGIC' ? 'text-red-500' : 'text-zinc-300'}`}>
-                Логика
-              </div>
-              <div className="text-xs text-zinc-500 mt-1 leading-relaxed">
-                Классическое расследование. Дедукция, допросы, факты. <br/>
-                <span className="text-zinc-600">Рекомендуется для начала.</span>
-              </div>
-            </div>
-          </div>
-        </button>
-        
-        {/* Кнопка ИНТУИЦИЯ */}
-        <button
-          onClick={() => selectMode('INTUITION')}
-          className={`
-            group w-full p-5 rounded-sm border transition-all duration-300 relative overflow-hidden text-left
-            ${setupState.selectedMode === 'INTUITION' 
-              ? 'border-red-600 bg-red-950/20 shadow-[0_0_15px_rgba(220,38,38,0.2)]' 
-              : 'border-zinc-800 bg-zinc-900/50 hover:border-zinc-600 hover:bg-zinc-900'}
-          `}
-        >
-          {setupState.selectedMode === 'INTUITION' && (
-            <div className="absolute top-0 right-0 p-1 bg-red-600 text-white text-[10px] font-bold uppercase tracking-widest">
-              Выбрано
-            </div>
-          )}
+        <ModeCard
+          mode="INTUITION"
+          number="02"
+          title="Интуиция"
+          description="Скрытые мотивы, карты способностей, блеф и психология."
+          hint="Для опытных детективов"
+          isSelected={setupState.selectedMode === 'INTUITION'}
+          onSelect={() => selectMode('INTUITION')}
+        />
+      </div>
 
-          <div className="flex items-start gap-4 relative z-10">
-            <div className={`
-              text-3xl p-3 rounded-full border 
-              ${setupState.selectedMode === 'INTUITION' ? 'border-red-600 text-red-500 bg-red-950/30' : 'border-zinc-700 text-zinc-600 bg-zinc-800'}
-            `}>
-              🎴
-            </div>
-            <div>
-              <div className={`font-black text-lg uppercase tracking-wider ${setupState.selectedMode === 'INTUITION' ? 'text-red-500' : 'text-zinc-300'}`}>
-                Интуиция
-              </div>
-              <div className="text-xs text-zinc-500 mt-1 leading-relaxed">
-                Скрытые мотивы и карты способностей. Хаос и блеф.
-              </div>
-            </div>
-          </div>
+      <div className="mt-8 pt-4 border-t border-zinc-800/50">
+        <button
+          type="button"
+          onClick={nextPhase}
+          disabled={!setupState.selectedMode}
+          className={`
+            w-full py-4 uppercase tracking-[0.25em] text-xs sm:text-sm font-semibold 
+            border transition-all duration-300 relative overflow-hidden
+            ${
+              setupState.selectedMode
+                ? 'bg-transparent text-zinc-300 border-zinc-600 hover:border-red-600 hover:text-red-400 hover:shadow-[0_0_20px_rgba(185,28,28,0.2)]'
+                : 'bg-zinc-900/30 text-zinc-700 border-zinc-800/50 cursor-not-allowed'
+            }
+          `}
+          style={{ minHeight: '52px' }}
+        >
+          {setupState.selectedMode ? 'Подтвердить выбор →' : 'Выберите режим'}
         </button>
       </div>
-      
-      {/* Кнопка ДАЛЕЕ (Теперь она сразу под вариантами) */}
-      <button
-        onClick={nextPhase}
-        disabled={!setupState.selectedMode}
-        className={`
-          w-full py-4 uppercase tracking-[0.2em] text-sm font-bold border transition-all duration-300
-          ${setupState.selectedMode
-            ? 'bg-zinc-100 text-zinc-950 border-white hover:bg-red-600 hover:text-white hover:border-red-600 shadow-[0_0_20px_rgba(255,255,255,0.1)]'
-            : 'bg-zinc-900 text-zinc-700 border-zinc-800 cursor-not-allowed'}
-        `}
-      >
-        Подтвердить выбор
-      </button>
     </div>
   );
 };

@@ -139,7 +139,7 @@ const DistrictCell: React.FC<DistrictCellProps> = ({
     <button
       type="button"
       onClick={onClick}
-      className={`aspect-square p-1 border transition-all flex flex-col items-center justify-center relative ${borderClass}`}
+      className={`aspect-square p-0.5 border transition-all flex flex-col items-center justify-center relative ${borderClass}`}
     >
       {isCorner && (
         <div
@@ -148,14 +148,14 @@ const DistrictCell: React.FC<DistrictCellProps> = ({
       )}
 
       <span
-        className={`text-[10px] font-medium ${citizens.length > 0 ? 'text-zinc-400' : 'text-zinc-700'}`}
+        className={`text-[9px] font-medium ${citizens.length > 0 ? 'text-zinc-400' : 'text-zinc-700'}`}
       >
         {citizens.length}/{max}
       </span>
 
-      <div className="flex flex-wrap justify-center gap-0.5 mt-0.5">
+      <div className="flex flex-wrap justify-center gap-0">
         {citizens.slice(0, 2).map((c) => (
-          <span key={c.id} className="text-[10px]">
+          <span key={c.id} className="text-[9px]">
             {c.gender === 'MALE' ? '👨' : '👩'}
           </span>
         ))}
@@ -230,19 +230,21 @@ export const PlaceCitizensStep: React.FC = () => {
         />
       )}
 
-      <div className="text-center mb-3">
-        <p className="text-zinc-500 text-xs italic mb-2">"Город оживает..."</p>
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-zinc-800 bg-zinc-900/50">
-          <span className="text-[10px] text-zinc-600 uppercase tracking-wider">Жители:</span>
-          <span className={`text-sm font-bold ${ready ? 'text-red-500' : 'text-zinc-400'}`}>
+      {/* Компактный заголовок */}
+      <div className="text-center mb-2">
+        <p className="text-zinc-500 text-[11px] italic mb-1">"Город оживает..."</p>
+        <div className="inline-flex items-center gap-2 px-2 py-1 border border-zinc-800 bg-zinc-900/50">
+          <span className="text-[9px] text-zinc-600 uppercase tracking-wider">Жители:</span>
+          <span className={`text-xs font-bold ${ready ? 'text-red-500' : 'text-zinc-400'}`}>
             {placedCount}
           </span>
-          <span className="text-zinc-700">/</span>
-          <span className="text-sm text-zinc-600">{totalCitizens}</span>
+          <span className="text-zinc-700 text-xs">/</span>
+          <span className="text-xs text-zinc-600">{totalCitizens}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-1 mb-3">
+      {/* Сетка 4x4 — компактнее */}
+      <div className="grid grid-cols-4 gap-0.5 mb-2">
         {DISTRICT_IDS.map((districtId, i) => {
           const citizens = getCitizensInDistrict(i);
           const max = getMaxInDistrict(i);
@@ -264,28 +266,28 @@ export const PlaceCitizensStep: React.FC = () => {
         })}
       </div>
 
-      <div className="flex justify-center gap-3 text-[9px] text-zinc-600 mb-3">
+      {/* Легенда — в одну строку */}
+      <div className="flex justify-center gap-3 text-[8px] text-zinc-600 mb-2">
         <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-green-600" /> Угол ✓
+          <span className="w-1.5 h-1.5 rounded-full bg-green-600" /> Угол ✓
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-amber-600" /> Угол (нужно 2)
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-600" /> Нужно 2
         </span>
       </div>
 
       {selectedCitizen && (
-        <p className="text-center text-red-400 text-[11px] mb-2">
-          ↑ Тапните на квартал для размещения
-        </p>
+        <p className="text-center text-red-400 text-[10px] mb-1">↑ Тапните на квартал</p>
       )}
 
+      {/* Нераспределённые — компактнее */}
       {unplacedCitizens.length > 0 && (
-        <div className="mb-3">
-          <p className="text-[10px] text-zinc-600 uppercase tracking-wider mb-1.5 px-1">
+        <div className="mb-2">
+          <p className="text-[9px] text-zinc-600 uppercase tracking-wider mb-1 px-1">
             Не размещены: {unplacedCitizens.length}
           </p>
           <div
-            className="flex gap-1.5 overflow-x-auto pb-2 px-1"
+            className="flex gap-1 overflow-x-auto pb-1.5 px-1"
             style={{ scrollbarWidth: 'thin' }}
           >
             {unplacedCitizens.map((c) => (
@@ -294,47 +296,48 @@ export const PlaceCitizensStep: React.FC = () => {
                 key={c.id}
                 onClick={() => setSelectedCitizen(c.id === selectedCitizen ? null : c.id)}
                 className={`
-                  flex-shrink-0 px-2 py-1.5 border transition-all flex items-center gap-1
+                  flex-shrink-0 px-1.5 py-1 border transition-all flex items-center gap-1
                   ${
                     selectedCitizen === c.id
-                      ? 'border-red-600 bg-red-950/40 scale-105'
+                      ? 'border-red-600 bg-red-950/40'
                       : 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700'
                   }
                 `}
               >
-                <span className="text-sm">{c.gender === 'MALE' ? '👨' : '👩'}</span>
-                <span className="text-[10px] text-zinc-400 whitespace-nowrap">{c.role}</span>
+                <span className="text-xs">{c.gender === 'MALE' ? '👨' : '👩'}</span>
+                <span className="text-[9px] text-zinc-400 whitespace-nowrap">{c.role}</span>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={autoPlaceCitizens}
-        className="w-full py-2.5 text-[11px] uppercase tracking-wider text-zinc-500 border border-zinc-800/50 bg-zinc-900/30 hover:bg-zinc-900/50 hover:text-zinc-400 transition-all mb-3"
-      >
-        ⚄ Авто-расстановка по правилам
-      </button>
+      {/* Кнопки — объединены без разделителя */}
+      <div className="mt-auto space-y-2">
+        <button
+          type="button"
+          onClick={autoPlaceCitizens}
+          className="w-full py-2 text-[10px] uppercase tracking-wider text-zinc-500 border border-zinc-800/50 bg-zinc-900/30 hover:bg-zinc-900/50 hover:text-zinc-400 transition-all"
+        >
+          ⚄ Авто-расстановка
+        </button>
 
-      <div className="mt-auto pt-3 border-t border-zinc-800/50">
         <button
           type="button"
           onClick={nextPhase}
           disabled={!ready}
           className={`
-            w-full py-4 uppercase tracking-[0.25em] text-xs sm:text-sm font-semibold 
+            w-full py-3 uppercase tracking-[0.2em] text-xs font-semibold 
             border transition-all duration-300
             ${
               ready
-                ? 'bg-transparent text-zinc-300 border-zinc-600 hover:border-red-600 hover:text-red-400 hover:shadow-[0_0_20px_rgba(185,28,28,0.2)]'
+                ? 'bg-transparent text-zinc-300 border-zinc-600 hover:border-red-600 hover:text-red-400'
                 : 'bg-zinc-900/30 text-zinc-700 border-zinc-800/50 cursor-not-allowed'
             }
           `}
-          style={{ minHeight: '52px' }}
+          style={{ minHeight: '48px' }}
         >
-          {ready ? 'Подтвердить →' : 'Разместите всех жителей'}
+          {ready ? 'Подтвердить →' : 'Разместите всех'}
         </button>
       </div>
     </div>

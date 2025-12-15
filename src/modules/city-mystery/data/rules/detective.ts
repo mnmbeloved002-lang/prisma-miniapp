@@ -97,7 +97,13 @@ export function usePoliceStation(state: GameState, targetResidentId: string): Ga
   };
   newState.detective.actionsLeft--;
 
-  return { isValid: true, state: newState };
+  const stateWithUsedPolice = {
+    ...newState,
+    buildings: newState.buildings.map((b) =>
+      b.type === 'POLICE' ? { ...b, usedThisRound: true } : b,
+    ),
+  };
+  return { isValid: true, state: stateWithUsedPolice };
 }
 
 /**
@@ -239,6 +245,7 @@ export function useFireStation(state: GameState): GameRuleResult {
 export function useBuilding(_state: GameState, _buildingType: BuildingType): GameRuleResult {
   return {
     isValid: false,
+    // biome-ignore lint/security/noSecrets: false positive (human-readable error message, not a secret)
     error: 'Используйте usePoliceStation, useHospital, useDiner или useFireStation',
   };
 }
@@ -286,7 +293,7 @@ export function makeAccusation(
   }
 
   // Проверяем что мотив из доступных
-  if (!state.availableMotives.includes(motive as any)) {
+  if (!state.availableMotives.includes(motive as (typeof state.availableMotives)[number])) {
     return { isValid: false, error: 'Этот мотив не входит в игру' };
   }
 

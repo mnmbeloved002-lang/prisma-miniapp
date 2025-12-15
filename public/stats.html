@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <title>Telegram Mini App Platform L5 2026 — Статистика качества</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Telegram Mini App Platform L5 2026 — статическая страница для Lighthouse CI с основными целевыми метриками качества мини-приложения."
+    >
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        font-size: 16px;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at top, #0f172a 0, #020617 55%, #020617 100%);
+        color: #e5e7eb;
+        line-height: 1.5;
+      }
+      main.page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      section.card {
+        width: 100%;
+        max-width: 720px;
+        background: rgba(15, 23, 42, 0.96);
+        border-radius: 24px;
+        padding: 24px 28px;
+        box-shadow: 0 24px 80px rgba(15, 23, 42, 0.75);
+        border: 1px solid rgba(148, 163, 184, 0.45);
+      }
+      h1 {
+        font-size: 1.75rem; /* 28px */
+        margin: 0 0 8px;
+      }
+      h2 {
+        font-size: 1.125rem; /* 18px */
+        margin: 20px 0 8px;
+      }
+      p {
+        font-size: 1rem; /* 16px */
+        margin: 4px 0;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.875rem; /* 14px */
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(59, 130, 246, 0.15);
+        color: #bfdbfe;
+        margin-bottom: 10px;
+      }
+      .meta {
+        font-size: 0.875rem; /* 14px */
+        color: #9ca3af;
+        margin-top: 16px;
+      }
+      .kpi-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 8px;
+      }
+      .kpi {
+        flex: 1 1 140px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(55, 65, 81, 0.8);
+      }
+      .kpi-label {
+        font-size: 0.875rem; /* 14px */
+        color: #9ca3af;
+      }
+      .kpi-value {
+        font-size: 1.25rem; /* 20px */
+        font-weight: 600;
+      }
+      a {
+        color: #93c5fd;
+      }
+      a:focus-visible {
+        outline: 2px solid #93c5fd;
+        outline-offset: 2px;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page" aria-labelledby="stats-title">
+      <section class="card">
+        <div class="badge" aria-label="Цель: Lighthouse L5 2026">
+          <span>📊 Lighthouse Target</span>
+          <span>L5&nbsp;2026</span>
+        </div>
+        <h1 id="stats-title">Статистика качества Telegram Mini App Platform</h1>
+        <p class="meta">
+          Эта статическая страница используется как целевая точка для Lighthouse&nbsp;CI. Здесь нет тяжёлого JavaScript,
+          только минимальная разметка и понятная типографика, чтобы аудиты best-practices и SEO могли стабильно
+          отрабатывать на 100%.
+        </p>
+
+        <h2>Целевые показатели качества</h2>
+        <p>Платформа ориентируется на зелёную зону Lighthouse в 2026 году:</p>
+        <div class="kpi-row" aria-label="Целевые показатели качества">
+          <div class="kpi">
+            <div class="kpi-label">Performance</div>
+            <div class="kpi-value">≥ 0.90</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Accessibility</div>
+            <div class="kpi-value">≥ 0.95</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Best Practices</div>
+            <div class="kpi-value">1.00</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">SEO</div>
+            <div class="kpi-value">1.00</div>
+          </div>
+        </div>
+
+        <p class="meta">
+          Конфигурация запуска: <code>lhci autorun</code> по <code>/index.html</code> и <code>/stats.html</code>
+          c <code>CHROME_PATH=/usr/bin/chromium</code>. Для prod-сборки используется статический каталог <code>dist/</code>.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

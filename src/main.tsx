@@ -1,24 +1,10 @@
-import ReactDOM from 'react-dom/client';
-import App from './App.tsx';
-import './index.css';
-import { initSentry } from './infrastructure/sentry';
-import { initTelegram } from './infrastructure/telegram';
-import { ErrorBoundary } from './ui/ErrorBoundary';
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './index.css'
 
-// Инициализируем Sentry ПЕРВЫМ (до любых ошибок)
-initSentry();
-
-// Инициализируем Telegram SDK
-initTelegram();
-
-const container = document.getElementById('root');
-if (!container) {
-  throw new Error('Root element with id "root" not found');
-}
-
-const root = ReactDOM.createRoot(container);
-root.render(
-  <ErrorBoundary>
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
     <App />
-  </ErrorBoundary>,
-);
+  </React.StrictMode>,
+)

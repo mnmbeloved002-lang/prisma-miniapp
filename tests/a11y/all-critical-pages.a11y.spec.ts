@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
-test.describe('Accessibility Compliance (Ritual AI - Full Cycle)', () => {
+test.describe('Accessibility Compliance (Mini App - Full Cycle)', () => {
   test('State 1: Idle (Home Page Content)', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 

@@ -3,9 +3,9 @@
  * Путь: src/modules/city-mystery/ai/KillerAI.ts
  */
 
-import type { GameState } from '../data/gameTypes';
 import type { Citizen } from '../data/citizens';
-import { getDistrictForResident, getAdjacentDistricts, MOTIVE_CARDS } from '../data/gameConstants';
+import { MOTIVE_CARDS } from '../data/gameConstants';
+import type { GameState } from '../data/gameTypes';
 
 export interface KillerDecision {
   action: string;
@@ -180,7 +180,9 @@ export class KillerAI {
     const sorted = candidates.sort((a, b) => {
       const aAlone = state.grid[a.district].length === 1 ? 0 : 1;
       const bAlone = state.grid[b.district].length === 1 ? 0 : 1;
-      if (aAlone !== bAlone) return aAlone - bAlone;
+      if (aAlone !== bAlone) {
+        return aAlone - bAlone;
+      }
 
       const aAlly = state.killer.allies.includes(a.citizen.faction) ? 1 : 0;
       const bAlly = state.killer.allies.includes(b.citizen.faction) ? 1 : 0;

@@ -1,37 +1,44 @@
 // Экспортируем всё из подмодулей
-export * from './utils';
-export * from './setup';
-export * from './killer';
-export * from './detective';
-export * from './phases';
-export * from './city';
-export * from './init';
 
+export * from './city';
+export * from './detective';
+export * from './init';
+export * from './killer';
+export * from './phases';
+export * from './setup';
+export * from './utils';
+
+import {
+  interrogateResident,
+  makeAccusation,
+  moveDetective,
+  trackResident,
+  useBuilding,
+} from './detective';
 // Импортируем функции для объекта совместимости
 import { createGame } from './init';
 import { frightenResidents, killResident, passKill } from './killer';
-import { moveDetective, interrogateResident, useBuilding, trackResident, makeAccusation } from './detective';
 import { nextPhase, urgentCall } from './phases';
-import { 
-  createSetupState,
-  selectMode,
-  selectRole,
-  toggleMotive,
-  autoSelectMotives,
-  placeCitizen,
-  removeCitizen,
-  autoPlaceCitizens,
-  placeBuilding,
-  removeBuilding,
+import {
   autoPlaceBuildings,
-  placeDetective,
+  autoPlaceCitizens,
   autoPlaceDetective,
+  autoSelectMotives,
+  autoSetup,
+  createSetupState,
+  nextSetupPhase,
+  placeBuilding,
+  placeCitizen,
+  placeDetective,
+  prevSetupPhase,
+  removeBuilding,
+  removeCitizen,
   selectKillerIdentity,
   selectKillerMotive,
-  nextSetupPhase,
-  prevSetupPhase,
-  autoSetup,
+  selectMode,
+  selectRole,
   setupToGameState,
+  toggleMotive,
 } from './setup';
 
 // Единый объект для GameStore
@@ -48,7 +55,7 @@ export const gameRules = {
   makeAccusation,
   urgentCall,
   nextPhase,
-  
+
   // Новый Setup API
   createSetupState,
   selectMode,

@@ -3,11 +3,11 @@
  */
 
 export {
+  AVAILABLE_QUESTIONS,
   canResidentLie,
   getTruthfulAnswer,
-  interrogate,
-  AVAILABLE_QUESTIONS,
   type InterrogationResult,
+  interrogate,
 } from './interrogation';
 
 export {

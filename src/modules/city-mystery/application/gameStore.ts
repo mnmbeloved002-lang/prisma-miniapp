@@ -1,6 +1,6 @@
 /**
  * Zustand store для управления состоянием игры "Городской убийца"
- * 
+ *
  * АРХИТЕКТУРА 2026:
  * - gameState = ЕДИНСТВЕННЫЙ источник правды
  * - gameRules = чистые функции (state, action) => newState
@@ -9,15 +9,15 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { gameRules, type GameRuleResult } from '../data/gameRules';
+import { gameRules } from '../data/gameRules';
 import type {
-  GameState,
-  PlayerRole,
-  GameMode,
-  NewGameConfig,
-  Motive,
-  QuestionType,
   BuildingType,
+  GameMode,
+  GameState,
+  Motive,
+  NewGameConfig,
+  PlayerRole,
+  QuestionType,
 } from '../data/gameTypes';
 
 // ==================== ТИПЫ ====================
@@ -33,10 +33,10 @@ interface GameStoreState {
   gameState: GameState | null;
   playerRole: PlayerRole | null;
   gameMode: GameMode;
-  
+
   // История для undo
   history: GameState[];
-  
+
   // UI состояние
   selectedResidents: string[];
   selectedMotive: Motive | null;
@@ -44,30 +44,34 @@ interface GameStoreState {
   isLoading: boolean;
   error: string | null;
   gameLog: string[];
-  
+
   // Действия
   initializeGame: (config: NewGameConfig) => void;
   setPlayerRole: (role: PlayerRole) => void;
   setGameState: (state: GameState) => void;
-  
+
   // Действия убийцы
   frightenResidents: (residentIds: string[]) => ValidationResult;
   killResident: (residentId: string, districtIndex: number) => ValidationResult;
   passKill: () => ValidationResult;
-  
+
   // Действия детектива
   moveDetective: (districtIndex: number) => ValidationResult;
-  interrogateResident: (residentId: string, question: QuestionType, value: string) => ValidationResult;
+  interrogateResident: (
+    residentId: string,
+    question: QuestionType,
+    value: string,
+  ) => ValidationResult;
   useBuilding: (buildingType: BuildingType) => ValidationResult;
   placeTrackingToken: (residentId: string, districtIndex: number) => ValidationResult;
   trackResident: (residentId: string) => ValidationResult;
-  
+
   // Управление игрой
   nextPhase: () => ValidationResult;
   undoAction: () => ValidationResult;
   restartGame: (config?: NewGameConfig) => void;
   resetGame: () => void;
-  
+
   // UI действия
   selectResident: (residentId: string) => void;
   deselectResident: (residentId: string) => void;
@@ -88,7 +92,7 @@ export const useGameStore = create<GameStoreState>()(
   devtools(
     (set, get) => ({
       // ==================== НАЧАЛЬНОЕ СОСТОЯНИЕ ====================
-      
+
       gameState: null,
       playerRole: null,
       gameMode: 'LOGIC',
@@ -99,15 +103,15 @@ export const useGameStore = create<GameStoreState>()(
       isLoading: false,
       error: null,
       gameLog: [],
-      
+
       // ==================== ИНИЦИАЛИЗАЦИЯ ====================
-      
+
       initializeGame: (config) => {
         set({ isLoading: true, error: null });
-        
+
         try {
           const gameState = gameRules.createGame(config);
-          
+
           set({
             gameState,
             gameMode: config.mode,
@@ -123,35 +127,34 @@ export const useGameStore = create<GameStoreState>()(
           });
         }
       },
-      
+
       setGameState: (state) => {
         set({ gameState: state, isGameInitialized: true });
       },
-
 
       setPlayerRole: (role) => {
         set({ playerRole: role });
         get().addLogMessage(`👤 Игрок выбрал роль: ${role === 'KILLER' ? 'Убийцу' : 'Детектива'}`);
       },
-      
+
       // ==================== ДЕЙСТВИЯ УБИЙЦЫ ====================
-      
+
       frightenResidents: (residentIds) => {
         const { gameState, playerRole } = get();
-        
+
         if (!gameState) {
           return { isValid: false, error: 'Игра не инициализирована' };
         }
-        
+
         if (playerRole !== 'KILLER') {
           return { isValid: false, error: 'Только убийца может запугивать' };
         }
-        
+
         // Сохраняем историю
         const history = [...get().history, gameState];
-        
+
         const result = gameRules.frightenResidents(gameState, residentIds);
-        
+
         if (result.isValid && result.state) {
           set({ gameState: result.state, history });
           get().addLogMessage(`😨 Запуганы 2 жителя`);
@@ -159,82 +162,82 @@ export const useGameStore = create<GameStoreState>()(
         } else {
           set({ error: result.error });
         }
-        
+
         return { isValid: result.isValid, error: result.error };
       },
-      
+
       killResident: (residentId, districtIndex) => {
         const { gameState, playerRole } = get();
-        
+
         if (!gameState) {
           return { isValid: false, error: 'Игра не инициализирована' };
         }
-        
+
         if (playerRole !== 'KILLER') {
           return { isValid: false, error: 'Только убийца может убивать' };
         }
-        
+
         const history = [...get().history, gameState];
-        
+
         const result = gameRules.killResident(gameState, residentId, districtIndex);
-        
+
         if (result.isValid && result.state) {
           set({ gameState: result.state, history });
           const { x, y } = getCoordinates(districtIndex);
           get().addLogMessage(`💀 Убийство в квартале [${x}, ${y}]`);
-          
+
           if (result.state.isGameOver) {
             get().addLogMessage(`🏆 Убийца победил!`);
           }
         } else {
           set({ error: result.error });
         }
-        
+
         return { isValid: result.isValid, error: result.error };
       },
-      
+
       passKill: () => {
         const { gameState, playerRole } = get();
-        
+
         if (!gameState) {
           return { isValid: false, error: 'Игра не инициализирована' };
         }
-        
+
         if (playerRole !== 'KILLER') {
           return { isValid: false, error: 'Только убийца может пропустить' };
         }
-        
+
         const history = [...get().history, gameState];
-        
+
         const result = gameRules.passKill(gameState);
-        
+
         if (result.isValid && result.state) {
           set({ gameState: result.state, history });
           get().addLogMessage(`⏭️ Убийца пропустил убийство (раундов: ${result.state.maxRounds})`);
         } else {
           set({ error: result.error });
         }
-        
+
         return { isValid: result.isValid, error: result.error };
       },
-      
+
       // ==================== ДЕЙСТВИЯ ДЕТЕКТИВА ====================
-      
+
       moveDetective: (districtIndex) => {
         const { gameState, playerRole } = get();
-        
+
         if (!gameState) {
           return { isValid: false, error: 'Игра не инициализирована' };
         }
-        
+
         if (playerRole !== 'DETECTIVE') {
           return { isValid: false, error: 'Только детектив может перемещаться' };
         }
-        
+
         const history = [...get().history, gameState];
-        
+
         const result = gameRules.moveDetective(gameState, districtIndex);
-        
+
         if (result.isValid && result.state) {
           set({ gameState: result.state, history });
           const { x, y } = getCoordinates(districtIndex);
@@ -242,96 +245,96 @@ export const useGameStore = create<GameStoreState>()(
         } else {
           set({ error: result.error });
         }
-        
+
         return { isValid: result.isValid, error: result.error };
       },
-      
+
       interrogateResident: (residentId, question, value) => {
         const { gameState, playerRole } = get();
-        
+
         if (!gameState) {
           return { isValid: false, error: 'Игра не инициализирована' };
         }
-        
+
         if (playerRole !== 'DETECTIVE') {
           return { isValid: false, error: 'Только детектив может допрашивать' };
         }
-        
+
         const history = [...get().history, gameState];
-        
+
         const result = gameRules.interrogateResident(gameState, residentId, question, value);
-        
+
         if (result.isValid && result.state) {
           set({ gameState: result.state, history });
           get().addLogMessage(`❓ Допрос: ${question} = ${value}`);
         } else {
           set({ error: result.error });
         }
-        
+
         return { isValid: result.isValid, error: result.error, data: result.data };
       },
-      
+
       useBuilding: (buildingType) => {
         const { gameState, playerRole } = get();
-        
+
         if (!gameState) {
           return { isValid: false, error: 'Игра не инициализирована' };
         }
-        
+
         if (playerRole !== 'DETECTIVE') {
           return { isValid: false, error: 'Только детектив может использовать здания' };
         }
-        
+
         const history = [...get().history, gameState];
-        
+
         const result = gameRules.useBuilding(gameState, buildingType);
-        
+
         if (result.isValid && result.state) {
           set({ gameState: result.state, history });
           get().addLogMessage(`🏢 Использовано здание: ${buildingType}`);
         } else {
           set({ error: result.error });
         }
-        
+
         return { isValid: result.isValid, error: result.error };
       },
-      
+
       placeTrackingToken: (residentId, districtIndex) => {
         const { gameState, playerRole } = get();
-        
+
         if (!gameState) {
           return { isValid: false, error: 'Игра не инициализирована' };
         }
-        
+
         if (playerRole !== 'DETECTIVE') {
           return { isValid: false, error: 'Только детектив может ставить жетон' };
         }
-        
+
         // Простая установка жетона (без валидации движком)
         const newState = JSON.parse(JSON.stringify(gameState));
         newState.detective.trackingToken = { residentId, districtIndex };
-        
+
         set({ gameState: newState });
         get().addLogMessage(`��️ Жетон слежки установлен`);
-        
+
         return { isValid: true };
       },
-      
+
       trackResident: (residentId) => {
         const { gameState, playerRole } = get();
-        
+
         if (!gameState) {
           return { isValid: false, error: 'Игра не инициализирована' };
         }
-        
+
         if (playerRole !== 'DETECTIVE') {
           return { isValid: false, error: 'Только детектив может следить' };
         }
-        
+
         const history = [...get().history, gameState];
-        
+
         const result = gameRules.trackResident(gameState, residentId);
-        
+
         if (result.isValid && result.state) {
           set({ gameState: result.state, history });
           const canKill = (result.data as any)?.canKill;
@@ -339,21 +342,21 @@ export const useGameStore = create<GameStoreState>()(
         } else {
           set({ error: result.error });
         }
-        
+
         return { isValid: result.isValid, error: result.error, data: result.data };
       },
-      
+
       // ==================== УПРАВЛЕНИЕ ФАЗАМИ ====================
-      
+
       nextPhase: () => {
         const { gameState } = get();
-        
+
         if (!gameState) {
           return { isValid: false, error: 'Игра не инициализирована' };
         }
-        
+
         const history = [...get().history, gameState];
-        
+
         // Сначала проверяем срочный вызов
         if (gameState.step === 'URGENT_CALL') {
           const urgentResult = gameRules.urgentCall(gameState);
@@ -363,39 +366,41 @@ export const useGameStore = create<GameStoreState>()(
             return { isValid: true };
           }
         }
-        
+
         const result = gameRules.nextPhase(gameState);
-        
+
         if (result.isValid && result.state) {
           set({ gameState: result.state, history });
           get().addLogMessage(`📍 Фаза: ${result.state.phase}, Раунд: ${result.state.round}`);
-          
+
           if (result.state.isGameOver) {
-            get().addLogMessage(`🏆 ${result.state.winner === 'DETECTIVE' ? 'Детектив' : 'Убийца'} победил!`);
+            get().addLogMessage(
+              `🏆 ${result.state.winner === 'DETECTIVE' ? 'Детектив' : 'Убийца'} победил!`,
+            );
           }
         } else {
           set({ error: result.error });
         }
-        
+
         return { isValid: result.isValid, error: result.error };
       },
-      
+
       undoAction: () => {
         const { history } = get();
-        
+
         if (history.length === 0) {
           return { isValid: false, error: 'Нет действий для отмены' };
         }
-        
+
         const newHistory = [...history];
         const previousState = newHistory.pop()!;
-        
+
         set({ gameState: previousState, history: newHistory });
         get().addLogMessage(`↩️ Действие отменено`);
-        
+
         return { isValid: true };
       },
-      
+
       restartGame: (config) => {
         const currentMode = get().gameMode;
         const newConfig: NewGameConfig = config || {
@@ -403,11 +408,11 @@ export const useGameStore = create<GameStoreState>()(
           includeFigure: false,
           selectedMotives: [],
         };
-        
+
         get().initializeGame(newConfig);
         get().addLogMessage(`🔄 Игра перезапущена`);
       },
-      
+
       resetGame: () => {
         set({
           gameState: null,
@@ -421,24 +426,24 @@ export const useGameStore = create<GameStoreState>()(
           gameLog: [],
         });
       },
-      
+
       // ==================== UI ДЕЙСТВИЯ ====================
-      
+
       selectResident: (residentId) => {
         const { selectedResidents, gameState, playerRole } = get();
-        
+
         // Toggle: если уже выбран — снимаем выделение
         if (selectedResidents.includes(residentId)) {
-          set({ selectedResidents: selectedResidents.filter(id => id !== residentId) });
+          set({ selectedResidents: selectedResidents.filter((id) => id !== residentId) });
           return;
         }
-        
+
         // Определяем лимит выбора
         let maxSelection = 1;
         if (playerRole === 'KILLER' && gameState?.step === 'FRIGHTEN') {
           maxSelection = 2;
         }
-        
+
         if (selectedResidents.length >= maxSelection) {
           // Заменяем последний выбранный
           set({ selectedResidents: [residentId] });
@@ -446,21 +451,21 @@ export const useGameStore = create<GameStoreState>()(
           set({ selectedResidents: [...selectedResidents, residentId] });
         }
       },
-      
+
       deselectResident: (residentId) => {
         const { selectedResidents } = get();
-        set({ selectedResidents: selectedResidents.filter(id => id !== residentId) });
+        set({ selectedResidents: selectedResidents.filter((id) => id !== residentId) });
       },
-      
+
       clearSelection: () => {
         set({ selectedResidents: [] });
       },
-      
+
       toggleMotive: (motive) => {
         const { selectedMotive } = get();
         set({ selectedMotive: selectedMotive === motive ? null : motive });
       },
-      
+
       addLogMessage: (message) => {
         const { gameLog } = get();
         const timestamp = new Date().toLocaleTimeString('ru-RU', {
@@ -469,7 +474,7 @@ export const useGameStore = create<GameStoreState>()(
         });
         set({ gameLog: [...gameLog, `[${timestamp}] ${message}`] });
       },
-      
+
       clearError: () => {
         set({ error: null });
       },
@@ -477,6 +482,6 @@ export const useGameStore = create<GameStoreState>()(
     {
       name: 'city-mystery-store',
       enabled: process.env.NODE_ENV !== 'production',
-    }
-  )
+    },
+  ),
 );

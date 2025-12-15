@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { useGameStore } from './gameStore';
-import type { NewGameConfig } from '../data/gameTypes';
 import { getAdjacentDistricts } from '../data/gameConstants';
+import type { NewGameConfig } from '../data/gameTypes';
+import { useGameStore } from './gameStore';
 
 function createDefaultConfig(): NewGameConfig {
   return {
@@ -88,9 +88,7 @@ describe('city-mystery gameStore', () => {
     expect(result.isValid).toBe(true);
 
     const after = useGameStore.getState();
-    expect(after.gameState?.frightenedResidents).toEqual(
-      expect.arrayContaining(residentIds),
-    );
+    expect(after.gameState?.frightenedResidents).toEqual(expect.arrayContaining(residentIds));
     // выбор должен быть очищен
     expect(after.selectedResidents).toEqual([]);
   });

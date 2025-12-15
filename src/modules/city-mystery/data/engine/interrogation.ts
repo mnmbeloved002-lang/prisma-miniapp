@@ -1,6 +1,6 @@
 /**
  * Логика допроса жителей
- * 
+ *
  * Правила:
  * - Детектив задаёт вопрос о характеристике убийцы
  * - Житель отвечает ЧЕСТНО, кроме:
@@ -10,7 +10,7 @@
  */
 
 import type { Citizen } from '../citizens';
-import type { QuestionType, GameState } from '../gameTypes';
+import type { GameState, QuestionType } from '../gameTypes';
 
 export interface InterrogationResult {
   answer: boolean;
@@ -24,7 +24,7 @@ export interface InterrogationResult {
  */
 export function canResidentLie(
   resident: Citizen,
-  gameState: GameState
+  gameState: GameState,
 ): { canLie: boolean; reason?: string } {
   const { killer } = gameState;
 
@@ -52,7 +52,7 @@ export function canResidentLie(
 export function getTruthfulAnswer(
   question: QuestionType,
   value: string,
-  killerIdentity: Citizen
+  killerIdentity: Citizen,
 ): boolean {
   switch (question) {
     case 'GENDER':
@@ -72,7 +72,7 @@ export function getTruthfulAnswer(
 
 /**
  * Выполнить допрос жителя
- * 
+ *
  * @param resident - допрашиваемый житель
  * @param question - тип вопроса (GENDER, AGE, BUILD, HEIGHT)
  * @param value - значение для проверки ("MALE", "YOUNG", etc.)
@@ -84,7 +84,7 @@ export function interrogate(
   question: QuestionType,
   value: string,
   gameState: GameState,
-  chooseLie: boolean = false
+  chooseLie: boolean = false,
 ): InterrogationResult {
   const { canLie, reason } = canResidentLie(resident, gameState);
   const truthfulAnswer = getTruthfulAnswer(question, value, gameState.killer.identity);
@@ -120,7 +120,11 @@ export function interrogate(
 /**
  * Список доступных вопросов
  */
-export const AVAILABLE_QUESTIONS: { type: QuestionType; label: string; options: { value: string; label: string }[] }[] = [
+export const AVAILABLE_QUESTIONS: {
+  type: QuestionType;
+  label: string;
+  options: { value: string; label: string }[];
+}[] = [
   {
     type: 'GENDER',
     label: 'Пол убийцы',

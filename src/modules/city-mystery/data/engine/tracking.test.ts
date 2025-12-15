@@ -2,10 +2,10 @@
  * Тесты логики слежки
  */
 
-import { describe, it, expect } from 'vitest';
-import { canKillerMurder, performTracking } from './tracking';
+import { describe, expect, it } from 'vitest';
 import type { Citizen } from '../citizens';
 import type { GameState } from '../gameTypes';
+import { canKillerMurder, performTracking } from './tracking';
 
 const createCitizen = (overrides: Partial<Citizen> = {}): Citizen => ({
   id: 'citizen-1',
@@ -21,7 +21,7 @@ const createCitizen = (overrides: Partial<Citizen> = {}): Citizen => ({
 const createGameState = (overrides: Partial<GameState> = {}): GameState => {
   const killer = createCitizen({ id: 'killer-1', gender: 'FEMALE' });
   const resident = createCitizen({ id: 'resident-1', gender: 'FEMALE' });
-  
+
   return {
     id: 'test-game',
     mode: 'LOGIC',
@@ -31,7 +31,21 @@ const createGameState = (overrides: Partial<GameState> = {}): GameState => {
     maxRounds: 5,
     grid: [
       [resident], // квартал 0
-      [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
     ],
     buildings: [],
     crimeScenes: [],
@@ -82,7 +96,21 @@ describe('tracking: canKillerMurder', () => {
     const gameState = createGameState({
       grid: [
         [resident], // квартал 0
-        [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
       ],
       detective: {
         ...createGameState().detective,
@@ -99,10 +127,7 @@ describe('tracking: canKillerMurder', () => {
   it('можно убить если подходит под мотив MANIAC (тот же пол)', () => {
     const resident = createCitizen({ id: 'resident-1', gender: 'FEMALE' });
     const gameState = createGameState({
-      grid: [
-        [resident],
-        [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
-      ],
+      grid: [[resident], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []],
       victims: [], // Первая жертва — любой пол
     });
 
@@ -114,12 +139,9 @@ describe('tracking: canKillerMurder', () => {
   it('нельзя убить если не подходит под мотив MANIAC (другой пол)', () => {
     const victim1 = createCitizen({ id: 'victim-1', gender: 'FEMALE' });
     const resident = createCitizen({ id: 'resident-1', gender: 'MALE' }); // Другой пол!
-    
+
     const gameState = createGameState({
-      grid: [
-        [resident],
-        [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
-      ],
+      grid: [[resident], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []],
       victims: [victim1], // Уже есть жертва-женщина
     });
 
@@ -143,10 +165,7 @@ describe('tracking: performTracking', () => {
   it('возвращает правильный результат для существующего жителя', () => {
     const resident = createCitizen({ id: 'resident-1', gender: 'FEMALE' });
     const gameState = createGameState({
-      grid: [
-        [resident],
-        [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
-      ],
+      grid: [[resident], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []],
     });
 
     const result = performTracking('resident-1', gameState);

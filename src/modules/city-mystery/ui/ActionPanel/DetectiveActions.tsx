@@ -2,7 +2,7 @@
  * Кнопки действий детектива
  */
 
-import React from 'react';
+import type React from 'react';
 import type { PhaseStep } from '../../data/gameTypes';
 
 interface DetectiveActionsProps {
@@ -28,9 +28,7 @@ export const DetectiveActions: React.FC<DetectiveActionsProps> = ({
 }) => {
   if (step === 'URGENT_CALL') {
     return (
-      <div className="text-center text-gray-400 py-4">
-        🚨 Перемещение на место преступления...
-      </div>
+      <div className="text-center text-gray-400 py-4">🚨 Перемещение на место преступления...</div>
     );
   }
 
@@ -59,9 +57,10 @@ export const DetectiveActions: React.FC<DetectiveActionsProps> = ({
           className={`
             w-full py-3 px-4 rounded-xl font-semibold text-sm
             transition-all duration-200
-            ${canInterrogate
-              ? 'bg-blue-600 hover:bg-blue-500 text-white'
-              : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+            ${
+              canInterrogate
+                ? 'bg-blue-600 hover:bg-blue-500 text-white'
+                : 'bg-gray-700 text-gray-400 cursor-not-allowed'
             }
           `}
         >
@@ -75,9 +74,10 @@ export const DetectiveActions: React.FC<DetectiveActionsProps> = ({
           className={`
             w-full py-2 px-4 rounded-xl font-medium text-sm
             transition-all duration-200
-            ${canTrack
-              ? 'bg-yellow-600 hover:bg-yellow-500 text-white'
-              : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+            ${
+              canTrack
+                ? 'bg-yellow-600 hover:bg-yellow-500 text-white'
+                : 'bg-gray-700 text-gray-400 cursor-not-allowed'
             }
           `}
         >
@@ -101,9 +101,5 @@ export const DetectiveActions: React.FC<DetectiveActionsProps> = ({
     );
   }
 
-  return (
-    <div className="text-center text-gray-500 py-4">
-      Ожидайте своего хода...
-    </div>
-  );
+  return <div className="text-center text-gray-500 py-4">Ожидайте своего хода...</div>;
 };

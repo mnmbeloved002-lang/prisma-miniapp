@@ -1,13 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-  GRID_SIZE,
-  TOTAL_DISTRICTS,
+  areDistrictsAdjacent,
   CENTRAL_DISTRICTS,
   CORNER_DISTRICTS,
-  getDistrictIndex,
-  getCoordinates,
-  areDistrictsAdjacent,
+  GRID_SIZE,
   getAdjacentDistricts,
+  getCoordinates,
+  getDistrictIndex,
+  TOTAL_DISTRICTS,
 } from './gameConstants';
 
 describe('City Mystery helpers: grid geometry', () => {

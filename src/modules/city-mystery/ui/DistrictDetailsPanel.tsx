@@ -1,7 +1,7 @@
-import React from 'react';
+import type React from 'react';
 import { useGameStore } from '../application/gameStore';
-import { CitizenCard } from './CitizenCard';
 import { BUILDING_ICONS } from '../data/gameConstants';
+import { CitizenCard } from './CitizenCard';
 
 interface DistrictDetailsPanelProps {
   selectedDistrict: number | null;
@@ -43,7 +43,9 @@ export const DistrictDetailsPanel: React.FC<DistrictDetailsPanelProps> = ({
 }) => {
   const { gameState, selectedResidents, selectResident } = useGameStore();
 
-  if (!gameState || selectedDistrict === null) return null;
+  if (!gameState || selectedDistrict === null) {
+    return null;
+  }
 
   const { x, y } = getCoordinates(selectedDistrict);
   const residents = gameState.grid[selectedDistrict] ?? [];
@@ -57,7 +59,9 @@ export const DistrictDetailsPanel: React.FC<DistrictDetailsPanelProps> = ({
         {/* Хедер */}
         <div className="flex items-start justify-between mb-4">
           <div>
-            <div className="text-xs text-gray-400 mb-1">Квартал [{y},{x}]</div>
+            <div className="text-xs text-gray-400 mb-1">
+              Квартал [{y},{x}]
+            </div>
             <h2 className="text-lg font-bold flex items-center gap-2">
               🏙️ Детали квартала
               {detectiveHere && (

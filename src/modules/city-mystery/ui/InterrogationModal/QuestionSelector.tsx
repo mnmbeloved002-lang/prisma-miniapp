@@ -2,7 +2,7 @@
  * Селектор вопроса для допроса
  */
 
-import React from 'react';
+import type React from 'react';
 import { AVAILABLE_QUESTIONS } from '../../data/engine';
 
 interface QuestionSelectorProps {

@@ -5,18 +5,17 @@
  * Запуск: npx tsx src/modules/city-mystery/ai/simulation.ts
  */
 
-import { KillerAI } from './KillerAI';
-import { DetectiveAI } from './DetectiveAI';
-import type { GameState, Motive, BuildingType } from '../data/gameTypes';
 import type { Citizen, Faction } from '../data/citizens';
 import { allCitizens } from '../data/citizens';
 import {
-  CORNER_DISTRICTS,
   CENTRAL_DISTRICTS,
-  MOTIVE_CARDS,
+  CORNER_DISTRICTS,
   getAdjacentDistricts,
-  getDistrictForResident,
+  MOTIVE_CARDS,
 } from '../data/gameConstants';
+import type { BuildingType, GameState, Motive } from '../data/gameTypes';
+import { DetectiveAI } from './DetectiveAI';
+import { KillerAI } from './KillerAI';
 
 // ============== УТИЛИТЫ ==============
 
@@ -215,7 +214,9 @@ function executeKill(state: GameState, victimId: string, districtIndex: number):
 
   // Находим жертву
   const victim = newState.grid[districtIndex].find((c) => c.id === victimId);
-  if (!victim) return state;
+  if (!victim) {
+    return state;
+  }
 
   // Добавляем в жертвы
   newState.victims.push(victim);
@@ -380,7 +381,9 @@ async function runSimulation(): Promise<void> {
       detectiveAI.clearLog();
       const decision = detectiveAI.decideAction(state);
 
-      if (decision.action === 'PASS') break;
+      if (decision.action === 'PASS') {
+        break;
+      }
       if (decision.action === 'MOVE' && typeof decision.target === 'number') {
         state = executeDetectiveMove(state, decision.target);
         logger.success(`Перемещение в квартал ${decision.target}`);
@@ -391,7 +394,10 @@ async function runSimulation(): Promise<void> {
           break;
         }
         state.detective.actionsLeft--;
-        state.detective.usedActionTypes = [...(state.detective.usedActionTypes || []), 'INTERROGATE'];
+        state.detective.usedActionTypes = [
+          ...(state.detective.usedActionTypes || []),
+          'INTERROGATE',
+        ];
         logger.success(`Допрос: ${decision.reasoning}`);
       } else if (decision.action.startsWith('USE_BUILDING_')) {
         // Проверка: 2 РАЗНЫХ действия
@@ -402,7 +408,10 @@ async function runSimulation(): Promise<void> {
           break;
         }
         state.detective.actionsLeft--;
-        state.detective.usedActionTypes = [...(state.detective.usedActionTypes || []), buildingAction];
+        state.detective.usedActionTypes = [
+          ...(state.detective.usedActionTypes || []),
+          buildingAction,
+        ];
         logger.success(`Использовано здание: ${buildingType} - ${decision.reasoning}`);
       }
     }

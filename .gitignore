@@ -99,3 +99,9 @@ reports/
 
 *storybook.log
 storybook-static
+
+# editor / backup artifacts
+*.bak.*
+*~
+*.swp
+.DS_Store

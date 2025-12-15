@@ -4,49 +4,15 @@ interface SetupLayoutProps {
   currentPhase: string;
   totalPhases: number;
   currentPhaseIndex: number;
+  phaseIds?: string[];
   title: string;
   error?: string | null;
   children: React.ReactNode;
 }
 
-const PHASE_IDS = [
-  'mode',
-  'role',
-  'motives',
-  'citizens',
-  'buildings',
-  'detective',
-  'killer',
-  'motive',
-  'ready',
-];
+export const SetupLayout: React.FC<SetupLayoutProps> = (props) => {
+  const { title, error, children } = props;
 
-function getProgressStatus(index: number, current: number): 'done' | 'current' | 'pending' {
-  if (index < current) {
-    return 'done';
-  }
-  if (index === current) {
-    return 'current';
-  }
-  return 'pending';
-}
-
-function getProgressClass(status: 'done' | 'current' | 'pending'): string {
-  const classes = {
-    done: 'bg-red-700',
-    current: 'bg-red-500 animate-pulse',
-    pending: 'bg-zinc-800',
-  };
-  return classes[status];
-}
-
-export const SetupLayout: React.FC<SetupLayoutProps> = ({
-  currentPhaseIndex,
-  totalPhases,
-  title,
-  error,
-  children,
-}) => {
   return (
     <div
       className="fixed inset-0 z-50 bg-black text-zinc-200 flex flex-col overflow-hidden"
@@ -74,38 +40,6 @@ export const SetupLayout: React.FC<SetupLayoutProps> = ({
           to { opacity: 1; transform: translateX(0); }
         }
       `}</style>
-
-      {/* HEADER */}
-      <header className="relative z-10 border-b border-zinc-800/50 bg-black/60 backdrop-blur-sm">
-        <div className="max-w-md mx-auto px-5 py-4">
-          <div className="flex justify-between items-center mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-red-600 rounded-full animate-pulse" />
-              <span className="text-[10px] font-medium text-zinc-500 uppercase tracking-[0.2em]">
-                Протокол
-              </span>
-            </div>
-            <span className="text-xs text-zinc-400 font-mono tracking-wider">
-              <span className="text-red-500">{currentPhaseIndex + 1}</span>
-              <span className="text-zinc-600 mx-1">/</span>
-              <span>{totalPhases}</span>
-            </span>
-          </div>
-
-          {/* Прогресс */}
-          <div className="flex gap-1.5">
-            {PHASE_IDS.slice(0, totalPhases).map((phaseId, idx) => {
-              const status = getProgressStatus(idx, currentPhaseIndex);
-              return (
-                <div
-                  key={phaseId}
-                  className={`h-1 flex-1 rounded-full transition-all duration-500 ${getProgressClass(status)}`}
-                />
-              );
-            })}
-          </div>
-        </div>
-      </header>
 
       {/* MAIN */}
       <main className="relative z-10 flex-1 flex flex-col overflow-y-auto">

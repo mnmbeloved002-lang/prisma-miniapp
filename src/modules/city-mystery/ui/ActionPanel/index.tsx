@@ -3,14 +3,15 @@
  * Оркестрирует дочерние компоненты
  */
 
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { useGameStore } from '../../application/gameStore';
-import { PhaseInfo } from './PhaseInfo';
+import type { QuestionType } from '../../data/gameTypes';
+import { InterrogationModal } from '../InterrogationModal';
+import { DetectiveActions } from './DetectiveActions';
 import { GameStats } from './GameStats';
 import { KillerActions } from './KillerActions';
-import { DetectiveActions } from './DetectiveActions';
-import { InterrogationModal } from '../InterrogationModal';
-import type { QuestionType } from '../../data/gameTypes';
+import { PhaseInfo } from './PhaseInfo';
 
 export const ActionPanel: React.FC = () => {
   const {
@@ -46,8 +47,10 @@ export const ActionPanel: React.FC = () => {
 
   // Получить выбранного жителя
   const getSelectedResident = () => {
-    if (selectedCount !== 1) return null;
-    return gameState.grid.flat().find(r => r.id === selectedResidents[0]) || null;
+    if (selectedCount !== 1) {
+      return null;
+    }
+    return gameState.grid.flat().find((r) => r.id === selectedResidents[0]) || null;
   };
 
   // === Обработчики убийцы ===
@@ -64,7 +67,7 @@ export const ActionPanel: React.FC = () => {
     if (selectedCount === 1) {
       let districtIndex = -1;
       for (let i = 0; i < gameState.grid.length; i++) {
-        if (gameState.grid[i].some(r => r.id === selectedResidents[0])) {
+        if (gameState.grid[i].some((r) => r.id === selectedResidents[0])) {
           districtIndex = i;
           break;
         }
@@ -162,9 +165,7 @@ export const ActionPanel: React.FC = () => {
         )}
 
         {!isKillerTurn && !isDetectiveTurn && (
-          <div className="text-center text-gray-500 py-4">
-            Ожидайте своего хода...
-          </div>
+          <div className="text-center text-gray-500 py-4">Ожидайте своего хода...</div>
         )}
       </div>
 

@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { MOTIVE_CARDS, CENTRAL_DISTRICTS, getDistrictIndex } from './gameConstants';
+import { describe, expect, it } from 'vitest';
 import { allCitizens, type Citizen } from './citizens';
+import { CENTRAL_DISTRICTS, getDistrictIndex, MOTIVE_CARDS } from './gameConstants';
 import type { GameState, Motive } from './gameTypes';
 
 function createBaseState(motive: Motive): GameState {

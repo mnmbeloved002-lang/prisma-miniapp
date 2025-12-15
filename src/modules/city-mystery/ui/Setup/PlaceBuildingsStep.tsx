@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import { useSetupStore } from '../../application/setupStore';
 import type { BuildingType } from '../../data/gameTypes';
 
@@ -11,31 +12,29 @@ const BUILDING_INFO: Record<BuildingType, { icon: string; name: string }> = {
 
 export const PlaceBuildingsStep: React.FC = () => {
   const { setupState, autoPlaceBuildings, nextPhase, prevPhase } = useSetupStore();
-  
-  const placedCount = setupState.availableBuildings.filter(b => b.placed).length;
-  
+
+  const placedCount = setupState.availableBuildings.filter((b) => b.placed).length;
+
   // Авто-расстановка при входе
   useEffect(() => {
     if (placedCount === 0) {
       autoPlaceBuildings();
     }
-  }, []);
-  
+  }, [autoPlaceBuildings, placedCount]);
+
   // Здание в квартале
   const getBuildingInDistrict = (districtIndex: number) => {
-    return setupState.availableBuildings.find(b => b.placed && b.position === districtIndex);
+    return setupState.availableBuildings.find((b) => b.placed && b.position === districtIndex);
   };
-  
+
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold text-center mb-2">🏢 Здания</h1>
-      <p className="text-gray-400 text-center mb-4">
-        8 зданий расставлены по стандартной схеме
-      </p>
-      
+      <p className="text-gray-400 text-center mb-4">8 зданий расставлены по стандартной схеме</p>
+
       {/* Легенда зданий */}
       <div className="flex justify-center gap-3 mb-4">
-        {(Object.keys(BUILDING_INFO) as BuildingType[]).map(type => {
+        {(Object.keys(BUILDING_INFO) as BuildingType[]).map((type) => {
           const info = BUILDING_INFO[type];
           return (
             <div key={type} className="flex items-center gap-1 text-sm">
@@ -45,7 +44,7 @@ export const PlaceBuildingsStep: React.FC = () => {
           );
         })}
       </div>
-      
+
       {/* Поле */}
       <div className="grid grid-cols-4 gap-2 mb-4">
         {Array.from({ length: 16 }).map((_, i) => {
@@ -56,12 +55,14 @@ export const PlaceBuildingsStep: React.FC = () => {
               className={`
                 aspect-square p-2 rounded-lg border-2 transition-all
                 flex flex-col items-center justify-center
-                ${building
-                  ? 'border-yellow-500/50 bg-yellow-500/10'
-                  : 'border-gray-600 bg-gray-800'}
+                ${
+                  building ? 'border-yellow-500/50 bg-yellow-500/10' : 'border-gray-600 bg-gray-800'
+                }
               `}
             >
-              <div className="text-[10px] text-gray-500">[{Math.floor(i/4)},{i%4}]</div>
+              <div className="text-[10px] text-gray-500">
+                [{Math.floor(i / 4)},{i % 4}]
+              </div>
               {building && (
                 <>
                   <span className="text-2xl">{BUILDING_INFO[building.type].icon}</span>
@@ -74,7 +75,7 @@ export const PlaceBuildingsStep: React.FC = () => {
           );
         })}
       </div>
-      
+
       {/* Описание зданий */}
       <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
         <div className="p-2 bg-gray-800 rounded">
@@ -90,7 +91,7 @@ export const PlaceBuildingsStep: React.FC = () => {
           <span className="text-lg">🚒</span> <b>Пожарная</b> — убрать место преступления
         </div>
       </div>
-      
+
       <div className="flex gap-3">
         <button
           onClick={prevPhase}
@@ -103,9 +104,11 @@ export const PlaceBuildingsStep: React.FC = () => {
           disabled={placedCount !== 8}
           className={`
             flex-1 py-3 rounded-lg font-bold transition-all
-            ${placedCount === 8
-              ? 'bg-yellow-500 text-black hover:bg-yellow-400'
-              : 'bg-gray-700 text-gray-500 cursor-not-allowed'}
+            ${
+              placedCount === 8
+                ? 'bg-yellow-500 text-black hover:bg-yellow-400'
+                : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+            }
           `}
         >
           Далее →

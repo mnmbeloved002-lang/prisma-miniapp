@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { useSetupStore } from '../../application/setupStore';
 import { MOTIVE_CARDS } from '../../data/gameConstants';
 
@@ -8,15 +8,15 @@ interface SetupReadyStepProps {
 
 export const SetupReadyStep: React.FC<SetupReadyStepProps> = ({ onStart }) => {
   const { setupState, prevPhase } = useSetupStore();
-  
+
   const selectedKiller = setupState.availableCitizens.find(
-    c => c.id === setupState.killerIdentityId
+    (c) => c.id === setupState.killerIdentityId,
   );
-  
+
   return (
     <div className="max-w-md mx-auto text-center">
       <h1 className="text-3xl font-bold mb-4">✅ Всё готово!</h1>
-      
+
       <div className="space-y-4 mb-8">
         {/* Режим */}
         <div className="p-3 bg-gray-800 rounded-lg">
@@ -25,7 +25,7 @@ export const SetupReadyStep: React.FC<SetupReadyStepProps> = ({ onStart }) => {
             {setupState.selectedMode === 'LOGIC' ? '🧠 Логика' : '🎴 Интуиция'}
           </div>
         </div>
-        
+
         {/* Роль */}
         <div className="p-3 bg-gray-800 rounded-lg">
           <div className="text-sm text-gray-400">Ваша роль</div>
@@ -33,7 +33,7 @@ export const SetupReadyStep: React.FC<SetupReadyStepProps> = ({ onStart }) => {
             {setupState.selectedRole === 'KILLER' ? '🔪 Убийца' : '🔍 Детектив'}
           </div>
         </div>
-        
+
         {/* Для убийцы — показать секретную инфу */}
         {setupState.selectedRole === 'KILLER' && selectedKiller && (
           <>
@@ -46,7 +46,7 @@ export const SetupReadyStep: React.FC<SetupReadyStepProps> = ({ onStart }) => {
                 {selectedKiller.faction} • {selectedKiller.age} • {selectedKiller.build}
               </div>
             </div>
-            
+
             {setupState.killerMotive && (
               <div className="p-3 bg-red-900/30 border border-red-500 rounded-lg">
                 <div className="text-sm text-gray-400">Ваш мотив</div>
@@ -61,18 +61,18 @@ export const SetupReadyStep: React.FC<SetupReadyStepProps> = ({ onStart }) => {
             )}
           </>
         )}
-        
+
         {/* Статистика */}
         <div className="p-3 bg-gray-800 rounded-lg">
           <div className="text-sm text-gray-400">На поле</div>
           <div className="text-sm">
-            👥 {setupState.placedCitizens.length} жителей •{' '}
-            🏢 {setupState.availableBuildings.filter(b => b.placed).length} зданий •{' '}
-            🎭 {setupState.selectedMotives.length} мотивов
+            👥 {setupState.placedCitizens.length} жителей • 🏢{' '}
+            {setupState.availableBuildings.filter((b) => b.placed).length} зданий • 🎭{' '}
+            {setupState.selectedMotives.length} мотивов
           </div>
         </div>
       </div>
-      
+
       <div className="flex gap-3">
         <button
           onClick={prevPhase}

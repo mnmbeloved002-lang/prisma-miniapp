@@ -1,6 +1,6 @@
 /**
  * Логика слежки за жителями
- * 
+ *
  * Правила:
  * - Детектив кладёт жетон слежки на жителя (действие полицейского участка)
  * - Потом может спросить: "Можешь ли ты убить этого жителя?"
@@ -9,8 +9,8 @@
  */
 
 import type { Citizen } from '../citizens';
-import type { GameState, Motive } from '../gameTypes';
 import { MOTIVE_CARDS } from '../gameConstants';
+import type { GameState } from '../gameTypes';
 
 export interface TrackingResult {
   canKill: boolean;
@@ -20,10 +20,7 @@ export interface TrackingResult {
 /**
  * Проверить, может ли убийца убить этого жителя прямо сейчас
  */
-export function canKillerMurder(
-  resident: Citizen,
-  gameState: GameState
-): TrackingResult {
+export function canKillerMurder(resident: Citizen, gameState: GameState): TrackingResult {
   const { killer, detective, frightenedResidents, grid, crimeScenes } = gameState;
 
   // 1. Нельзя убить самого себя
@@ -66,7 +63,7 @@ export function canKillerMurder(
  */
 function findResidentDistrict(residentId: string, grid: Citizen[][]): number | null {
   for (let i = 0; i < grid.length; i++) {
-    if (grid[i].some(r => r.id === residentId)) {
+    if (grid[i].some((r) => r.id === residentId)) {
       return i;
     }
   }
@@ -76,12 +73,9 @@ function findResidentDistrict(residentId: string, grid: Citizen[][]): number | n
 /**
  * Выполнить слежку (вопрос "можешь ли убить?")
  */
-export function performTracking(
-  residentId: string,
-  gameState: GameState
-): TrackingResult {
-  const resident = gameState.grid.flat().find(r => r.id === residentId);
-  
+export function performTracking(residentId: string, gameState: GameState): TrackingResult {
+  const resident = gameState.grid.flat().find((r) => r.id === residentId);
+
   if (!resident) {
     return { canKill: false, reason: 'Житель не найден' };
   }

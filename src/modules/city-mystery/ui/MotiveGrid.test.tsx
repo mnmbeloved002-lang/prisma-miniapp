@@ -28,9 +28,7 @@ describe('city-mystery MotiveGrid', () => {
   it('показывает заглушку, если мотивы недоступны', () => {
     render(<MotiveGrid />);
 
-    expect(
-      screen.getByText(/Мотивы пока недоступны/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Мотивы пока недоступны/i)).toBeInTheDocument();
   });
 
   it('отображает мотивы из gameState.availableMotives', () => {

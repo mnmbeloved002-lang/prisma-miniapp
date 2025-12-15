@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
+import type React from 'react';
 import { FACTION_ICONS } from '../data/gameConstants';
 
 interface CitizenCardProps {
@@ -26,14 +26,22 @@ export const CitizenCard: React.FC<CitizenCardProps> = ({
 
   // Динамические стили для состояний
   const getBorderColor = () => {
-    if (isSelected) return 'border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.4)]';
-    if (isFrightened) return 'border-red-900/50';
+    if (isSelected) {
+      return 'border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.4)]';
+    }
+    if (isFrightened) {
+      return 'border-red-900/50';
+    }
     return 'border-white/10 hover:border-white/30';
   };
 
   const getBackground = () => {
-    if (isSelected) return 'bg-yellow-900/20';
-    if (isFrightened) return 'bg-gray-900/80 grayscale opacity-60';
+    if (isSelected) {
+      return 'bg-yellow-900/20';
+    }
+    if (isFrightened) {
+      return 'bg-gray-900/80 grayscale opacity-60';
+    }
     return 'bg-white/5';
   };
 
@@ -90,11 +98,10 @@ export const CitizenCard: React.FC<CitizenCardProps> = ({
 
       {/* Верхняя часть: Роль и Пол/Возраст */}
       <div className="w-full flex items-center justify-between z-10">
-        <span className="font-bold text-xs text-gray-100 truncate max-w-[70%]">
-          {citizen.role}
-        </span>
+        <span className="font-bold text-xs text-gray-100 truncate max-w-[70%]">{citizen.role}</span>
         <span className="text-[10px] font-mono text-gray-400 bg-black/30 px-1.5 rounded">
-          {genderSymbol}{citizen.age}
+          {genderSymbol}
+          {citizen.age}
         </span>
       </div>
 
@@ -105,7 +112,7 @@ export const CitizenCard: React.FC<CitizenCardProps> = ({
           {citizen.build === 'MEDIUM' && 'Средний'}
           {citizen.build === 'LARGE' && 'Крепкий'}
         </span>
-        
+
         {/* Иконка фракции с тултипом */}
         <div className="flex items-center gap-1 bg-black/20 px-1.5 py-0.5 rounded-md border border-white/5">
           <span className="text-xs leading-none">{FACTION_ICONS[citizen.faction]}</span>

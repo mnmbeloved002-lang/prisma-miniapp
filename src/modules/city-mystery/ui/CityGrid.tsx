@@ -1,5 +1,5 @@
-import React from 'react';
-import { Citizen } from '../data/citizens';
+import type React from 'react';
+import type { Citizen } from '../data/citizens';
 
 interface CityGridProps {
   grid: Citizen[][]; // 16 клеток
@@ -11,9 +11,9 @@ export const CityGrid: React.FC<CityGridProps> = ({ grid, detectivePos }) => {
     <div className="grid grid-cols-4 gap-2 p-4 bg-gray-900 rounded-lg max-w-md mx-auto aspect-square">
       {grid.map((citizens, cellIndex) => {
         const isDetectiveHere = cellIndex === detectivePos;
-        
+
         return (
-          <div 
+          <div
             key={cellIndex}
             className={`
               relative border-2 rounded p-1 flex flex-col items-center justify-center text-xs
@@ -29,15 +29,13 @@ export const CityGrid: React.FC<CityGridProps> = ({ grid, detectivePos }) => {
 
             {/* Фишка Детектива */}
             {isDetectiveHere && (
-              <div className="absolute -top-2 -right-2 text-2xl z-10 animate-bounce">
-                🕵️‍♂️
-              </div>
+              <div className="absolute -top-2 -right-2 text-2xl z-10 animate-bounce">🕵️‍♂️</div>
             )}
 
             {/* Жители в квартале */}
             <div className="flex flex-wrap justify-center gap-1 mt-2">
               {citizens.map((citizen) => (
-                <div 
+                <div
                   key={citizen.id}
                   className="bg-gray-700 text-gray-200 px-1 rounded shadow-sm border border-gray-600 text-[10px] truncate w-full text-center"
                   title={`${citizen.role} (${citizen.faction})`}
@@ -45,7 +43,7 @@ export const CityGrid: React.FC<CityGridProps> = ({ grid, detectivePos }) => {
                   {citizen.role}
                 </div>
               ))}
-              
+
               {/* Если пусто */}
               {citizens.length === 0 && !isDetectiveHere && (
                 <span className="text-gray-600">-</span>

@@ -2,7 +2,7 @@
  * Информация о текущей фазе игры
  */
 
-import React from 'react';
+import type React from 'react';
 import type { GamePhase, PhaseStep, PlayerRole } from '../../data/gameTypes';
 
 interface PhaseInfoProps {

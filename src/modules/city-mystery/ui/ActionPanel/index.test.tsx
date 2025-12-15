@@ -1,7 +1,6 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { ActionPanel } from './index';
 import { useGameStore } from '../../application/gameStore';
+import { ActionPanel } from './index';
 
 const TEST_CONFIG = {
   mode: 'LOGIC' as const,
@@ -11,7 +10,7 @@ const TEST_CONFIG = {
 
 describe('city-mystery ActionPanel', () => {
   beforeEach(() => {
-    useGameStore.setState(() => ({} as any));
+    useGameStore.setState(() => ({}) as any);
   });
 
   it('рендерит заголовок панели действий', () => {
@@ -21,9 +20,7 @@ describe('city-mystery ActionPanel', () => {
 
   it('показывает заглушку, если игра не инициализирована', () => {
     render(<ActionPanel />);
-    expect(
-      screen.getByText(/Игра не инициализирована/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Игра не инициализирована/i)).toBeInTheDocument();
   });
 
   it('показывает кнопку запугивания для убийцы', () => {

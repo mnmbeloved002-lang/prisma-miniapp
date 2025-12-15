@@ -29,12 +29,8 @@ export const GameLog: React.FC = () => {
               key={`${index}-${entry}`}
               className="flex items-start gap-2 bg-gray-900/40 border border-gray-700 rounded-lg px-3 py-2"
             >
-              <span className="text-xs text-gray-500 mt-0.5">
-                {index + 1}.
-              </span>
-              <span className="text-gray-200 break-words">
-                {entry}
-              </span>
+              <span className="text-xs text-gray-500 mt-0.5">{index + 1}.</span>
+              <span className="text-gray-200 break-words">{entry}</span>
             </div>
           ))}
         </div>

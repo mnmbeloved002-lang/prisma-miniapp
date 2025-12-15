@@ -1,22 +1,22 @@
 import type React from 'react';
-import { useState } from 'react';
 import { useSetupStore } from '../../application/setupStore';
-import type { GameMode } from '../../data/gameTypes';
+import type { PlayMode } from '../../data/gameTypes';
 import { Typewriter } from './Typewriter';
 
-interface ModeCardProps {
-  mode: GameMode;
+interface PlayModeCardProps {
   caseNumber: string;
   title: string;
+  subtitle: string;
   description: string;
   hint: string;
   isSelected: boolean;
   onSelect: () => void;
 }
 
-const ModeCard: React.FC<ModeCardProps> = ({
+const PlayModeCard: React.FC<PlayModeCardProps> = ({
   caseNumber,
   title,
+  subtitle,
   description,
   hint,
   isSelected,
@@ -40,7 +40,6 @@ const ModeCard: React.FC<ModeCardProps> = ({
       }
     `}
     >
-      {/* Скрепка */}
       <div
         className={`
         absolute -top-1 right-4 w-3 h-6 rounded-b-sm transition-colors
@@ -48,7 +47,6 @@ const ModeCard: React.FC<ModeCardProps> = ({
       `}
       />
 
-      {/* Штамп */}
       {isSelected && (
         <div className="absolute top-3 right-3 px-2 py-0.5 border border-red-600/60 text-red-500 text-[9px] font-bold uppercase tracking-widest rotate-[-3deg]">
           Выбрано
@@ -72,12 +70,13 @@ const ModeCard: React.FC<ModeCardProps> = ({
         <div className="flex-1 min-w-0">
           <h3
             className={`
-            text-base sm:text-lg font-bold uppercase tracking-wider mb-1
+            text-base sm:text-lg font-bold uppercase tracking-wider mb-0.5
             ${isSelected ? 'text-red-400' : 'text-zinc-300'}
           `}
           >
             {title}
           </h3>
+          <p className="text-[10px] text-zinc-600 uppercase tracking-wider mb-2">{subtitle}</p>
           <p className="text-[11px] sm:text-xs text-zinc-500 leading-relaxed">{description}</p>
           <p className="text-[10px] text-zinc-600 mt-2 uppercase tracking-wider">● {hint}</p>
         </div>
@@ -93,67 +92,69 @@ const ModeCard: React.FC<ModeCardProps> = ({
   </button>
 );
 
-export const SelectModeStep: React.FC = () => {
-  const { setupState, selectMode, nextPhase } = useSetupStore();
-  const [showCards, setShowCards] = useState(false);
+export const SelectPlayModeStep: React.FC = () => {
+  const { setupState, setPlayMode, nextPhase } = useSetupStore();
+  const selectedPlayMode = setupState.playMode;
+
+  const handleSelect = (mode: PlayMode) => {
+    setPlayMode(mode);
+  };
+
+  const handleNext = () => {
+    if (selectedPlayMode) {
+      nextPhase();
+    }
+  };
 
   return (
     <div className="w-full flex flex-col h-full">
       <p className="text-zinc-500 text-xs sm:text-sm text-center mb-8 italic leading-relaxed">
-        <Typewriter
-          text='"Каждое дело требует своего подхода...'
-          speed={35}
-          onComplete={() => setShowCards(true)}
-        />
+        <Typewriter text='"Каждое дело уникально..."' speed={35} />
         <br />
         <span className="text-zinc-600">
-          {showCards && (
-            <Typewriter text='Выберите метод расследования..."' speed={35} delay={100} />
-          )}
+          <Typewriter text='Выберите формат расследования"' speed={35} delay={800} />
         </span>
       </p>
 
-      <div
-        className={`space-y-4 flex-1 transition-opacity duration-500 ${showCards ? 'opacity-100' : 'opacity-0'}`}
-      >
-        <ModeCard
-          mode="LOGIC"
+      <div className="space-y-4 flex-1">
+        <PlayModeCard
           caseNumber="01"
-          title="Логика"
-          description="Классическое расследование. Дедукция, допросы, анализ фактов."
-          hint="Рекомендуется новичкам"
-          isSelected={setupState.selectedMode === 'LOGIC'}
-          onSelect={() => selectMode('LOGIC')}
+          title="Против ИИ"
+          subtitle="PvE • Одиночная игра"
+          description="Сразитесь с искусственным интеллектом. Идеально для обучения и практики."
+          hint="Рекомендуется для первой игры"
+          isSelected={selectedPlayMode === 'PVE'}
+          onSelect={() => handleSelect('PVE')}
         />
 
-        <ModeCard
-          mode="INTUITION"
+        <PlayModeCard
           caseNumber="02"
-          title="Интуиция"
-          description="Скрытые мотивы, карты способностей, блеф и психология."
-          hint="Для опытных детективов"
-          isSelected={setupState.selectedMode === 'INTUITION'}
-          onSelect={() => selectMode('INTUITION')}
+          title="Против игрока"
+          subtitle="PvP • Два игрока"
+          description="Противостояние двух умов. Один — Убийца, другой — Детектив."
+          hint="Для опытных игроков"
+          isSelected={selectedPlayMode === 'PVP'}
+          onSelect={() => handleSelect('PVP')}
         />
       </div>
 
       <div className="mt-8 pt-4 border-t border-zinc-800/50">
         <button
           type="button"
-          onClick={nextPhase}
-          disabled={!setupState.selectedMode}
+          onClick={handleNext}
+          disabled={!selectedPlayMode}
           className={`
-            w-full py-4 uppercase tracking-[0.25em] text-xs sm:text-sm font-semibold 
+            w-full py-4 uppercase tracking-[0.25em] text-xs sm:text-sm font-semibold
             border transition-all duration-300 relative overflow-hidden
             ${
-              setupState.selectedMode
+              selectedPlayMode
                 ? 'bg-transparent text-zinc-300 border-zinc-600 hover:border-red-600 hover:text-red-400 hover:shadow-[0_0_20px_rgba(185,28,28,0.2)]'
                 : 'bg-zinc-900/30 text-zinc-700 border-zinc-800/50 cursor-not-allowed'
             }
           `}
           style={{ minHeight: '52px' }}
         >
-          {setupState.selectedMode ? 'Подтвердить выбор →' : 'Выберите режим'}
+          {selectedPlayMode ? 'Подтвердить →' : 'Выберите формат'}
         </button>
       </div>
     </div>

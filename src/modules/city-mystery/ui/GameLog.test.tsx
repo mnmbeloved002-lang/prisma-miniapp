@@ -25,19 +25,14 @@ describe('city-mystery GameLog', () => {
   it('показывает заглушку, если лог пустой', () => {
     render(<GameLog />);
 
-    expect(
-      screen.getByText(/Действий пока нет/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Действий пока нет/i)).toBeInTheDocument();
   });
 
   it('отображает записи из gameLog стора', () => {
     const state = useGameStore.getState();
     useGameStore.setState({
       ...state,
-      gameLog: [
-        '[10:00:00] 🎮 Игра началась',
-        '[10:01:00] 🔪 Убийца сделал ход',
-      ],
+      gameLog: ['[10:00:00] 🎮 Игра началась', '[10:01:00] 🔪 Убийца сделал ход'],
     } as any);
 
     render(<GameLog />);

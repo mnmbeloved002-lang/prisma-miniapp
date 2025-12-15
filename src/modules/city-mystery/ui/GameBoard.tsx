@@ -1,17 +1,14 @@
-import React from 'react';
+import type React from 'react';
 import { useGameStore } from '../application/gameStore';
 import { CityMap } from './CityMap';
 
 export const GameBoard: React.FC = () => {
-  const {
-    gameState,
-    playerRole,
-    selectedResidents,
-    moveDetective,
-    selectResident,
-  } = useGameStore();
+  const { gameState, playerRole, selectedResidents, moveDetective, selectResident } =
+    useGameStore();
 
-  if (!gameState) return null;
+  if (!gameState) {
+    return null;
+  }
 
   return (
     <CityMap

@@ -42,11 +42,20 @@ const MotiveChip: React.FC<MotiveChipProps> = ({
   };
 
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      disabled={isDisabled && !isSelected}
-      className={`
+    <div className="relative">
+      <button
+        type="button"
+        aria-label="Показать описание мотива"
+        onClick={handleInfoClick}
+        className="absolute top-0.5 right-0.5 w-4 h-4 flex items-center justify-center text-[8px] text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800 rounded-full transition-colors cursor-pointer z-10"
+      >
+        i
+      </button>
+      <button
+        type="button"
+        onClick={onToggle}
+        disabled={isDisabled && !isSelected}
+        className={`
         relative p-2 border transition-all duration-200 flex flex-col items-center justify-center
         ${
           isSelected
@@ -56,31 +65,23 @@ const MotiveChip: React.FC<MotiveChipProps> = ({
               : 'bg-zinc-900/40 border-zinc-800/60 hover:border-zinc-700 hover:bg-zinc-900/60'
         }
       `}
-    >
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: Игнорируем, так как это интерактивный элемент */}
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: Уже обрабатывается в родительском элементе */}
-      <div
-        onClick={handleInfoClick}
-        className="absolute top-0.5 right-0.5 w-4 h-4 flex items-center justify-center text-[8px] text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800 rounded-full transition-colors cursor-pointer z-10"
       >
-        i
-      </div>
+        {/* Булавка выбора */}
+        {isSelected && (
+          <div className="absolute -top-1 -left-1 w-3 h-3 bg-red-600 rounded-full shadow-lg" />
+        )}
 
-      {/* Булавка выбора */}
-      {isSelected && (
-        <div className="absolute -top-1 -left-1 w-3 h-3 bg-red-600 rounded-full shadow-lg" />
-      )}
-
-      <span className="text-lg mb-0.5">{card?.icon || '❓'}</span>
-      <span
-        className={`
+        <span className="text-lg mb-0.5">{card?.icon || '❓'}</span>
+        <span
+          className={`
         text-[9px] sm:text-[10px] font-medium uppercase tracking-wide text-center leading-tight
         ${isSelected ? 'text-red-400' : 'text-zinc-500'}
       `}
-      >
-        {card?.name || motive}
-      </span>
-    </button>
+        >
+          {card?.name || motive}
+        </span>
+      </button>
+    </div>
   );
 };
 
@@ -92,37 +93,22 @@ interface MotiveInfoPopupProps {
 const MotiveInfoPopup: React.FC<MotiveInfoPopupProps> = ({ motive, onClose }) => {
   const card = MOTIVE_CARDS[motive];
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const _handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
       onClose();
     }
   };
 
   return (
-    // biome-ignore lint/a11y/useSemanticElements: Не используем <button> т.к. содержит другую кнопку
-    // biome-ignore lint/a11y/noStaticElementInteractions: Это интерактивный overlay
-    // biome-ignore lint/a11y/useKeyWithClickEvents: Уже есть onKeyDown
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm cursor-pointer"
-      onClick={onClose}
-      onKeyDown={handleKeyDown}
-      role="button"
-      tabIndex={0}
-      aria-label="Close popup"
-    >
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: Это контейнер контента */}
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: Останавливаем всплытие кликов */}
-      <div
-        className="relative max-w-xs w-full bg-zinc-900 border border-zinc-700 p-5 shadow-2xl cursor-default"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50 relative flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
+      <button type="button" className="absolute inset-0 cursor-pointer" />
+      <div className="relative max-w-xs w-full bg-zinc-900 border border-zinc-700 p-5 shadow-2xl cursor-default">
         {/* Скрепка */}
         <div className="absolute -top-1 right-6 w-3 h-6 rounded-b-sm bg-red-600" />
 
         {/* Кнопка закрытия */}
         <button
           type="button"
-          onClick={onClose}
           className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center text-zinc-500 hover:text-zinc-300 transition-colors"
           aria-label="Close"
         >

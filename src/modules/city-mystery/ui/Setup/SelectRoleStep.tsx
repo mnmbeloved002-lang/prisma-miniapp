@@ -1,6 +1,8 @@
 import type React from 'react';
+import { useEffect } from 'react';
 import { useSetupStore } from '../../application/setupStore';
-import type { PlayerRole } from '../../data/gameTypes';
+import type { AIDifficulty, PlayerRole } from '../../data/gameTypes';
+import { Typewriter } from './Typewriter';
 
 interface RoleCardProps {
   playerRole: PlayerRole;
@@ -40,7 +42,6 @@ const RoleCard: React.FC<RoleCardProps> = ({
       }
     `}
     >
-      {/* Скрепка */}
       <div
         className={`
         absolute -top-1 right-4 w-3 h-6 rounded-b-sm transition-colors
@@ -48,7 +49,6 @@ const RoleCard: React.FC<RoleCardProps> = ({
       `}
       />
 
-      {/* Штамп */}
       {isSelected && (
         <div className="absolute top-3 right-3 px-2 py-0.5 border border-red-600/60 text-red-500 text-[9px] font-bold uppercase tracking-widest rotate-[-3deg]">
           Досье
@@ -56,7 +56,6 @@ const RoleCard: React.FC<RoleCardProps> = ({
       )}
 
       <div className="flex items-start gap-4">
-        {/* Номер дела */}
         <div
           className={`
           w-12 h-12 flex items-center justify-center border-2 text-lg font-black
@@ -85,7 +84,6 @@ const RoleCard: React.FC<RoleCardProps> = ({
         </div>
       </div>
 
-      {/* Нижняя линия */}
       <div
         className={`
         absolute bottom-0 left-0 h-0.5 transition-all duration-500
@@ -96,18 +94,60 @@ const RoleCard: React.FC<RoleCardProps> = ({
   </button>
 );
 
+interface DifficultyButtonProps {
+  level: AIDifficulty;
+  label: string;
+  description: string;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+const DifficultyButton: React.FC<DifficultyButtonProps> = ({
+  label,
+  description,
+  isSelected,
+  onSelect,
+}) => (
+  <button
+    type="button"
+    onClick={onSelect}
+    className={`
+      flex-1 p-3 border transition-all duration-200 text-center
+      ${
+        isSelected
+          ? 'border-red-700/60 bg-red-950/30 text-red-400'
+          : 'border-zinc-800 bg-zinc-900/40 text-zinc-500 hover:border-zinc-700'
+      }
+    `}
+  >
+    <p className="text-xs font-bold uppercase tracking-wider">{label}</p>
+    <p className="text-[9px] text-zinc-600 mt-0.5">{description}</p>
+  </button>
+);
+
 export const SelectRoleStep: React.FC = () => {
-  const { setupState, selectRole, nextPhase } = useSetupStore();
+  const { setupState, selectRole, setAIDifficulty, nextPhase } = useSetupStore();
+
+  const isPvE = setupState.playMode === 'PVE';
+  const difficulty: AIDifficulty = setupState.aiDifficulty ?? 'NORMAL';
+
+  useEffect(() => {
+    if (isPvE && setupState.selectedRole && !setupState.aiDifficulty) {
+      setAIDifficulty('NORMAL');
+    }
+  }, [isPvE, setupState.selectedRole, setupState.aiDifficulty, setAIDifficulty]);
 
   return (
     <div className="w-full flex flex-col h-full">
-      <p className="text-zinc-500 text-xs sm:text-sm text-center mb-8 italic leading-relaxed">
-        "В каждой истории есть две стороны.
+      <p className="text-zinc-500 text-xs sm:text-sm text-center mb-6 italic leading-relaxed">
+        <Typewriter text='"В каждой истории есть две стороны.' speed={35} />
         <br />
-        <span className="text-zinc-600">Выберите свою..."</span>
+        <span className="text-zinc-600">
+          <Typewriter text='Выберите свою..."' speed={35} delay={800} />
+        </span>
       </p>
 
-      <div className="space-y-4 flex-1">
+      <div className="space-y-3 flex-1">
         <RoleCard
           playerRole="KILLER"
           caseNumber="К"
@@ -131,13 +171,45 @@ export const SelectRoleStep: React.FC = () => {
         />
       </div>
 
-      <div className="mt-8 pt-4 border-t border-zinc-800/50">
+      {/* Выбор сложности AI — только для PvE */}
+      {isPvE && setupState.selectedRole && (
+        <div className="mt-4 pt-4 border-t border-zinc-800/50">
+          <p className="text-[10px] text-zinc-600 uppercase tracking-wider mb-2 text-center">
+            Сложность ИИ-{setupState.selectedRole === 'KILLER' ? 'Детектива' : 'Убийцы'}
+          </p>
+          <div className="flex gap-2">
+            <DifficultyButton
+              level="EASY"
+              label="Новичок"
+              description="Простые ходы"
+              isSelected={difficulty === 'EASY'}
+              onSelect={() => setAIDifficulty('EASY')}
+            />
+            <DifficultyButton
+              level="NORMAL"
+              label="Опытный"
+              description="Сбалансировано"
+              isSelected={difficulty === 'NORMAL'}
+              onSelect={() => setAIDifficulty('NORMAL')}
+            />
+            <DifficultyButton
+              level="HARD"
+              label="Мастер"
+              description="Без пощады"
+              isSelected={difficulty === 'HARD'}
+              onSelect={() => setAIDifficulty('HARD')}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="mt-4 pt-4 border-t border-zinc-800/50">
         <button
           type="button"
           onClick={nextPhase}
           disabled={!setupState.selectedRole}
           className={`
-            w-full py-4 uppercase tracking-[0.25em] text-xs sm:text-sm font-semibold 
+            w-full py-4 uppercase tracking-[0.25em] text-xs sm:text-sm font-semibold
             border transition-all duration-300 relative overflow-hidden
             ${
               setupState.selectedRole

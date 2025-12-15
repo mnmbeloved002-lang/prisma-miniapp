@@ -1,15 +1,21 @@
-import type { GameState, QuestionType, BuildingType } from '../gameTypes';
-import { getDistrictForResident, areDistrictsAdjacent } from '../gameConstants';
 import { interrogate, performTracking } from '../engine';
+import { areDistrictsAdjacent, getDistrictForResident } from '../gameConstants';
+import type { BuildingType, GameState, QuestionType } from '../gameTypes';
 import { cloneState, type GameRuleResult } from './utils';
 
 export function moveDetective(state: GameState, toDistrict: number): GameRuleResult {
-  if (state.phase !== 'DETECTIVE') return { isValid: false, error: 'Сейчас не фаза детектива' };
-  if (state.detective.movementPoints < 1) return { isValid: false, error: 'Нет очков движения' };
-  if (toDistrict < 0 || toDistrict > 15)
+  if (state.phase !== 'DETECTIVE') {
+    return { isValid: false, error: 'Сейчас не фаза детектива' };
+  }
+  if (state.detective.movementPoints < 1) {
+    return { isValid: false, error: 'Нет очков движения' };
+  }
+  if (toDistrict < 0 || toDistrict > 15) {
     return { isValid: false, error: 'Неверный индекс квартала' };
-  if (!areDistrictsAdjacent(state.detective.position, toDistrict))
+  }
+  if (!areDistrictsAdjacent(state.detective.position, toDistrict)) {
     return { isValid: false, error: 'Можно перемещаться только в соседние кварталы' };
+  }
 
   const newState = cloneState(state);
   newState.detective.position = toDistrict;
@@ -24,16 +30,22 @@ export function interrogateResident(
   question: QuestionType,
   value: string,
 ): GameRuleResult {
-  if (state.detective.actionsLeft < 1) return { isValid: false, error: 'Не осталось действий' };
+  if (state.detective.actionsLeft < 1) {
+    return { isValid: false, error: 'Не осталось действий' };
+  }
 
   const resident = state.grid.flat().find((c) => c.id === residentId);
-  if (!resident) return { isValid: false, error: 'Житель не найден' };
+  if (!resident) {
+    return { isValid: false, error: 'Житель не найден' };
+  }
 
   const residentDistrict = getDistrictForResident(residentId, state.grid);
-  if (residentDistrict !== state.detective.position)
+  if (residentDistrict !== state.detective.position) {
     return { isValid: false, error: 'Житель не в вашем квартале' };
-  if (state.frightenedResidents.includes(residentId))
+  }
+  if (state.frightenedResidents.includes(residentId)) {
     return { isValid: false, error: 'Житель запуган и не будет отвечать' };
+  }
 
   const dinerInDistrict = state.buildings.find(
     (b) => b.type === 'DINER' && b.position === state.detective.position,
@@ -52,16 +64,22 @@ export function interrogateResident(
  * Положить жетон слежки на жителя в этом или соседнем квартале
  */
 export function usePoliceStation(state: GameState, targetResidentId: string): GameRuleResult {
-  if (state.detective.actionsLeft < 1) return { isValid: false, error: 'Не осталось действий' };
+  if (state.detective.actionsLeft < 1) {
+    return { isValid: false, error: 'Не осталось действий' };
+  }
 
   const building = state.buildings.find(
     (b) => b.type === 'POLICE' && b.position === state.detective.position,
   );
-  if (!building) return { isValid: false, error: 'В этом квартале нет полицейского участка' };
+  if (!building) {
+    return { isValid: false, error: 'В этом квартале нет полицейского участка' };
+  }
 
   // Проверяем что житель в этом или соседнем квартале
   const residentDistrict = getDistrictForResident(targetResidentId, state.grid);
-  if (residentDistrict === null) return { isValid: false, error: 'Житель не найден' };
+  if (residentDistrict === null) {
+    return { isValid: false, error: 'Житель не найден' };
+  }
 
   const isHere = residentDistrict === state.detective.position;
   const isAdjacent = areDistrictsAdjacent(state.detective.position, residentDistrict);
@@ -87,12 +105,16 @@ export function usePoliceStation(state: GameState, targetResidentId: string): Ga
  * Успокоить одного запуганного жителя в этом или соседнем квартале
  */
 export function useHospital(state: GameState, targetResidentId: string): GameRuleResult {
-  if (state.detective.actionsLeft < 1) return { isValid: false, error: 'Не осталось действий' };
+  if (state.detective.actionsLeft < 1) {
+    return { isValid: false, error: 'Не осталось действий' };
+  }
 
   const building = state.buildings.find(
     (b) => b.type === 'HOSPITAL' && b.position === state.detective.position,
   );
-  if (!building) return { isValid: false, error: 'В этом квартале нет больницы' };
+  if (!building) {
+    return { isValid: false, error: 'В этом квартале нет больницы' };
+  }
 
   // Проверяем что житель запуган
   if (!state.frightenedResidents.includes(targetResidentId)) {
@@ -101,7 +123,9 @@ export function useHospital(state: GameState, targetResidentId: string): GameRul
 
   // Проверяем что житель в этом или соседнем квартале
   const residentDistrict = getDistrictForResident(targetResidentId, state.grid);
-  if (residentDistrict === null) return { isValid: false, error: 'Житель не найден' };
+  if (residentDistrict === null) {
+    return { isValid: false, error: 'Житель не найден' };
+  }
 
   const isHere = residentDistrict === state.detective.position;
   const isAdjacent = areDistrictsAdjacent(state.detective.position, residentDistrict);
@@ -128,15 +152,21 @@ export function useDiner(
   question: QuestionType,
   value: string,
 ): GameRuleResult {
-  if (state.detective.actionsLeft < 1) return { isValid: false, error: 'Не осталось действий' };
+  if (state.detective.actionsLeft < 1) {
+    return { isValid: false, error: 'Не осталось действий' };
+  }
 
   const building = state.buildings.find(
     (b) => b.type === 'DINER' && b.position === state.detective.position,
   );
-  if (!building) return { isValid: false, error: 'В этом квартале нет закусочной' };
+  if (!building) {
+    return { isValid: false, error: 'В этом квартале нет закусочной' };
+  }
 
   const resident = state.grid.flat().find((c) => c.id === targetResidentId);
-  if (!resident) return { isValid: false, error: 'Житель не найден' };
+  if (!resident) {
+    return { isValid: false, error: 'Житель не найден' };
+  }
 
   // Проверяем что житель не запуган
   if (state.frightenedResidents.includes(targetResidentId)) {
@@ -145,7 +175,9 @@ export function useDiner(
 
   // Проверяем что житель в этом или соседнем квартале
   const residentDistrict = getDistrictForResident(targetResidentId, state.grid);
-  if (residentDistrict === null) return { isValid: false, error: 'Житель не найден' };
+  if (residentDistrict === null) {
+    return { isValid: false, error: 'Житель не найден' };
+  }
 
   const isHere = residentDistrict === state.detective.position;
   const isAdjacent = areDistrictsAdjacent(state.detective.position, residentDistrict);
@@ -167,12 +199,16 @@ export function useDiner(
  * Возвращает выпавшую соцгруппу в data.faction
  */
 export function useFireStation(state: GameState): GameRuleResult {
-  if (state.detective.actionsLeft < 1) return { isValid: false, error: 'Не осталось действий' };
+  if (state.detective.actionsLeft < 1) {
+    return { isValid: false, error: 'Не осталось действий' };
+  }
 
   const building = state.buildings.find(
     (b) => b.type === 'FIRE_STATION' && b.position === state.detective.position,
   );
-  if (!building) return { isValid: false, error: 'В этом квартале нет пожарной части' };
+  if (!building) {
+    return { isValid: false, error: 'В этом квартале нет пожарной части' };
+  }
 
   // Тянем случайную соцгруппу
   const factions = [
@@ -200,7 +236,7 @@ export function useFireStation(state: GameState): GameRuleResult {
 }
 
 // Старая функция useBuilding оставлена для совместимости (deprecated)
-export function useBuilding(state: GameState, buildingType: BuildingType): GameRuleResult {
+export function useBuilding(_state: GameState, _buildingType: BuildingType): GameRuleResult {
   return {
     isValid: false,
     error: 'Используйте usePoliceStation, useHospital, useDiner или useFireStation',
@@ -209,7 +245,9 @@ export function useBuilding(state: GameState, buildingType: BuildingType): GameR
 
 export function trackResident(state: GameState, residentId: string): GameRuleResult {
   const resident = state.grid.flat().find((c) => c.id === residentId);
-  if (!resident) return { isValid: false, error: 'Житель не найден' };
+  if (!resident) {
+    return { isValid: false, error: 'Житель не найден' };
+  }
 
   if (state.detective.trackingToken.residentId !== residentId) {
     return { isValid: false, error: 'На этом жителе нет жетона слежки' };

@@ -46,18 +46,14 @@ export const MotiveGrid: React.FC = () => {
                 data-testid={`motive-card-${key}`}
                 className={[
                   'p-3 rounded-lg border text-sm transition-colors',
-                  isSelected
-                    ? 'border-blue-500 bg-blue-900/20'
-                    : 'border-gray-700 bg-gray-900/40',
+                  isSelected ? 'border-blue-500 bg-blue-900/20' : 'border-gray-700 bg-gray-900/40',
                 ].join(' ')}
               >
                 <div className="font-semibold">
                   {motive.name ?? motive.id ?? `Мотив #${index + 1}`}
                 </div>
                 {motive.description && (
-                  <div className="mt-1 text-gray-400 text-xs">
-                    {motive.description}
-                  </div>
+                  <div className="mt-1 text-gray-400 text-xs">{motive.description}</div>
                 )}
               </div>
             );

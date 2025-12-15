@@ -2,10 +2,10 @@
  * Тесты логики допроса
  */
 
-import { describe, it, expect } from 'vitest';
-import { canResidentLie, getTruthfulAnswer, interrogate } from './interrogation';
+import { describe, expect, it } from 'vitest';
 import type { Citizen } from '../citizens';
 import type { GameState } from '../gameTypes';
+import { canResidentLie, getTruthfulAnswer, interrogate } from './interrogation';
 
 // Мок жителей
 const createCitizen = (overrides: Partial<Citizen> = {}): Citizen => ({
@@ -20,48 +20,49 @@ const createCitizen = (overrides: Partial<Citizen> = {}): Citizen => ({
 });
 
 // Мок состояния игры
-const createGameState = (overrides: Partial<GameState> = {}): GameState => ({
-  id: 'test-game',
-  mode: 'LOGIC',
-  phase: 'DETECTIVE',
-  step: 'INVESTIGATE',
-  round: 1,
-  maxRounds: 5,
-  grid: [],
-  buildings: [],
-  crimeScenes: [],
-  frightenedResidents: [],
-  detective: {
-    position: 0,
-    actionsLeft: 2,
-    movementPoints: 2,
-    trackingToken: { residentId: null, districtIndex: null },
-    collectedEvidence: [],
-    availableCards: [],
-  },
-  killer: {
-    identity: createCitizen({ id: 'killer-1', gender: 'FEMALE', age: 'YOUNG' }),
-    motive: 'MANIAC',
-    figure: null,
-    allies: null,
-    frightenedThisRound: [],
-    usedAbilities: [],
-  },
-  victims: [],
-  availableMotives: [],
-  discardedMotives: [],
-  history: [],
-  isGameOver: false,
-  ...overrides,
-} as GameState);
+const createGameState = (overrides: Partial<GameState> = {}): GameState =>
+  ({
+    id: 'test-game',
+    mode: 'LOGIC',
+    phase: 'DETECTIVE',
+    step: 'INVESTIGATE',
+    round: 1,
+    maxRounds: 5,
+    grid: [],
+    buildings: [],
+    crimeScenes: [],
+    frightenedResidents: [],
+    detective: {
+      position: 0,
+      actionsLeft: 2,
+      movementPoints: 2,
+      trackingToken: { residentId: null, districtIndex: null },
+      collectedEvidence: [],
+      availableCards: [],
+    },
+    killer: {
+      identity: createCitizen({ id: 'killer-1', gender: 'FEMALE', age: 'YOUNG' }),
+      motive: 'MANIAC',
+      figure: null,
+      allies: null,
+      frightenedThisRound: [],
+      usedAbilities: [],
+    },
+    victims: [],
+    availableMotives: [],
+    discardedMotives: [],
+    history: [],
+    isGameOver: false,
+    ...overrides,
+  }) as GameState;
 
 describe('interrogation: canResidentLie', () => {
   it('убийца может лгать', () => {
     const killer = createCitizen({ id: 'killer-1' });
     const gameState = createGameState();
-    
+
     const result = canResidentLie(killer, gameState);
-    
+
     expect(result.canLie).toBe(true);
     expect(result.reason).toContain('убийца');
   });
@@ -74,9 +75,9 @@ describe('interrogation: canResidentLie', () => {
         figure,
       },
     });
-    
+
     const result = canResidentLie(figure, gameState);
-    
+
     expect(result.canLie).toBe(true);
     expect(result.reason).toContain('фигурант');
   });
@@ -89,9 +90,9 @@ describe('interrogation: canResidentLie', () => {
         allies: 'CRIME',
       },
     });
-    
+
     const result = canResidentLie(ally, gameState);
-    
+
     expect(result.canLie).toBe(true);
     expect(result.reason).toContain('союзник');
   });
@@ -104,16 +105,16 @@ describe('interrogation: canResidentLie', () => {
         allies: 'CRIME',
       },
     });
-    
+
     const result = canResidentLie(resident, gameState);
-    
+
     expect(result.canLie).toBe(false);
   });
 });
 
 describe('interrogation: getTruthfulAnswer', () => {
-  const killer = createCitizen({ 
-    gender: 'FEMALE', 
+  const killer = createCitizen({
+    gender: 'FEMALE',
     age: 'YOUNG',
     build: 'SLIM',
     height: 'TALL',

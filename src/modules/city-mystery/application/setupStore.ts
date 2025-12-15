@@ -4,81 +4,89 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { 
-  SetupState, 
-  SetupPhase, 
-  GameMode, 
-  PlayerRole, 
-  Motive,
+import type {
+  AIDifficulty,
   BuildingType,
-  GameState 
+  GameMode,
+  GameState,
+  Motive,
+  PlayerRole,
+  PlayMode,
+  SetupState,
 } from '../data/gameTypes';
 import {
-  createSetupState,
-  selectMode,
-  selectRole,
-  toggleMotive,
-  autoSelectMotives,
-  placeCitizen,
-  removeCitizen,
-  autoPlaceCitizens,
-  placeBuilding,
-  removeBuilding,
   autoPlaceBuildings,
-  placeDetective,
+  autoPlaceCitizens,
   autoPlaceDetective,
+  autoSelectMotives,
+  autoSetup,
+  createSetupState,
+  nextSetupPhase,
+  placeBuilding,
+  placeCitizen,
+  placeDetective,
+  prevSetupPhase,
+  removeBuilding,
+  removeCitizen,
+  selectKillerAllies,
   selectKillerIdentity,
   selectKillerMotive,
-  nextSetupPhase,
-  prevSetupPhase,
-  autoSetup,
+  selectMode,
+  selectPlayMode,
+  selectRole,
+  setAIDifficulty as setAIDifficultyRule,
   setupToGameState,
-  validatePhase,
+  toggleMotive,
 } from '../data/rules/setup';
 
 interface SetupStoreState {
   // Состояние настройки
   setupState: SetupState;
-  
+
   // UI состояние
   error: string | null;
-  
+
   // Действия — режим и роль
   selectMode: (mode: GameMode) => void;
   selectRole: (role: PlayerRole) => void;
-  
+
+  // Действия — формат и сложность
+  setPlayMode: (mode: PlayMode) => void;
+  setAIDifficulty: (difficulty: AIDifficulty) => void;
+
   // Действия — мотивы
   toggleMotive: (motive: Motive) => void;
   autoSelectMotives: () => void;
-  
+
   // Действия — жители
   placeCitizen: (citizenId: string, districtIndex: number) => void;
   removeCitizen: (citizenId: string) => void;
   autoPlaceCitizens: () => void;
-  
+
   // Действия — здания
   placeBuilding: (buildingType: BuildingType, position: number) => void;
   removeBuilding: (position: number) => void;
   autoPlaceBuildings: () => void;
-  
+
   // Действия — детектив
   placeDetective: (position: number) => void;
   autoPlaceDetective: () => void;
-  
+
   // Действия — убийца
   selectKillerIdentity: (citizenId: string) => void;
   selectKillerMotive: (motive: Motive) => void;
-  
+  selectKillerAllies: (faction: string) => void;
+
   // Навигация
   nextPhase: () => void;
   prevPhase: () => void;
-  
+
   // Быстрая настройка
   autoSetup: (mode: GameMode, role: PlayerRole) => void;
-  
+
   // Финализация
   finishSetup: () => GameState | null;
-  
+
   // Сброс
   reset: () => void;
 }
@@ -88,141 +96,164 @@ export const useSetupStore = create<SetupStoreState>()(
     (set, get) => ({
       setupState: createSetupState(),
       error: null,
-      
+
       // Режим и роль
       selectMode: (mode) => {
-        set({ 
+        set({
           setupState: selectMode(get().setupState, mode),
-          error: null 
+          error: null,
         });
       },
-      
+
       selectRole: (role) => {
-        set({ 
+        set({
           setupState: selectRole(get().setupState, role),
-          error: null 
+          error: null,
         });
       },
-      
+
+      // Формат и сложность
+      setPlayMode: (mode) => {
+        set({
+          setupState: selectPlayMode(get().setupState, mode),
+          error: null,
+        });
+      },
+
+      setAIDifficulty: (difficulty) => {
+        set({
+          setupState: setAIDifficultyRule(get().setupState, difficulty),
+          error: null,
+        });
+      },
+
       // Мотивы
       toggleMotive: (motive) => {
         const result = toggleMotive(get().setupState, motive);
-        set({ 
+        set({
           setupState: result.state,
-          error: result.error || null 
+          error: result.error || null,
         });
       },
-      
+
       autoSelectMotives: () => {
-        set({ 
+        set({
           setupState: autoSelectMotives(get().setupState),
-          error: null 
+          error: null,
         });
       },
-      
+
       // Жители
       placeCitizen: (citizenId, districtIndex) => {
         const result = placeCitizen(get().setupState, citizenId, districtIndex);
-        set({ 
+        set({
           setupState: result.state,
-          error: result.error || null 
+          error: result.error || null,
         });
       },
-      
+
       removeCitizen: (citizenId) => {
-        set({ 
+        set({
           setupState: removeCitizen(get().setupState, citizenId),
-          error: null 
+          error: null,
         });
       },
-      
+
       autoPlaceCitizens: () => {
-        set({ 
+        set({
           setupState: autoPlaceCitizens(get().setupState),
-          error: null 
+          error: null,
         });
       },
-      
+
       // Здания
       placeBuilding: (buildingType, position) => {
         const result = placeBuilding(get().setupState, buildingType, position);
-        set({ 
+        set({
           setupState: result.state,
-          error: result.error || null 
+          error: result.error || null,
         });
       },
-      
+
       removeBuilding: (position) => {
-        set({ 
+        set({
           setupState: removeBuilding(get().setupState, position),
-          error: null 
+          error: null,
         });
       },
-      
+
       autoPlaceBuildings: () => {
-        set({ 
+        set({
           setupState: autoPlaceBuildings(get().setupState),
-          error: null 
+          error: null,
         });
       },
-      
+
       // Детектив
       placeDetective: (position) => {
         const result = placeDetective(get().setupState, position);
-        set({ 
+        set({
           setupState: result.state,
-          error: result.error || null 
+          error: result.error || null,
         });
       },
-      
+
       autoPlaceDetective: () => {
-        set({ 
+        set({
           setupState: autoPlaceDetective(get().setupState),
-          error: null 
+          error: null,
         });
       },
-      
+
       // Убийца
       selectKillerIdentity: (citizenId) => {
         const result = selectKillerIdentity(get().setupState, citizenId);
-        set({ 
+        set({
           setupState: result.state,
-          error: result.error || null 
+          error: result.error || null,
         });
       },
-      
+
       selectKillerMotive: (motive) => {
         const result = selectKillerMotive(get().setupState, motive);
-        set({ 
+        set({
           setupState: result.state,
-          error: result.error || null 
+          error: result.error || null,
         });
       },
-      
+
+      selectKillerAllies: (faction) => {
+        const result = selectKillerAllies(get().setupState, faction);
+        set({
+          setupState: result.state,
+          error: result.error || null,
+        });
+      },
+
       // Навигация
       nextPhase: () => {
         const result = nextSetupPhase(get().setupState);
-        set({ 
+        set({
           setupState: result.state,
-          error: result.error || null 
+          error: result.error || null,
         });
       },
-      
+
       prevPhase: () => {
-        set({ 
+        set({
           setupState: prevSetupPhase(get().setupState),
-          error: null 
+          error: null,
         });
       },
-      
+
       // Быстрая настройка
       autoSetup: (mode, role) => {
-        set({ 
+        set({
           setupState: autoSetup(mode, role),
-          error: null 
+          error: null,
         });
       },
-      
+
       // Финализация
       finishSetup: () => {
         const result = setupToGameState(get().setupState);
@@ -232,15 +263,15 @@ export const useSetupStore = create<SetupStoreState>()(
         }
         return result;
       },
-      
+
       // Сброс
       reset: () => {
-        set({ 
+        set({
           setupState: createSetupState(),
-          error: null 
+          error: null,
         });
       },
     }),
-    { name: 'setup-store' }
-  )
+    { name: 'setup-store' },
+  ),
 );

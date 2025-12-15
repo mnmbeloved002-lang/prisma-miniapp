@@ -40,24 +40,7 @@ function createMockStoreState() {
 
   const gameState = {
     // 4×4 сетка кварталов
-    grid: [
-      [citizen1],
-      [],
-      [],
-      [],
-      [citizen2],
-      [],
-      [],
-      [],
-      [],
-      [],
-      [],
-      [],
-      [],
-      [],
-      [],
-      [],
-    ],
+    grid: [[citizen1], [], [], [], [citizen2], [], [], [], [], [], [], [], [], [], [], []],
     // Одно здание в квартале 0
     buildings: [
       {
@@ -154,7 +137,7 @@ describe('GameBoard', () => {
     const callForC2 = calls.find(([props]) => props.citizen.id === 'c2');
     expect(callForC2).toBeDefined();
 
-    const propsForC2 = callForC2![0];
+    const propsForC2 = callForC2?.[0];
 
     // Житель c2 запуган и выбран (см. mockStoreState)
     expect(propsForC2.isFrightened).toBe(true);

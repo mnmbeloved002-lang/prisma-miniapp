@@ -2,7 +2,7 @@
  * Кнопки действий убийцы
  */
 
-import React from 'react';
+import type React from 'react';
 import type { PhaseStep } from '../../data/gameTypes';
 
 interface KillerActionsProps {
@@ -33,18 +33,17 @@ export const KillerActions: React.FC<KillerActionsProps> = ({
           className={`
             w-full py-3 px-4 rounded-xl font-semibold text-sm
             transition-all duration-200
-            ${selectedCount === 2
-              ? 'bg-purple-600 hover:bg-purple-500 text-white'
-              : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+            ${
+              selectedCount === 2
+                ? 'bg-purple-600 hover:bg-purple-500 text-white'
+                : 'bg-gray-700 text-gray-400 cursor-not-allowed'
             }
           `}
         >
           😨 Запугать выбранных ({selectedCount}/2)
         </button>
-        
-        <p className="text-xs text-gray-500 text-center">
-          Выберите 2 жителей на карте
-        </p>
+
+        <p className="text-xs text-gray-500 text-center">Выберите 2 жителей на карте</p>
       </div>
     );
   }
@@ -58,9 +57,10 @@ export const KillerActions: React.FC<KillerActionsProps> = ({
           className={`
             w-full py-3 px-4 rounded-xl font-semibold text-sm
             transition-all duration-200
-            ${canKill
-              ? 'bg-red-600 hover:bg-red-500 text-white'
-              : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+            ${
+              canKill
+                ? 'bg-red-600 hover:bg-red-500 text-white'
+                : 'bg-gray-700 text-gray-400 cursor-not-allowed'
             }
           `}
         >
@@ -78,16 +78,10 @@ export const KillerActions: React.FC<KillerActionsProps> = ({
           </button>
         )}
 
-        <p className="text-xs text-gray-500 text-center">
-          Выберите жертву согласно мотиву
-        </p>
+        <p className="text-xs text-gray-500 text-center">Выберите жертву согласно мотиву</p>
       </div>
     );
   }
 
-  return (
-    <div className="text-center text-gray-500 py-4">
-      Ожидайте своего хода...
-    </div>
-  );
+  return <div className="text-center text-gray-500 py-4">Ожидайте своего хода...</div>;
 };

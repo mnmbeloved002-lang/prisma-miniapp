@@ -3,9 +3,9 @@
  * Путь: src/modules/city-mystery/ai/DetectiveAI.ts
  */
 
-import type { GameState, QuestionType, Motive, BuildingType } from '../data/gameTypes';
 import type { Citizen, Faction } from '../data/citizens';
-import { getDistrictForResident, getAdjacentDistricts, MOTIVE_CARDS } from '../data/gameConstants';
+import { getAdjacentDistricts } from '../data/gameConstants';
+import type { BuildingType, GameState, Motive, QuestionType } from '../data/gameTypes';
 
 export interface DetectiveDecision {
   action: string;
@@ -31,7 +31,10 @@ export class DetectiveAI {
     excludedIds: [],
     possibleMotives: ['MANIAC', 'SADIST', 'HEADHUNTER', 'VIGILANTE', 'KILLER', 'TERRORIST'],
   };
-  private interrogationHistory: Map<string, { question: QuestionType; answer: boolean; trusted: boolean }[]> = new Map();
+  private interrogationHistory: Map<
+    string,
+    { question: QuestionType; answer: boolean; trusted: boolean }[]
+  > = new Map();
 
   /**
    * Решает, что делать на фазе расследования
@@ -50,14 +53,16 @@ export class DetectiveAI {
       return { action: 'PASS', reasoning: 'Нет действий и движения' };
     }
     const usedActions = state.detective.usedActionTypes || [];
-    
+
     // Приоритет 1: Допросить жителей в текущем квартале
     if (actionsLeft > 0 && !usedActions.includes('INTERROGATE')) {
       const residentsHere = state.grid[currentDistrict];
       const canInterrogate = residentsHere.filter((r) => !state.frightenedResidents.includes(r.id));
       if (canInterrogate.length > 0) {
         const decision = this.decideInterrogation(state, canInterrogate);
-        if (decision) return decision;
+        if (decision) {
+          return decision;
+        }
       }
     }
     // Приоритет 2: Использовать здание
@@ -67,13 +72,17 @@ export class DetectiveAI {
       );
       if (buildingHere && !usedActions.includes(`BUILDING_${buildingHere.type}`)) {
         const decision = this.decideBuildingUse(state, buildingHere.type);
-        if (decision) return decision;
+        if (decision) {
+          return decision;
+        }
       }
     }
     // Приоритет 3: Переместиться к жителям
     if (movementLeft > 0) {
       const decision = this.decideMovement(state);
-      if (decision) return decision;
+      if (decision) {
+        return decision;
+      }
     }
 
     return { action: 'PASS', reasoning: 'Нет полезных действий' };
@@ -142,7 +151,7 @@ export class DetectiveAI {
     if (!this.interrogationHistory.has(residentId)) {
       this.interrogationHistory.set(residentId, []);
     }
-    this.interrogationHistory.get(residentId)!.push({ question, answer, trusted });
+    this.interrogationHistory.get(residentId)?.push({ question, answer, trusted });
 
     this.log.push(
       `[DETECTIVE] Ответ: ${answer ? 'ДА' : 'НЕТ'} (${trusted ? 'доверяем' : 'может врать'})`,
@@ -179,7 +188,7 @@ export class DetectiveAI {
           reasoning: 'Тяну жетон соцгруппы для перемещения жителей',
         };
 
-      case 'HOSPITAL':
+      case 'HOSPITAL': {
         const frightenedNearby = this.findFrightenedNearby(state);
         if (frightenedNearby) {
           this.log.push(`[DETECTIVE] Использую Больницу: успокаиваю ${frightenedNearby.role}`);
@@ -190,8 +199,9 @@ export class DetectiveAI {
           };
         }
         break;
+      }
 
-      case 'DINER':
+      case 'DINER': {
         const targetForDiner = this.findDinerTarget(state);
         if (targetForDiner) {
           this.log.push(`[DETECTIVE] Использую Закусочную: допрос ${targetForDiner.role}`);
@@ -202,6 +212,7 @@ export class DetectiveAI {
           };
         }
         break;
+      }
     }
 
     return null;
@@ -211,7 +222,7 @@ export class DetectiveAI {
     const currentPos = state.detective.position;
     const adjacent = getAdjacentDistricts(currentPos);
     const nearbyDistricts = [currentPos, ...adjacent];
-    
+
     for (const district of nearbyDistricts) {
       for (const resident of state.grid[district]) {
         if (state.frightenedResidents.includes(resident.id)) {
@@ -226,12 +237,14 @@ export class DetectiveAI {
     const currentPos = state.detective.position;
     const adjacent = getAdjacentDistricts(currentPos);
     const nearbyDistricts = [currentPos, ...adjacent];
-    
+
     for (const district of nearbyDistricts) {
       for (const resident of state.grid[district]) {
         if (!state.frightenedResidents.includes(resident.id)) {
           const asked = this.interrogationHistory.get(resident.id)?.length || 0;
-          if (asked < 5) return resident;
+          if (asked < 5) {
+            return resident;
+          }
         }
       }
     }
@@ -256,7 +269,9 @@ export class DetectiveAI {
         hasBuilding: state.buildings.some((b) => b.position === d && !b.usedThisRound),
       }))
       .sort((a, b) => {
-        if (b.residents !== a.residents) return b.residents - a.residents;
+        if (b.residents !== a.residents) {
+          return b.residents - a.residents;
+        }
         return (b.hasBuilding ? 1 : 0) - (a.hasBuilding ? 1 : 0);
       });
 
@@ -298,7 +313,9 @@ export class DetectiveAI {
 
   analyzeKillings(state: GameState): void {
     const victims = state.victims;
-    if (victims.length === 0) return;
+    if (victims.length === 0) {
+      return;
+    }
 
     this.log.push(`[DETECTIVE] Анализ ${victims.length} убийств...`);
 

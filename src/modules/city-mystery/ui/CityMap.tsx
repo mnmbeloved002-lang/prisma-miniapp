@@ -1,8 +1,8 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { CitizenCard } from './CitizenCard';
+import { motion } from 'motion/react';
+import type React from 'react';
 import { BUILDING_ICONS } from '../data/gameConstants';
 import type { GameState } from '../data/gameTypes';
+import { CitizenCard } from './CitizenCard';
 
 interface CityMapProps {
   gameState: GameState;
@@ -19,7 +19,6 @@ export const CityMap: React.FC<CityMapProps> = ({
   onDistrictClick,
   onResidentClick,
 }) => {
-  
   const isMoveable = (index: number) => {
     return (
       playerRole === 'DETECTIVE' &&
@@ -36,22 +35,18 @@ export const CityMap: React.FC<CityMapProps> = ({
     <div className="w-fit mx-auto">
       {/* Заголовок */}
       <div className="flex justify-between items-center mb-4 px-2">
-        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest">
-          Карта
-        </h2>
-        <div className="text-xs text-gray-500 font-mono">
-          Fixed 220px
-        </div>
+        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Карта</h2>
+        <div className="text-xs text-gray-500 font-mono">Fixed 220px</div>
       </div>
 
       {/* СЕТКА: gap-2 (8px ~ 2mm) */}
       <div className="grid grid-cols-4 gap-2 p-4 bg-black/40 rounded-3xl border border-white/10 shadow-2xl backdrop-blur-xl">
         {gameState.grid.map((residents, index) => {
-          const building = gameState.buildings.find(b => b.position === index);
+          const building = gameState.buildings.find((b) => b.position === index);
           const isCrimeScene = gameState.crimeScenes.includes(index);
           const isDetectiveHere = gameState.detective.position === index;
           const canMove = isMoveable(index);
-          
+
           const x = index % 4;
           const y = Math.floor(index / 4);
 
@@ -85,7 +80,12 @@ export const CityMap: React.FC<CityMapProps> = ({
                   const citizen = residents[slot];
                   // Пустой слот
                   if (!citizen) {
-                     return <div key={`empty-${slot}`} className="flex-1 rounded bg-white/5 border border-white/5" />;
+                    return (
+                      <div
+                        key={`empty-${slot}`}
+                        className="flex-1 rounded bg-white/5 border border-white/5"
+                      />
+                    );
                   }
                   // Карточка жителя
                   return (
@@ -102,10 +102,10 @@ export const CityMap: React.FC<CityMapProps> = ({
               </div>
 
               {/* 3. СЛОИ: Детектив и Место преступления (абсолютное позиционирование) */}
-              
+
               {/* Детектив (справа внизу, поверх всего) */}
               {isDetectiveHere && (
-                <motion.div 
+                <motion.div
                   layoutId="detective-token"
                   className="absolute bottom-1 right-1 text-3xl z-20 drop-shadow-xl"
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
